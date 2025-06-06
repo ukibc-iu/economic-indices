@@ -8,7 +8,7 @@ st.set_page_config(layout="wide")
 st.title("Consumer Demand Index")
 
 # Path to your default data file (place your CSV here)
-DEFAULT_DATA_PATH = "data/Coonsumer_Demand_Index.csv"
+DEFAULT_DATA_PATH = "data/Consumer_Demand_Index.csv"
 
 # Load the data automatically
 try:
