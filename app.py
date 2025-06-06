@@ -17,9 +17,11 @@ if uploaded_file:
     # Show columns for debugging
     st.write("Columns in uploaded CSV:", df.columns.tolist())
     
-    # Convert 'Date' column to datetime, adjust format if needed
+    # Convert 'Date' column to datetime with format '%b-%y' (e.g., Jan-23)
     try:
-        df['Date'] = pd.to_datetime(df['Date'], format='%d-%b')
+        df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
+        # Fix any years parsed as 1900s to 2000s
+        df.loc[df['Date'].dt.year < 2000, 'Date'] += pd.DateOffset(years=100)
     except Exception as e:
         st.error(f"Date parsing error: {e}")
         st.stop()
