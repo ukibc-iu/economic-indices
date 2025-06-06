@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")
@@ -26,18 +26,27 @@ if uploaded_file:
 
     df = df.dropna(subset=features)
 
-    # PCA
-    pca = PCA(n_components=1)
-    pca_components = pca.fit_transform(df[features])
+    # Step 1: Standardize features
+    scaler_std = StandardScaler()
+    scaled_features = scaler_std.fit_transform(df[features])
 
-    # Min-Max Scaling between -5 to +5
-    scaler = MinMaxScaler(feature_range=(-5, 5))
-    df['CDI'] = scaler.fit_transform(pca_components)
+    # Step 2: PCA
+    pca = PCA(n_components=1)
+    pca_components = pca.fit_transform(scaled_features)
+
+    # Step 3: Scale PCA output to -5 to +5
+    # Shift to positive range before MinMaxScaler
+    pca_shifted = pca_components - pca_components.min()
+    scaler_mm = MinMaxScaler(feature_range=(0, 1))
+    pca_normalized = scaler_mm.fit_transform(pca_shifted)
+    cdi_scaled = pca_normalized * 10 - 5  # scale to [-5,5]
+
+    df['CDI'] = cdi_scaled
 
     # Monthly labels
     df['Month'] = df['Date'].dt.strftime('%b-%Y')
 
-    # Custom Fiscal Quarter Function
+    # Fiscal quarter function based on Apr-Mar financial year
     def get_fiscal_quarter(date):
         month = date.month
         year = date.year
@@ -58,7 +67,7 @@ if uploaded_file:
 
     df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 
-    # Mode toggle
+    # Mode toggle for Monthly/Quarterly view
     mode = st.radio("📅 View Mode", ['Monthly', 'Quarterly'], horizontal=True)
 
     if mode == 'Monthly':
@@ -71,10 +80,10 @@ if uploaded_file:
         selected_value = quarter_df.loc[quarter_df['Fiscal_Quarter'] == selected_quarter, 'CDI'].values[0]
         display_label = selected_quarter
 
-    # Draw the CDI Scale
+    # Plot the CDI scale with selected value highlighted
     fig = go.Figure()
 
-    # CDI Marker
+    # CDI marker
     fig.add_trace(go.Scatter(
         x=[selected_value],
         y=[0],
@@ -85,12 +94,20 @@ if uploaded_file:
         name="CDI"
     ))
 
-    # Dotted line for selected CDI
+    # Dotted vertical line at selected CDI value
     fig.add_shape(
         type='line',
         x0=selected_value, x1=selected_value,
         y0=-0.3, y1=0.3,
         line=dict(color='crimson', dash='dot')
+    )
+
+    # Zero baseline line
+    fig.add_shape(
+        type='line',
+        x0=0, x1=0,
+        y0=-0.5, y1=0.5,
+        line=dict(color='gray', dash='dash')
     )
 
     fig.update_layout(
@@ -105,12 +122,13 @@ if uploaded_file:
         ),
         yaxis=dict(visible=False),
         height=220,
-        margin=dict(l=30, r=30, t=50, b=30)
+        margin=dict(l=30, r=30, t=50, b=30),
+        showlegend=False
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # Optional: Show full CDI table
+    # Optional: show raw data with CDI
     if st.checkbox("🔍 Show raw data with CDI"):
         st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI'] + features])
 
