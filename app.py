@@ -5,7 +5,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")
-st.title("📊 Consumer Demand Index Dashboard (Scale: -5 to +5)")
+st.title("Consumer Demand Index")  # Updated title here
 
 uploaded_file = st.file_uploader("📁 Upload your monthly data CSV", type=["csv"])
 
