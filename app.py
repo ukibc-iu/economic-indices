@@ -79,11 +79,19 @@ if mode == 'Monthly':
     selected_month = st.selectbox("Select a month", df['Month'].unique())
     selected_value = df.loc[df['Month'] == selected_month, 'CDI'].values[0]
     display_label = selected_month
+    line_x = df['Date']
+    line_y = df['CDI']
+    line_title = "CDI Over Time (Monthly)"
+    xaxis_title = "Date"
 else:
     quarter_df = df.groupby('Fiscal_Quarter')['CDI'].mean().reset_index()
     selected_quarter = st.selectbox("Select a fiscal quarter", quarter_df['Fiscal_Quarter'].unique())
     selected_value = quarter_df.loc[quarter_df['Fiscal_Quarter'] == selected_quarter, 'CDI'].values[0]
     display_label = selected_quarter
+    line_x = quarter_df['Fiscal_Quarter']
+    line_y = quarter_df['CDI']
+    line_title = "CDI Over Time (Quarterly)"
+    xaxis_title = "Fiscal Quarter"
 
 # Plot CDI scale
 fig = go.Figure()
@@ -128,6 +136,28 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
+# Line Graph of CDI over time
+line_fig = go.Figure()
+line_fig.add_trace(go.Scatter(
+    x=line_x,
+    y=line_y,
+    mode='lines+markers',
+    line=dict(color='royalblue', width=3),
+    marker=dict(size=6),
+    name='CDI'
+))
+
+line_fig.update_layout(
+    title=line_title,
+    xaxis_title=xaxis_title,
+    yaxis_title="CDI (-5 to +5)",
+    yaxis=dict(range=[-5.5, 5.5]),
+    height=400,
+    margin=dict(l=40, r=40, t=50, b=40)
+)
+
+st.plotly_chart(line_fig, use_container_width=True)
 
 if st.checkbox("🔍 Show raw data with CDI"):
     st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI'] + features])
