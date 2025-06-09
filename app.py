@@ -230,8 +230,3 @@ with col2:
 # --- Raw Data ---
 if st.checkbox("🔍 Show raw data with CDI"):
     st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI'] + features])
-
-
-# --- Raw Data ---
-if st.checkbox("🔍 Show raw data with CDI"):
-    st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI'] + features])
