@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import plotly.graph_objects as go
+import plotly.io as pio
 
 st.set_page_config(layout="wide")
 st.title("Consumer Demand Index")
@@ -95,80 +96,91 @@ else:
     xaxis_type = "category"
     xaxis_title = "Fiscal Quarter"
 
-# Updated CDI Scale Graph with Aesthetic Boxes
+# ----------------------------- #
+# Enhanced CDI Scale Graph Here
+# ----------------------------- #
 fig = go.Figure()
 
-# Color zones for -3 to +3
-colors = {
-    -3: "#d73027",  # Red
-    -2: "#fc8d59",  # Orange
-    -1: "#fee08b",  # Yellow
-     0: "#d9ef8b",  # Light Green
-     1: "#91cf60",  # Green
-     2: "#1a9850",  # Darker Green
-     3: "#006837",  # Deep Green
+# Color map for -5 to +5
+color_map = {
+    -5: ("#800000", "Extremely Low"),
+    -4: ("#bd0026", "Severely Low"),
+    -3: ("#e31a1c", "Very Low"),
+    -2: ("#fc4e2a", "Low"),
+    -1: ("#fd8d3c", "Slightly Low"),
+     0: ("#fecc5c", "Neutral"),
+     1: ("#c2e699", "Slightly High"),
+     2: ("#78c679", "High"),
+     3: ("#31a354", "Very High"),
+     4: ("#006837", "Severely High"),
+     5: ("#004529", "Extremely High")
 }
 
-# Draw colored boxes and numbers
-for val, color in colors.items():
+# Draw color-coded boxes
+for val in range(-5, 6):
+    color, label = color_map[val]
     fig.add_shape(
         type="rect",
-        x0=val - 0.5, x1=val + 0.5,
-        y0=-0.5, y1=0.5,
+        x0=val - 0.5,
+        x1=val + 0.5,
+        y0=-0.3,
+        y1=0.3,
+        line=dict(color="black", width=1),
         fillcolor=color,
-        line=dict(width=0),
         layer="below"
     )
-    fig.add_annotation(
-        x=val, y=0,
-        text=str(val),
-        showarrow=False,
-        font=dict(color="white", size=12),
-        align="center"
-    )
+    fig.add_trace(go.Scatter(
+        x=[val],
+        y=[0],
+        mode='text',
+        text=[str(val)],
+        textposition="middle center",
+        hoverinfo="text",
+        hovertext=[f"{label} ({val})"],
+        showlegend=False
+    ))
 
-# Highlight the selected CDI value's box with a dotted rectangle
-highlight_x = round(selected_value)
-if -3 <= highlight_x <= 3:
-    fig.add_shape(
-        type="rect",
-        x0=highlight_x - 0.5, x1=highlight_x + 0.5,
-        y0=-0.5, y1=0.5,
-        line=dict(color="black", width=2, dash="dot"),
-        fillcolor="rgba(0,0,0,0)"
-    )
+# Highlight selected value with a dotted crimson box
+fig.add_shape(
+    type="rect",
+    x0=selected_value - 0.5,
+    x1=selected_value + 0.5,
+    y0=-0.35,
+    y1=0.35,
+    line=dict(color="crimson", width=3, dash="dot"),
+    fillcolor="rgba(0,0,0,0)"
+)
 
-# Display actual value above
+# Show CDI value as text above
 fig.add_trace(go.Scatter(
     x=[selected_value],
-    y=[0.6],
+    y=[0.45],
     mode='text',
     text=[f"{selected_value:.2f}"],
-    textfont=dict(size=16, color="black")
+    textfont=dict(size=14, color='crimson'),
+    showlegend=False
 ))
 
 fig.update_layout(
     title=f"Consumer Demand Index for {display_label}",
     xaxis=dict(
-        range=[-3.5, 3.5],
-        showgrid=False,
-        zeroline=False,
-        tickvals=[],
+        range=[-5.5, 5.5],
+        title='CDI Scale (-5 to +5)',
         showticklabels=False,
+        showgrid=False,
+        zeroline=False
     ),
-    yaxis=dict(
-        visible=False,
-        range=[-1, 1],
-    ),
-    height=220,
-    margin=dict(l=30, r=30, t=50, b=30),
-    showlegend=False,
-    plot_bgcolor="white",
+    yaxis=dict(visible=False),
+    height=280,
+    margin=dict(l=30, r=30, t=60, b=30),
+    showlegend=False
 )
 
 st.plotly_chart(fig, use_container_width=True)
 
+# ----------------------------- #
 # Line graph of CDI over time
+# ----------------------------- #
 line_fig = go.Figure()
 line_fig.add_trace(go.Scatter(
     x=line_x,
@@ -191,6 +203,8 @@ line_fig.update_layout(
 
 st.plotly_chart(line_fig, use_container_width=True)
 
-# Show raw data
+# ----------------------------- #
+# Show raw data table
+# ----------------------------- #
 if st.checkbox("🔍 Show raw data with CDI"):
     st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI'] + features])
