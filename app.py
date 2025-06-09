@@ -168,16 +168,16 @@ col1, col2 = st.columns(2)
 # LEFT: Line graph
 with col1:
    line_fig = go.Figure()
-line_fig.add_trace(go.Scatter(
+    line_fig.add_trace(go.Scatter(
     x=line_x,
     y=line_y,
     mode='lines+markers',
     line=dict(color='#007381', width=3),  # Teal line
     marker=dict(size=6, color='#E85412'),  # Burnt Orange markers
     name='CDI'
-))
+    ))
 
-line_fig.update_layout(
+    line_fig.update_layout(
     title=line_title,
     xaxis_title=xaxis_title,
     yaxis_title="CDI (-5 to +5)",
@@ -185,9 +185,9 @@ line_fig.update_layout(
     xaxis=dict(type=xaxis_type),
     height=400,
     margin=dict(l=40, r=40, t=50, b=40)
-)
+    )
 
-st.plotly_chart(line_fig, use_container_width=True)
+    st.plotly_chart(line_fig, use_container_width=True)
 
 # RIGHT: Pie chart - Feature Contribution
 with col2:
