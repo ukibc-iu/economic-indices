@@ -163,28 +163,29 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # --- 2-COLUMN LAYOUT ---
+# --- 2-COLUMN LAYOUT ---
 col1, col2 = st.columns(2)
 
 # LEFT: Line graph
 with col1:
-   line_fig = go.Figure()
+    line_fig = go.Figure()
     line_fig.add_trace(go.Scatter(
-    x=line_x,
-    y=line_y,
-    mode='lines+markers',
-    line=dict(color='#007381', width=3),  # Teal line
-    marker=dict(size=6, color='#E85412'),  # Burnt Orange markers
-    name='CDI'
+        x=line_x,
+        y=line_y,
+        mode='lines+markers',
+        line=dict(color='#007381', width=3),  # Teal line
+        marker=dict(size=6, color='#E85412'),  # Burnt Orange markers
+        name='CDI'
     ))
 
     line_fig.update_layout(
-    title=line_title,
-    xaxis_title=xaxis_title,
-    yaxis_title="CDI (-5 to +5)",
-    yaxis=dict(range=[-5.5, 5.5]),
-    xaxis=dict(type=xaxis_type),
-    height=400,
-    margin=dict(l=40, r=40, t=50, b=40)
+        title=line_title,
+        xaxis_title=xaxis_title,
+        yaxis_title="CDI (-5 to +5)",
+        yaxis=dict(range=[-5.5, 5.5]),
+        xaxis=dict(type=xaxis_type),
+        height=400,
+        margin=dict(l=40, r=40, t=50, b=40)
     )
 
     st.plotly_chart(line_fig, use_container_width=True)
@@ -205,7 +206,7 @@ with col2:
         })
         contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
 
-                color_palette = ['#62C8CE', '#E85412', '#007381', '#002060', '#4B575F']
+        color_palette = ['#62C8CE', '#E85412', '#007381', '#002060', '#4B575F']
 
         pie_fig = go.Figure(data=[
             go.Pie(
@@ -225,6 +226,10 @@ with col2:
             margin=dict(l=30, r=30, t=40, b=30)
         )
         st.plotly_chart(pie_fig, use_container_width=True)
+
+# --- Raw Data ---
+if st.checkbox("🔍 Show raw data with CDI"):
+    st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI'] + features])
 
 
 # --- Raw Data ---
