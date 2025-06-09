@@ -95,46 +95,75 @@ else:
     xaxis_type = "category"
     xaxis_title = "Fiscal Quarter"
 
-# Plot CDI scale (Gauge)
+# Updated CDI Scale Graph with Aesthetic Boxes
 fig = go.Figure()
 
+# Color zones for -3 to +3
+colors = {
+    -3: "#d73027",  # Red
+    -2: "#fc8d59",  # Orange
+    -1: "#fee08b",  # Yellow
+     0: "#d9ef8b",  # Light Green
+     1: "#91cf60",  # Green
+     2: "#1a9850",  # Darker Green
+     3: "#006837",  # Deep Green
+}
+
+# Draw colored boxes and numbers
+for val, color in colors.items():
+    fig.add_shape(
+        type="rect",
+        x0=val - 0.5, x1=val + 0.5,
+        y0=-0.5, y1=0.5,
+        fillcolor=color,
+        line=dict(width=0),
+        layer="below"
+    )
+    fig.add_annotation(
+        x=val, y=0,
+        text=str(val),
+        showarrow=False,
+        font=dict(color="white", size=12),
+        align="center"
+    )
+
+# Highlight the selected CDI value's box with a dotted rectangle
+highlight_x = round(selected_value)
+if -3 <= highlight_x <= 3:
+    fig.add_shape(
+        type="rect",
+        x0=highlight_x - 0.5, x1=highlight_x + 0.5,
+        y0=-0.5, y1=0.5,
+        line=dict(color="black", width=2, dash="dot"),
+        fillcolor="rgba(0,0,0,0)"
+    )
+
+# Display actual value above
 fig.add_trace(go.Scatter(
     x=[selected_value],
-    y=[0],
-    mode='markers+text',
-    marker=dict(size=20, color='crimson'),
+    y=[0.6],
+    mode='text',
     text=[f"{selected_value:.2f}"],
-    textposition="top center"
+    textfont=dict(size=16, color="black")
 ))
-
-fig.add_shape(
-    type='line',
-    x0=selected_value, x1=selected_value,
-    y0=-0.3, y1=0.3,
-    line=dict(color='crimson', dash='dot')
-)
-
-fig.add_shape(
-    type='line',
-    x0=0, x1=0,
-    y0=-0.5, y1=0.5,
-    line=dict(color='gray', dash='dash')
-)
 
 fig.update_layout(
     title=f"Consumer Demand Index for {display_label}",
     xaxis=dict(
-        range=[-5.5, 5.5],
-        tickmode='linear',
-        tick0=-5,
-        dtick=1,
-        title='CDI Scale (-5 to +5)',
-        showgrid=False
+        range=[-3.5, 3.5],
+        showgrid=False,
+        zeroline=False,
+        tickvals=[],
+        showticklabels=False,
     ),
-    yaxis=dict(visible=False),
+    yaxis=dict(
+        visible=False,
+        range=[-1, 1],
+    ),
     height=220,
     margin=dict(l=30, r=30, t=50, b=30),
-    showlegend=False
+    showlegend=False,
+    plot_bgcolor="white",
 )
 
 st.plotly_chart(fig, use_container_width=True)
