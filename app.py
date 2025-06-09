@@ -192,7 +192,7 @@ with col1:
 
 # RIGHT: Pie chart - Feature Contribution for Monthly and Quarterly modes
 with col2:
-    st.markdown("### 🧠 Feature Contributions to CDI")
+    st.markdown("### Feature Contributions to CDI")
 
     pca_weights = pca.components_[0]
 
