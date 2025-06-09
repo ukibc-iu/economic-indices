@@ -191,32 +191,36 @@ with col1:
 with col2:
     st.markdown("### 🧠 Feature Contributions to CDI")
 
-    # Compute contributions using PCA weights × scaled values
-    pca_weights = pca.components_[0]
-    scaled_row = scaled_features[selected_idx]
-    contributions = scaled_row * pca_weights
+    if mode == 'Monthly':
+        # Compute contributions using PCA weights × scaled values
+        pca_weights = pca.components_[0]
+        scaled_row = scaled_features[selected_idx]
+        contributions = scaled_row * pca_weights
 
-    contrib_df = pd.DataFrame({
-        'Feature': features,
-        'Contribution': contributions
-    })
-    contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
+        contrib_df = pd.DataFrame({
+            'Feature': features,
+            'Contribution': contributions
+        })
+        contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
 
-    pie_fig = go.Figure(data=[
-        go.Pie(
-            labels=contrib_df['Feature'],
-            values=contrib_df['Abs_Contribution'],
-            hoverinfo='label+percent+value',
-            textinfo='label+percent',
-            marker=dict(line=dict(color='#000000', width=1))
+        pie_fig = go.Figure(data=[
+            go.Pie(
+                labels=contrib_df['Feature'],
+                values=contrib_df['Abs_Contribution'],
+                hoverinfo='label+percent+value',
+                textinfo='label+percent',
+                marker=dict(line=dict(color='#000000', width=1))
+            )
+        ])
+        pie_fig.update_layout(
+            title=f"Contribution Breakdown: {display_label}",
+            height=400,
+            margin=dict(l=30, r=30, t=40, b=30)
         )
-    ])
-    pie_fig.update_layout(
-        title=f"Contribution Breakdown: {display_label}",
-        height=400,
-        margin=dict(l=30, r=30, t=40, b=30)
-    )
-    st.plotly_chart(pie_fig, use_container_width=True)
+        st.plotly_chart(pie_fig, use_container_width=True)
+    else:
+        st.info("📊 Feature contribution chart is only available for individual months.")
+
 
 # --- Raw Data ---
 if st.checkbox("🔍 Show raw data with CDI"):
