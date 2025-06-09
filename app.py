@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import plotly.graph_objects as go
-import numpy as np
+import plotly.io as pio
 
 st.set_page_config(layout="wide")
 st.title("Consumer Demand Index")
@@ -47,7 +47,7 @@ scaler_mm = MinMaxScaler(feature_range=(0, 1))
 pca_normalized = scaler_mm.fit_transform(pca_shifted)
 cdi_scaled = pca_normalized * 10 - 5  # scale to [-5,5]
 
-df['CDI'] = cdi_scaled.flatten()
+df['CDI'] = cdi_scaled
 
 # Monthly labels
 df['Month'] = df['Date'].dt.strftime('%b-%Y')
@@ -96,16 +96,6 @@ else:
     xaxis_type = "category"
     xaxis_title = "Fiscal Quarter"
 
-# Helper functions for text color contrast
-def hex_to_rgb(hex_color):
-    hex_color = hex_color.lstrip('#')
-    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-
-def get_text_color(hex_color):
-    r, g, b = hex_to_rgb(hex_color)
-    brightness = (r*299 + g*587 + b*114) / 1000
-    return 'white' if brightness < 150 else 'black'
-
 # ----------------------------- #
 # Enhanced CDI Scale Graph Here
 # ----------------------------- #
@@ -126,10 +116,9 @@ color_map = {
      5: ("#004529", "Extremely High")
 }
 
-# Draw color-coded boxes and scale numbers with dynamic contrast text color
+# Draw color-coded boxes
 for val in range(-5, 6):
     color, label = color_map[val]
-    text_color = get_text_color(color)
     fig.add_shape(
         type="rect",
         x0=val - 0.5,
@@ -148,7 +137,7 @@ for val in range(-5, 6):
         textposition="middle center",
         hoverinfo="text",
         hovertext=[f"{label} ({val})"],
-        textfont=dict(color=text_color, size=14),
+        textfont=dict(color='white', size=14),
         showlegend=False
     ))
 
@@ -185,8 +174,6 @@ fig.update_layout(
     yaxis=dict(visible=False),
     height=280,
     margin=dict(l=30, r=30, t=60, b=30),
-    plot_bgcolor='white',
-    paper_bgcolor='white',
     showlegend=False
 )
 
@@ -218,40 +205,7 @@ line_fig.update_layout(
 st.plotly_chart(line_fig, use_container_width=True)
 
 # ----------------------------- #
-# Pie chart showing distribution of CDI categories
-# ----------------------------- #
-
-# First, create a category column mapping CDI to nearest integer scale category
-df['CDI_Category'] = df['CDI'].round().clip(-5, 5).astype(int)
-
-# Map to labels and colors
-labels = []
-values = []
-colors = []
-
-for val in range(-5, 6):
-    labels.append(color_map[val][1])
-    values.append((df['CDI_Category'] == val).sum())
-    colors.append(color_map[val][0])
-
-pie_fig = go.Figure(data=[go.Pie(
-    labels=labels,
-    values=values,
-    marker=dict(colors=colors, line=dict(color='black', width=1)),
-    hoverinfo='label+percent+value',
-    textinfo='label+percent'
-)])
-
-pie_fig.update_layout(
-    title="Distribution of Consumer Demand Index Categories",
-    height=400,
-    margin=dict(l=40, r=40, t=50, b=40)
-)
-
-st.plotly_chart(pie_fig, use_container_width=True)
-
-# ----------------------------- #
 # Show raw data table
 # ----------------------------- #
 if st.checkbox("🔍 Show raw data with CDI"):
-    st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI', 'CDI_Category'] + features])
+    st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI'] + features])
