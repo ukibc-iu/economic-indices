@@ -112,6 +112,13 @@ color_map = {
      5: ("#004529", "Extremely High")
 }
 
+def get_text_color(bg_hex):
+    # Simple brightness check to decide text color black/white
+    bg_hex = bg_hex.lstrip('#')
+    r, g, b = int(bg_hex[0:2], 16), int(bg_hex[2:4], 16), int(bg_hex[4:6], 16)
+    brightness = (r*299 + g*587 + b*114) / 1000
+    return 'black' if brightness > 150 else 'white'
+
 for val in range(-5, 6):
     color, label = color_map[val]
     fig.add_shape(
@@ -129,7 +136,7 @@ for val in range(-5, 6):
         textposition="middle center",
         hoverinfo="text",
         hovertext=[f"{label} ({val})"],
-        textfont=dict(color='white', size=14),
+        textfont=dict(color=get_text_color(color), size=14),
         showlegend=False
     ))
 
@@ -162,18 +169,19 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
+
 # --- 2-COLUMN LAYOUT ---
 col1, col2 = st.columns(2)
 
-# LEFT: Line graph
+# LEFT: Line graph (unchanged)
 with col1:
     line_fig = go.Figure()
     line_fig.add_trace(go.Scatter(
         x=line_x,
         y=line_y,
         mode='lines+markers',
-        line=dict(color='#007381', width=3),  # Teal line
-        marker=dict(size=6, color='#E85412'),  # Burnt Orange markers
+        line=dict(color='#007381', width=3),
+        marker=dict(size=6, color='#E85412'),
         name='CDI'
     ))
 
@@ -186,17 +194,16 @@ with col1:
         height=400,
         margin=dict(l=40, r=40, t=50, b=40)
     )
-
     st.plotly_chart(line_fig, use_container_width=True)
 
-# RIGHT: Pie chart - Feature Contribution
+# RIGHT: Pie chart - Feature Contribution for Monthly and Quarterly modes
 with col2:
     st.markdown("### 🧠 Feature Contributions to CDI")
 
+    pca_weights = pca.components_[0]
+
     if mode == 'Monthly':
-        # Make sure selected_idx is valid for scaled_features
         if 0 <= selected_idx < len(scaled_features):
-            pca_weights = pca.components_[0]
             scaled_row = scaled_features[selected_idx]
             contributions = scaled_row * pca_weights
 
@@ -228,6 +235,42 @@ with col2:
             st.plotly_chart(pie_fig, use_container_width=True)
         else:
             st.warning("Selected data index out of range for feature contributions.")
+
+    else:  # Quarterly mode
+        # Get indices of rows for selected quarter
+        quarter_indices = df.index[df['Fiscal_Quarter'] == selected_quarter].tolist()
+        if quarter_indices:
+            avg_scaled_features = scaled_features[quarter_indices].mean(axis=0)
+            contributions = avg_scaled_features * pca_weights
+
+            contrib_df = pd.DataFrame({
+                'Feature': features,
+                'Contribution': contributions
+            })
+            contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
+
+            color_palette = ['#62C8CE', '#E85412', '#007381', '#002060', '#4B575F']
+
+            pie_fig = go.Figure(data=[
+                go.Pie(
+                    labels=contrib_df['Feature'],
+                    values=contrib_df['Abs_Contribution'],
+                    hoverinfo='label+percent+value',
+                    textinfo='label+percent',
+                    marker=dict(
+                        colors=color_palette[:len(contrib_df)],
+                        line=dict(color='white', width=1.5)
+                    )
+                )
+            ])
+            pie_fig.update_layout(
+                title=f"Contribution Breakdown: {display_label}",
+                height=400,
+                margin=dict(l=30, r=30, t=40, b=30)
+            )
+            st.plotly_chart(pie_fig, use_container_width=True)
+        else:
+            st.warning("No data found for the selected fiscal quarter.")
 
 # --- Raw Data ---
 if st.checkbox("🔍 Show raw data with CDI"):
