@@ -119,7 +119,8 @@ for val in range(-5, 6):
         x0=val - 0.5, x1=val + 0.5,
         y0=-0.3, y1=0.3,
         line=dict(color="black", width=1),
-        fillcolor=color
+        fillcolor=color,
+        layer="below"
     )
     fig.add_trace(go.Scatter(
         x=[val],
