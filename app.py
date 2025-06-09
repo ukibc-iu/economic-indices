@@ -120,7 +120,7 @@ for val in range(-5, 6):
         y0=-0.3, y1=0.3,
         line=dict(color="black", width=1),
         fillcolor=color,
-        layer="below"
+        layer="below"  # ensures shapes behind text
     )
     fig.add_trace(go.Scatter(
         x=[val],
@@ -130,7 +130,7 @@ for val in range(-5, 6):
         textposition="middle center",
         hoverinfo="text",
         hovertext=[f"{label} ({val})"],
-        textfont=dict(color='white', size=14),  # <-- white text color here
+        textfont=dict(color='white', size=16, family="Arial Black", weight='bold'),
         showlegend=False
     ))
 
@@ -140,7 +140,8 @@ fig.add_shape(
     x1=selected_value + 0.5,
     y0=-0.35, y1=0.35,
     line=dict(color="crimson", width=3, dash="dot"),
-    fillcolor="rgba(0,0,0,0)"
+    fillcolor="rgba(0,0,0,0)",
+    layer="above"  # highlight shape above
 )
 
 fig.add_trace(go.Scatter(
@@ -148,7 +149,7 @@ fig.add_trace(go.Scatter(
     y=[0.45],
     mode='text',
     text=[f"{selected_value:.2f}"],
-    textfont=dict(size=14, color='crimson'),
+    textfont=dict(size=16, color='crimson', family="Arial Black", weight='bold'),
     showlegend=False
 ))
 
@@ -162,7 +163,6 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
-
 
 # --- 2-COLUMN LAYOUT ---
 col1, col2 = st.columns(2)
