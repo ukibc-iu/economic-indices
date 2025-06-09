@@ -194,37 +194,40 @@ with col2:
     st.markdown("### 🧠 Feature Contributions to CDI")
 
     if mode == 'Monthly':
-        # Compute contributions using PCA weights × scaled values
-        pca_weights = pca.components_[0]
-        scaled_row = scaled_features[selected_idx]
-        contributions = scaled_row * pca_weights
+        # Make sure selected_idx is valid for scaled_features
+        if 0 <= selected_idx < len(scaled_features):
+            pca_weights = pca.components_[0]
+            scaled_row = scaled_features[selected_idx]
+            contributions = scaled_row * pca_weights
 
-        contrib_df = pd.DataFrame({
-            'Feature': features,
-            'Contribution': contributions
-        })
-        contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
+            contrib_df = pd.DataFrame({
+                'Feature': features,
+                'Contribution': contributions
+            })
+            contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
 
-        color_palette = ['#62C8CE', '#E85412', '#007381', '#002060', '#4B575F']
+            color_palette = ['#62C8CE', '#E85412', '#007381', '#002060', '#4B575F']
 
-        pie_fig = go.Figure(data=[
-            go.Pie(
-                labels=contrib_df['Feature'],
-                values=contrib_df['Abs_Contribution'],
-                hoverinfo='label+percent+value',
-                textinfo='label+percent',
-                marker=dict(
-                    colors=color_palette[:len(contrib_df)],
-                    line=dict(color='white', width=1.5)
+            pie_fig = go.Figure(data=[
+                go.Pie(
+                    labels=contrib_df['Feature'],
+                    values=contrib_df['Abs_Contribution'],
+                    hoverinfo='label+percent+value',
+                    textinfo='label+percent',
+                    marker=dict(
+                        colors=color_palette[:len(contrib_df)],
+                        line=dict(color='white', width=1.5)
+                    )
                 )
+            ])
+            pie_fig.update_layout(
+                title=f"Contribution Breakdown: {display_label}",
+                height=400,
+                margin=dict(l=30, r=30, t=40, b=30)
             )
-        ])
-        pie_fig.update_layout(
-            title=f"Contribution Breakdown: {display_label}",
-            height=400,
-            margin=dict(l=30, r=30, t=40, b=30)
-        )
-        st.plotly_chart(pie_fig, use_container_width=True)
+            st.plotly_chart(pie_fig, use_container_width=True)
+        else:
+            st.warning("Selected data index out of range for feature contributions.")
 
 # --- Raw Data ---
 if st.checkbox("🔍 Show raw data with CDI"):
