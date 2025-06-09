@@ -112,13 +112,6 @@ color_map = {
      5: ("#004529", "Extremely High")
 }
 
-def get_text_color(bg_hex):
-    # Simple brightness check to decide text color black/white
-    bg_hex = bg_hex.lstrip('#')
-    r, g, b = int(bg_hex[0:2], 16), int(bg_hex[2:4], 16), int(bg_hex[4:6], 16)
-    brightness = (r*299 + g*587 + b*114) / 1000
-    return 'black' if brightness > 150 else 'white'
-
 for val in range(-5, 6):
     color, label = color_map[val]
     fig.add_shape(
@@ -136,7 +129,7 @@ for val in range(-5, 6):
         textposition="middle center",
         hoverinfo="text",
         hovertext=[f"{label} ({val})"],
-        textfont=dict(color=get_text_color(color), size=14),
+        textfont=dict(color='white', size=14),  # <-- white text color here
         showlegend=False
     ))
 
