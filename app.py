@@ -240,5 +240,5 @@ if st.checkbox("🔍 Show raw data with CDI"):
 
 
 # --- Raw Data ---
-if st.checkbox("🔍 Show raw data with CDI"):
+if st.checkbox("🔍 Show raw data with CDI", key="show_raw_data"):
     st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI'] + features])
