@@ -5,13 +5,6 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")
-st.markdown("""
-    <style>
-        html, body, [class*="css"]  {
-            font-family: Arial, sans-serif;
-        }
-    </style>
-""", unsafe_allow_html=True)
 st.title("Consumer Demand Index")
 
 # Path to your default data file (place your CSV here)
@@ -240,5 +233,5 @@ if st.checkbox("🔍 Show raw data with CDI"):
 
 
 # --- Raw Data ---
-if st.checkbox("🔍 Show raw data with CDI", key="show_raw_data"):
+if st.checkbox("🔍 Show raw data with CDI"):
     st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI'] + features])
