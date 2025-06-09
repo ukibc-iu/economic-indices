@@ -167,25 +167,27 @@ col1, col2 = st.columns(2)
 
 # LEFT: Line graph
 with col1:
-    line_fig = go.Figure()
-    line_fig.add_trace(go.Scatter(
-        x=line_x,
-        y=line_y,
-        mode='lines+markers',
-        line=dict(color='royalblue', width=3),
-        marker=dict(size=6),
-        name='CDI'
-    ))
-    line_fig.update_layout(
-        title=line_title,
-        xaxis_title=xaxis_title,
-        yaxis_title="CDI (-5 to +5)",
-        yaxis=dict(range=[-5.5, 5.5]),
-        xaxis=dict(type=xaxis_type),
-        height=400,
-        margin=dict(l=40, r=40, t=50, b=40)
-    )
-    st.plotly_chart(line_fig, use_container_width=True)
+   line_fig = go.Figure()
+line_fig.add_trace(go.Scatter(
+    x=line_x,
+    y=line_y,
+    mode='lines+markers',
+    line=dict(color='#007381', width=3),  # Teal line
+    marker=dict(size=6, color='#E85412'),  # Burnt Orange markers
+    name='CDI'
+))
+
+line_fig.update_layout(
+    title=line_title,
+    xaxis_title=xaxis_title,
+    yaxis_title="CDI (-5 to +5)",
+    yaxis=dict(range=[-5.5, 5.5]),
+    xaxis=dict(type=xaxis_type),
+    height=400,
+    margin=dict(l=40, r=40, t=50, b=40)
+)
+
+st.plotly_chart(line_fig, use_container_width=True)
 
 # RIGHT: Pie chart - Feature Contribution
 with col2:
@@ -203,13 +205,18 @@ with col2:
         })
         contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
 
+                color_palette = ['#62C8CE', '#E85412', '#007381', '#002060', '#4B575F']
+
         pie_fig = go.Figure(data=[
             go.Pie(
                 labels=contrib_df['Feature'],
                 values=contrib_df['Abs_Contribution'],
                 hoverinfo='label+percent+value',
                 textinfo='label+percent',
-                marker=dict(line=dict(color='#000000', width=1))
+                marker=dict(
+                    colors=color_palette[:len(contrib_df)],
+                    line=dict(color='white', width=1.5)
+                )
             )
         ])
         pie_fig.update_layout(
@@ -218,8 +225,6 @@ with col2:
             margin=dict(l=30, r=30, t=40, b=30)
         )
         st.plotly_chart(pie_fig, use_container_width=True)
-    else:
-        st.info("📊 Feature contribution chart is only available for individual months.")
 
 
 # --- Raw Data ---
