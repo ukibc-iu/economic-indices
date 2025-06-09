@@ -117,14 +117,21 @@ def hex_to_rgb(hex_color):
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
 # --- CDI SCALE PLOT ---
+# --- CDI SCALE PLOT ---
 fig = go.Figure()
+
+x_vals = []
+texts = []
+text_colors = []
 
 for val in range(-5, 6):
     color, label = color_map[val]
     r, g, b = hex_to_rgb(color)
     brightness = (r*299 + g*587 + b*114) / 1000
-    text_color = 'white' if brightness < 128 else 'black'
+    # Lower brightness means darker bg, use white text, else black
+    text_color = 'white' if brightness < 150 else 'black'
 
+    # Add the colored rectangle
     fig.add_shape(
         type="rect",
         x0=val - 0.5, x1=val + 0.5,
@@ -132,18 +139,12 @@ for val in range(-5, 6):
         line=dict(color="black", width=1),
         fillcolor=color
     )
-    fig.add_trace(go.Scatter(
-        x=[val],
-        y=[0],
-        mode='text',
-        text=[str(val)],
-        textposition="middle center",
-        hoverinfo="text",
-        hovertext=[f"{label} ({val})"],
-        textfont=dict(color=text_color, size=14),
-        showlegend=False
-    ))
+    # Save positions and text for a single Scatter trace
+    x_vals.append(val)
+    texts.append(str(val))
+    text_colors.append(text_color)
 
+# Highlight the selected CDI value with a border rectangle
 fig.add_shape(
     type="rect",
     x0=selected_value - 0.5,
@@ -153,12 +154,27 @@ fig.add_shape(
     fillcolor="rgba(0,0,0,0)"
 )
 
+# Add selected CDI numeric value just above the scale bar
 fig.add_trace(go.Scatter(
     x=[selected_value],
-    y=[0.45],
+    y=[0.5],
     mode='text',
     text=[f"{selected_value:.2f}"],
-    textfont=dict(size=14, color='crimson'),
+    textfont=dict(size=16, color='crimson', family="Arial"),
+    showlegend=False
+))
+
+# Add the scale numbers as a single trace
+fig.add_trace(go.Scatter(
+    x=x_vals,
+    y=[0]*len(x_vals),
+    mode='text',
+    text=texts,
+    textfont=dict(
+        color=text_colors,
+        size=14,
+        family="Arial"
+    ),
     showlegend=False
 ))
 
@@ -174,7 +190,6 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
-
 # --- 2-COLUMN LAYOUT ---
 col1, col2 = st.columns(2)
 
