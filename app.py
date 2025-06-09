@@ -137,6 +137,7 @@ for val in range(-5, 6):
         textposition="middle center",
         hoverinfo="text",
         hovertext=[f"{label} ({val})"],
+        textfont=dict(color='white', size=14),
         showlegend=False
     ))
 
