@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")
-st.title("Consumer Demand Index")
+st.title("Consumer Demand Index (CDI)")
 
 DEFAULT_DATA_PATH = "data/Consumer_Demand_Index.csv"
 
