@@ -169,11 +169,12 @@ st.caption("Note: Scale bar clips CDI between -5 to +5 for visual comparison. Re
 col1, col2 = st.columns(2)
 
 # LEFT: Line Graph
+# LEFT: Line Graph
 with col1:
     line_fig = go.Figure()
     line_fig.add_trace(go.Scatter(
         x=line_x,
-        y=line_y,
+        y=line_y,  # Make sure this is CDI_Real
         mode='lines+markers',
         line=dict(color='#007381', width=3),
         marker=dict(size=6, color='#E85412'),
