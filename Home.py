@@ -6,14 +6,13 @@ st.title("📊 Economic Indices Dashboard")
 
 st.markdown("Select an index below to explore its detailed trends and analysis.")
 
-# Mapping names to page filenames (must match what’s in /pages/)
 indices = {
     "Consumer Demand Index (CDI)": "1_CDI_Dashboard",
-    "EV Market Adoption Rate": "2_EV Market Adoption Rate",
-    "Housing Affordability Stress Index": "3_Housing Affordability Stress Index",
-    "Renewable Transition Readiness Score": "4_Renewable Transition Readiness Score",
-    "Infrastructure Activity Index (IAI)": "5_Infrastructure Activity Index (IAI)",
-    "IMP Index": "6_IMP Index",
+    "Retail Activity Index": "2_Retail_Index",
+    "Energy Usage Index": "3_Energy_Index",
+    "Transport Movement Index": "4_Transport_Index",
+    "Financial Sentiment Index": "5_Sentiment_Index",
+    "Real Estate Index": "6_Housing_Index",
 }
 
 cols = st.columns(3)
