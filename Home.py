@@ -6,7 +6,6 @@ st.title("📊 Economic Indices Dashboard")
 
 st.markdown("Select an index below to explore its detailed trends and analysis.")
 
-# Updated indices dictionary
 indices = {
     "Consumer Demand Index (CDI)": "1_CDI_Dashboard",
     "EV Market Adoption Rate": "2_EV Market Adoption Rate",
@@ -21,7 +20,7 @@ for i, (name, page) in enumerate(indices.items()):
     with cols[i % 3]:
         st.subheader(name)
 
-        # Sample mini line chart with unique key
+        # Sample mini line chart
         fig = go.Figure()
         fig.add_trace(go.Scatter(y=[1, 2, 1.5, 2.5, 3], mode="lines", line=dict(color="blue")))
         fig.update_layout(
@@ -34,6 +33,5 @@ for i, (name, page) in enumerate(indices.items()):
 
         st.caption("An overview of recent trends in " + name.split('(')[0].strip())
 
-        # Button with unique key
-        if st.button(f"Go to {name}", key=f"button-{i}"):
+        if st.button("Open detailed view of the index →", key=name):
             st.switch_page(f"pages/{page}.py")
