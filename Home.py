@@ -3,10 +3,9 @@ import plotly.graph_objects as go
 
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
 st.title("📊 Economic Indices Dashboard")
-
 st.markdown("Select an index below to explore its detailed trends and analysis.")
 
-# Index info: filename, color, and mock trend data
+# Index info: page file, color, and mock trend data
 indices = {
     "Consumer Demand Index (CDI)": (
         "1_CDI_Dashboard", "#00FFD1", [1.0, 0.2, 0.74, 1.6, 1.8]
@@ -28,7 +27,7 @@ indices = {
     ),
 }
 
-# Layout: 3 columns per row
+# Use 3 columns per row
 cols = st.columns(3)
 
 for i, (name, (page, color, trend)) in enumerate(indices.items()):
@@ -36,13 +35,23 @@ for i, (name, (page, color, trend)) in enumerate(indices.items()):
         with st.container():
             st.markdown(
                 f"""
-                <div style="border: 2px solid {color}; border-radius: 12px; padding: 20px; margin: 10px 0;">
+                <div style="
+                    background-color: #111;
+                    border: 2px solid {color};
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                    height: 100%;
+                ">
                 """,
                 unsafe_allow_html=True
             )
 
             # Title
-            st.markdown(f"<h4 style='color:white;margin-bottom:0.5rem'>{name}</h4>", unsafe_allow_html=True)
+            st.markdown(
+                f"<h4 style='margin-bottom:0.5rem;color:white'>{name}</h4>",
+                unsafe_allow_html=True
+            )
 
             # Chart
             fig = go.Figure()
@@ -63,7 +72,8 @@ for i, (name, (page, color, trend)) in enumerate(indices.items()):
 
             # Overview
             st.markdown(
-                f"<p style='color:{color}; margin-top:-0.5rem;'>An overview of recent trends in {name.split('(')[0].strip()}</p>",
+                f"<p style='color:{color}; margin-bottom: 0.5rem;'>"
+                f"An overview of recent trends in {name.split('(')[0].strip()}</p>",
                 unsafe_allow_html=True
             )
 
@@ -71,5 +81,5 @@ for i, (name, (page, color, trend)) in enumerate(indices.items()):
             if st.button("Open detailed view of the index →", key=f"btn-{i}"):
                 st.switch_page(f"pages/{page}.py")
 
-            # Close div
+            # Close HTML div
             st.markdown("</div>", unsafe_allow_html=True)
