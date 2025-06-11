@@ -36,9 +36,10 @@ indices = {
 }
 
 # Create columns and render each index card
-cols = st.columns(3)
+# Create columns and render each index card with 2 per row
+cols = st.columns(2)
 for i, (name, (page, color, trend, icon, overview)) in enumerate(indices.items()):
-    with cols[i % 3]:
+    with cols[i % 2]:
         st.subheader(f"{icon} {name}")
 
         # Neon-style mini line chart
