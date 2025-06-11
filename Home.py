@@ -6,13 +6,14 @@ st.title("📊 Economic Indices Dashboard")
 
 st.markdown("Select an index below to explore its detailed trends and analysis.")
 
+# ✅ Updated indices mapping
 indices = {
     "Consumer Demand Index (CDI)": "1_CDI_Dashboard",
-    "Retail Activity Index": "2_Retail_Index",
-    "Energy Usage Index": "3_Energy_Index",
-    "Transport Movement Index": "4_Transport_Index",
-    "Financial Sentiment Index": "5_Sentiment_Index",
-    "Real Estate Index": "6_Housing_Index",
+    "EV Market Adoption Rate": "2_EV_Market_Adoption_Rate",
+    "Housing Affordability Stress Index": "3_Housing_Affordability_Stress_Index",
+    "Renewable Transition Readiness Score": "4_Renewable_Transition_Readiness_Score",
+    "Infrastructure Activity Index (IAI)": "5_Infrastructure_Activity_Index_(IAI)",
+    "IMP Index": "6_IMP Index",
 }
 
 cols = st.columns(3)
