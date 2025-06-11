@@ -6,7 +6,7 @@ st.title("📊 Economic Indices Dashboard")
 
 st.markdown("Select an index below to explore its detailed trends and analysis.")
 
-# Index info: filename, neon color, and mini trend data
+# Index info: filename, color, and mock trend data
 indices = {
     "Consumer Demand Index (CDI)": (
         "1_CDI_Dashboard", "#00FFD1", [1.0, 0.2, 0.74, 1.6, 1.8]
@@ -28,30 +28,21 @@ indices = {
     ),
 }
 
-# 3-column layout
 cols = st.columns(3)
 
 for i, (name, (page, color, trend)) in enumerate(indices.items()):
     with cols[i % 3]:
         with st.container():
+            # Create a card-like appearance using background and border via Markdown
             st.markdown(
                 f"""
-                <div style="
-                    background-color: #1c1c1c;
-                    border: 2px solid {color};
-                    border-radius: 12px;
-                    padding: 1rem;
-                    margin-bottom: 1.5rem;
-                ">
+                <div style="border: 2px solid {color}; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="color: white;">{name}</h4>
                 """,
                 unsafe_allow_html=True
             )
 
-            st.markdown(
-                f"<h4 style='color:white;margin-bottom:0.5rem'>{name}</h4>",
-                unsafe_allow_html=True
-            )
-
+            # Mini line chart
             fig = go.Figure()
             fig.add_trace(go.Scatter(
                 y=trend,
@@ -66,13 +57,15 @@ for i, (name, (page, color, trend)) in enumerate(indices.items()):
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
             )
-            st.plotly_chart(fig, use_container_width=True, key=f"chart-{i}")
+            st.plotly_chart(fig, use_container_width=True)
 
+            # Overview text in respective color
             st.markdown(
-                f"<p style='color:{color};margin-top:0.2rem;'>An overview of recent trends in {name.split('(')[0].strip()}</p>",
+                f"<p style='color:{color};margin-top:-0.5rem;'>An overview of recent trends in {name.split('(')[0].strip()}</p>",
                 unsafe_allow_html=True
             )
 
+            # Navigation button (default style for now)
             if st.button("Open detailed view of the index →", key=f"button-{i}"):
                 st.switch_page(f"pages/{page}.py")
 
