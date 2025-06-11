@@ -1,13 +1,13 @@
 import streamlit as st
 import plotly.graph_objects as go
- 
+
 # Set dark theme layout and page title
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
 st.title("📊 Economic Indices Dashboard")
- 
+
 st.markdown("*Select an index below to explore its detailed trends and analysis.*")
- 
-# Index info: filename, neon-style color, and mock trend data
+
+# Index info: filename, neon-style color, mock trend data, and icon
 indices = {
     "Consumer Demand Index (CDI)": (
         "1_CDI_Dashboard", "#00FFF7", [1.0, 0.2, 0.74, 1.6, 1.8], "🛍️"  # mild upward
@@ -28,13 +28,14 @@ indices = {
         "6_IMP_Index", "#8A2BE2", [2.0, 2.5, 1.8, 2.8, 2.3], "📦"  # dip and rise
     ),
 }
- 
+
 # Create columns and render each index card
 cols = st.columns(3)
-for i, (name, (page, color, trend)) in enumerate(indices.items()):
+for i, (name, (page, color, trend, icon)) in enumerate(indices.items()):
     with cols[i % 3]:
-        st.subheader(name)
- 
+        # Add icon next to the index name
+        st.subheader(f"{icon} {name}")
+
         # Neon-style mini line chart with bold outline + hollow circle markers
         fig = go.Figure()
         fig.add_trace(go.Scatter(
@@ -57,11 +58,11 @@ for i, (name, (page, color, trend)) in enumerate(indices.items()):
             paper_bgcolor="rgba(0,0,0,0)",
         )
         st.plotly_chart(fig, use_container_width=True, key=f"chart-{i}")
- 
+
         # Colored caption text
         overview_text = f"<p style='color:{color}; margin-bottom: 0.5rem;'>An overview of recent trends in {name.split('(')[0].strip()}</p>"
         st.markdown(overview_text, unsafe_allow_html=True)
- 
+
         # Default Streamlit button (to avoid loading issues)
         if st.button("Open detailed view of the index →", key=f"button-{i}"):
             st.switch_page(f"pages/{page}.py")
