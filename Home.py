@@ -12,19 +12,19 @@ indices = {
         "1_CDI_Dashboard", "#62C8CE", [1.0, 0.2, 0.74, 1.6, 1.8]  # mild upward
     ),
     "EV Market Adoption Rate": (
-        "2_EV Market Adoption Rate", "#E85412", [2.5, 2.0, 1.1, 0.9, 1.7]  # gradual decline
+        "2_EV_Market_Adoption_Rate", "#E85412", [2.5, 2.0, 1.1, 0.9, 1.7]  # gradual decline
     ),
     "Housing Affordability Stress Index": (
-        "3_Housing Affordability Stress Index", "#007381", [1.5, 1.3, 1.1, 1.4, 1.7]  # bounce back
+        "3_Housing_Affordability_Stress_Index", "#007381", [1.5, 1.3, 1.1, 1.4, 1.7]  # bounce back
     ),
     "Renewable Transition Readiness Score": (
-        "4_Renewable Transition Readiness Score", "#002060", [1.2, 1.8, 1.1, 1.9, 1.5]  # volatile
+        "4_Renewable_Transition_Readiness_Score", "#002060", [1.2, 1.8, 1.1, 1.9, 1.5]  # volatile
     ),
     "Infrastructure Activity Index (IAI)": (
-        "5_Infrastructure Activity Index (IAI)", "#4B575F", [1.0, 1.5, 1.2, 1.8, 2.5]  # strong growth
+        "5_Infrastructure_Activity_Index_(IAI)", "#4B575F", [1.0, 1.5, 1.2, 1.8, 2.5]  # strong growth
     ),
     "IMP Index": (
-        "6_IMP Index", "#60AEB3", [2.0, 2.5, 1.8, 2.8, 2.3]  # dip and rise
+        "6_IMP_Index", "#60AEB3", [2.0, 2.5, 1.8, 2.8, 2.3]  # dip and rise
     ),
 }
 
