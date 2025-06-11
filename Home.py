@@ -9,22 +9,22 @@ st.markdown("Select an index below to explore its detailed trends and analysis."
 # Index info: filename, color, and mock trend data
 indices = {
     "Consumer Demand Index (CDI)": (
-        "1_CDI_Dashboard", "#62C8CE", [1, 1.2, 1.5, 1.9, 2.3]  # mild upward
+        "1_CDI_Dashboard", "#62C8CE", [1.0, 0.2, 0.74, 1.6, 1.8]  # mild upward
     ),
     "EV Market Adoption Rate": (
-        "2_EV Market Adoption Rate", "#E85412", [2.5, 2.3, 2.1, 1.8, 1.6]  # downward
+        "2_EV Market Adoption Rate", "#E85412", [2.5, 2.0, 1.1, 0.9, 1.7]  # gradual decline
     ),
     "Housing Affordability Stress Index": (
-        "3_Housing Affordability Stress Index", "#007381", [1.5, 1.6, 1.6, 1.5, 1.5]  # stable
+        "3_Housing Affordability Stress Index", "#007381", [1.5, 1.3, 1.1, 1.4, 1.7]  # bounce back
     ),
     "Renewable Transition Readiness Score": (
-        "4_Renewable Transition Readiness Score", "#002060", [1.2, 1.4, 1.0, 1.6, 1.8]  # bounce
+        "4_Renewable Transition Readiness Score", "#002060", [1.2, 1.8, 1.1, 1.9, 1.5]  # volatile
     ),
     "Infrastructure Activity Index (IAI)": (
-        "5_Infrastructure Activity Index (IAI)", "#4B575F", [1.0, 1.3, 1.7, 2.5, 2.9]  # strong growth
+        "5_Infrastructure Activity Index (IAI)", "#4B575F", [1.0, 1.5, 2.0, 2.8, 3.5]  # strong growth
     ),
     "IMP Index": (
-        "6_IMP Index", "#60AEB3", [2.0, 2.5, 1.8, 2.8, 2.2]  # volatile
+        "6_IMP Index", "#60AEB3", [2.0, 2.5, 1.8, 2.8, 2.3]  # dip and rise
     ),
 }
 
