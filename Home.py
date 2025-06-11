@@ -58,8 +58,10 @@ for i, (name, (page, color, trend)) in enumerate(indices.items()):
         )
         st.plotly_chart(fig, use_container_width=True, key=f"chart-{i}")
 
-        st.caption("An overview of recent trends in " + name.split('(')[0].strip())
+        # Colored caption text
+        overview_text = f"<p style='color:{color}; margin-bottom: 0.5rem;'>An overview of recent trends in {name.split('(')[0].strip()}</p>"
+        st.markdown(overview_text, unsafe_allow_html=True)
 
-        # Default Streamlit button (avoiding loading issues)
+        # Default Streamlit button (to avoid loading issues)
         if st.button("Open detailed view of the index →", key=f"button-{i}"):
             st.switch_page(f"pages/{page}.py")
