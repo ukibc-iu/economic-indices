@@ -3,45 +3,45 @@ import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import plotly.graph_objects as go
-
+ 
 st.set_page_config(layout="wide")
 st.title("Consumer Demand Index (CDI)")
-
+ 
 DEFAULT_DATA_PATH = "data/Consumer_Demand_Index.csv"
-
+ 
 # Load data
 try:
     df = pd.read_csv(DEFAULT_DATA_PATH)
 except Exception as e:
     st.error(f"Error loading data: {e}")
     st.stop()
-
+ 
 df.columns = df.columns.str.strip()
 df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
 df = df.dropna(subset=['Date'])
-
+ 
 # Features
 features = ['UPI Transactions', 'GST Revenue', 'Vehicle Sales', 'Housing Sales', 'Power Consumption']
 missing_cols = [col for col in features if col not in df.columns]
 if missing_cols:
     st.error(f"Missing columns: {missing_cols}")
     st.stop()
-
+ 
 df = df.dropna(subset=features)
-
+ 
 # Standardize & PCA
 scaler_std = StandardScaler()
 scaled_features = scaler_std.fit_transform(df[features])
 pca = PCA(n_components=1)
 pca_components = pca.fit_transform(scaled_features)
-
+ 
 # Store CDI values
 df['CDI_Real'] = pca_components[:, 0]
 df['CDI_Scaled'] = df['CDI_Real'].clip(-5, 5)
-
+ 
 # Time labels
 df['Month'] = df['Date'].dt.strftime('%b-%Y')
-
+ 
 def get_fiscal_quarter(date):
     m, y = date.month, date.year
     if m in [4, 5, 6]:
@@ -53,12 +53,12 @@ def get_fiscal_quarter(date):
     else:
         q, fy = 'Q4', y - 1
     return f"{q} {fy}-{str(fy+1)[-2:]}"
-
+ 
 df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
-
+ 
 # View mode
 mode = st.radio("📅 View Mode", ['Monthly', 'Quarterly'], horizontal=True)
-
+ 
 if mode == 'Monthly':
     selected_month = st.selectbox("Select a month", df['Month'].unique())
     selected_row = df[df['Month'] == selected_month].iloc[0]
@@ -84,7 +84,7 @@ else:
     xaxis_type = "category"
     xaxis_title = "Fiscal Quarter"
     selected_value_scaled = df.loc[quarter_indices, 'CDI_Scaled'].mean()
-
+ 
 # --- CDI SCALE ---
 fig = go.Figure()
 color_map = {
@@ -95,7 +95,7 @@ color_map = {
     3: ("#31a354", "Very High"), 4: ("#006837", "Severely High"),
     5: ("#004529", "Extremely High")
 }
-
+ 
 for val in range(-5, 6):
     color, label = color_map[val]
     fig.add_shape(type="rect", x0=val-0.5, x1=val+0.5, y0=-0.3, y1=0.3,
@@ -103,27 +103,27 @@ for val in range(-5, 6):
     fig.add_trace(go.Scatter(x=[val], y=[0], mode='text', text=[str(val)],
                              hovertext=[f"{label} ({val})"], showlegend=False,
                              textfont=dict(color='white', size=16)))
-
+ 
 fig.add_shape(type="rect", x0=selected_value_scaled-0.5, x1=selected_value_scaled+0.5,
               y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
               fillcolor="rgba(0,0,0,0)", layer="above")
-
+ 
 fig.add_trace(go.Scatter(x=[selected_value_scaled], y=[0.45], mode='text',
                          text=[f"{selected_value_real:.2f}"], showlegend=False,
                          textfont=dict(size=16, color='crimson')))
-
+ 
 fig.update_layout(title=f"Consumer Demand Index for {display_label} (Real: {selected_value_real:.2f})",
                   xaxis=dict(range=[-5.5, 5.5], title='CDI Scale (-5 to +5)',
                              showticklabels=False, showgrid=False),
                   yaxis=dict(visible=False), height=280,
                   margin=dict(l=30, r=30, t=60, b=30), showlegend=False)
-
+ 
 st.plotly_chart(fig, use_container_width=True)
 st.caption("Note: CDI scale is clipped to -5 to +5 for consistent visualization. Actual values shown in graphs and data.")
-
+ 
 # --- 2-COLUMN LAYOUT ---
 col1, col2 = st.columns(2)
-
+ 
 # LEFT: Line chart
 with col1:
     line_fig = go.Figure()
@@ -137,14 +137,12 @@ with col1:
                            xaxis=dict(type=xaxis_type), height=400,
                            margin=dict(l=40, r=40, t=50, b=40))
     st.plotly_chart(line_fig, use_container_width=True)
-
-# RIGHT: Pie chart
-# RIGHT: Pie chart
+ 
 # RIGHT: Pie chart
 with col2:
     st.markdown("### Feature Contributions to CDI")
     pca_weights = pca.components_[0]
-
+ 
     if mode == 'Monthly':
         if 0 <= selected_idx < len(scaled_features):
             scaled_row = scaled_features[selected_idx]
@@ -168,37 +166,22 @@ with col2:
         else:
             st.warning("No data for selected quarter.")
             contrib_df = None
-
+ 
     if contrib_df is not None:
         pie_fig = go.Figure(data=[go.Pie(
             labels=contrib_df['Feature'],
             values=contrib_df['Abs_Contribution'],
             hoverinfo='label+percent+value',
             textinfo='label+percent',
-            sort=False,
-            insidetextorientation='radial',
-            marker=dict(
-                colors=['#62C8CE', '#E85412', '#007381', '#002060', '#4B575F'],
-                line=dict(color='white', width=2)
-            ),
-            opacity=0.9,  # Slight opacity to simulate subtle background
-            hoverlabel=dict(
-                bgcolor='white',
-                font_size=14,
-                font_family="Arial"
-            )
+            marker=dict(colors=['#62C8CE', '#E85412', '#007381', '#002060', '#4B575F'],
+                        line=dict(color='white', width=1.5))
         )])
-
         pie_fig.update_layout(
             title=f"Contribution Breakdown: {display_label}",
-            height=400,
-            margin=dict(l=30, r=30, t=40, b=30),
-            uniformtext_minsize=12,
-            uniformtext_mode='hide'
+            height=400, margin=dict(l=30, r=30, t=40, b=30)
         )
-
         st.plotly_chart(pie_fig, use_container_width=True)
-
+ 
 # --- Raw Data ---
 if st.checkbox("🔍 Show raw data with CDI"):
     st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI_Real', 'CDI_Scaled'] + features])
