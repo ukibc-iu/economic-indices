@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.graph_objects as go
+import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
 st.title("📊 Economic Indices Dashboard")
@@ -28,21 +29,22 @@ indices = {
     ),
 }
 
+# Layout: 3 columns per row
 cols = st.columns(3)
 
 for i, (name, (page, color, trend)) in enumerate(indices.items()):
     with cols[i % 3]:
         with st.container():
-            # Create a card-like appearance using background and border via Markdown
+            # Create the full index card in one box using st.markdown
             st.markdown(
                 f"""
-                <div style="border: 2px solid {color}; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                <h4 style="color: white;">{name}</h4>
+                <div style="border: 2px solid {color}; border-radius: 12px; padding: 20px; margin: 10px 0;">
+                    <h4 style="color: white; margin-bottom: 10px;">{name}</h4>
                 """,
                 unsafe_allow_html=True
             )
 
-            # Mini line chart
+            # Chart inside card
             fig = go.Figure()
             fig.add_trace(go.Scatter(
                 y=trend,
@@ -59,14 +61,15 @@ for i, (name, (page, color, trend)) in enumerate(indices.items()):
             )
             st.plotly_chart(fig, use_container_width=True)
 
-            # Overview text in respective color
+            # Overview text
             st.markdown(
                 f"<p style='color:{color};margin-top:-0.5rem;'>An overview of recent trends in {name.split('(')[0].strip()}</p>",
                 unsafe_allow_html=True
             )
 
-            # Navigation button (default style for now)
+            # Navigation button (Streamlit native for working routing)
             if st.button("Open detailed view of the index →", key=f"button-{i}"):
                 st.switch_page(f"pages/{page}.py")
 
+            # Close the outer div
             st.markdown("</div>", unsafe_allow_html=True)
