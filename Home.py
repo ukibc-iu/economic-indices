@@ -22,10 +22,10 @@ indices = {
         "4_Renewable_Transition_Readiness_Score", "#FFD700", [1.2, 1.8, 1.1, 1.9, 1.5], "🌱"  # volatile
     ),
     "Infrastructure Activity Index (IAI)": (
-        "5_Infrastructure_Activity_Index_(IAI)", "#FF3131", [1.0, 1.5, 1.2, 1.8, 2.5], "🏗️"  # strong growth
+        "5_Infrastructure_Activity_Index_(IAI)", "#FF3131", [1.0, 1.5, 1.2, 1.8, 2.5], "🏢"  # strong growth
     ),
     "IMP Index": (
-        "6_IMP_Index", "#8A2BE2", [2.0, 2.5, 1.8, 2.8, 2.3], "📦"  # dip and rise
+        "6_IMP_Index", "#8A2BE2", [2.0, 2.5, 1.8, 2.8, 2.3], "💰"  # dip and rise
     ),
 }
 
