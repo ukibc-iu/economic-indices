@@ -47,32 +47,22 @@ for i, (name, (page, color, trend)) in enumerate(indices.items()):
 
         st.caption("An overview of recent trends in " + name.split('(')[0].strip())
 
-        # Custom styled button with functional click
+        # Stylized clickable "button" link with color
         st.markdown(
             f"""
-            <style>
-            .button-{i} > div {{
-                background-color: {color};
-                border-radius: 8px;
-                padding: 0.5rem;
-                text-align: center;
-                margin-top: 0.5rem;
-            }}
-            .button-{i} button {{
-                color: white;
-                background: none;
-                border: none;
-                font-weight: bold;
-                font-size: 0.95rem;
-                width: 100%;
-                cursor: pointer;
-            }}
-            </style>
+            <a href="/pages/{page}.py" target="_self" style="text-decoration: none;">
+                <div style='
+                    background-color: {color};
+                    color: white;
+                    padding: 0.5rem;
+                    border-radius: 0.5rem;
+                    text-align: center;
+                    font-weight: 600;
+                    margin-top: 0.5rem;
+                    display: block;'>
+                    Open detailed view of the index →
+                </div>
+            </a>
             """,
             unsafe_allow_html=True
         )
-        container = st.container()
-        with container:
-            if st.button("Open detailed view of the index →", key=f"button-{i}"):
-                st.switch_page(f"pages/{page}.py")
-        st.markdown(f"<div class='button-{i}'></div>", unsafe_allow_html=True)
