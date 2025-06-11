@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
 st.title("📊 Economic Indices Dashboard")
  
-st.markdown("Select an index below to explore its detailed trends and analysis.")
+st.markdown("*Select an index below to explore its detailed trends and analysis.*")
  
 # Index info: filename, neon-style color, and mock trend data
 indices = {
