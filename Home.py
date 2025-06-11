@@ -1,11 +1,11 @@
 import streamlit as st
 import plotly.graph_objects as go
-
+ 
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
 st.title("📊 Economic Indices Dashboard")
-
+ 
 st.markdown("Select an index below to explore its detailed trends and analysis.")
-
+ 
 # Index info: filename, color, and mock trend data
 indices = {
     "Consumer Demand Index (CDI)": (
@@ -27,13 +27,12 @@ indices = {
         "6_IMP_Index", "#60AEB3", [2.0, 2.5, 1.8, 2.8, 2.3]
     ),
 }
-
+ 
 cols = st.columns(3)
-
 for i, (name, (page, color, trend)) in enumerate(indices.items()):
     with cols[i % 3]:
         st.subheader(name)
-
+ 
         # Mini chart with unique trend and color
         fig = go.Figure()
         fig.add_trace(go.Scatter(y=trend, mode="lines", line=dict(color=color)))
@@ -44,24 +43,9 @@ for i, (name, (page, color, trend)) in enumerate(indices.items()):
             yaxis=dict(visible=False),
         )
         st.plotly_chart(fig, use_container_width=True, key=f"chart-{i}")
-
+ 
         st.caption("An overview of recent trends in " + name.split('(')[0].strip())
-
-        # Styled Streamlit button (functionally correct)
-        button_css = f"""
-            <style>
-                div.stButton > button#{f'button-{i}'} {{
-                    background-color: {color};
-                    color: white;
-                    border: none;
-                    padding: 0.5rem 1rem;
-                    border-radius: 0.5rem;
-                    width: 100%;
-                    font-weight: 600;
-                }}
-            </style>
-        """
-        st.markdown(button_css, unsafe_allow_html=True)
-
+ 
+        # Correct navigation using Streamlit
         if st.button("Open detailed view of the index →", key=f"button-{i}"):
-            st.switch_page(f"pages/{page}.py")
+            st.switch_page(f"pages/{page}.py"
