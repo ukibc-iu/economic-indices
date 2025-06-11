@@ -6,24 +6,36 @@ st.title("📊 Economic Indices Dashboard")
 
 st.markdown("Select an index below to explore its detailed trends and analysis.")
 
-# Index info with color codes
+# Index info: filename, color, and mock trend data
 indices = {
-    "Consumer Demand Index (CDI)": ("1_CDI_Dashboard", "#62C8CE"),
-    "EV Market Adoption Rate": ("2_EV Market Adoption Rate", "#E85412"),
-    "Housing Affordability Stress Index": ("3_Housing Affordability Stress Index", "#007381"),
-    "Renewable Transition Readiness Score": ("4_Renewable Transition Readiness Score", "#002060"),
-    "Infrastructure Activity Index (IAI)": ("5_Infrastructure Activity Index (IAI)", "#4B575F"),
-    "IMP Index": ("6_IMP Index", "#60AEB3"),
+    "Consumer Demand Index (CDI)": (
+        "1_CDI_Dashboard", "#62C8CE", [1, 1.2, 1.5, 1.9, 2.3]  # mild upward
+    ),
+    "EV Market Adoption Rate": (
+        "2_EV Market Adoption Rate", "#E85412", [2.5, 2.3, 2.1, 1.8, 1.6]  # downward
+    ),
+    "Housing Affordability Stress Index": (
+        "3_Housing Affordability Stress Index", "#007381", [1.5, 1.6, 1.6, 1.5, 1.5]  # stable
+    ),
+    "Renewable Transition Readiness Score": (
+        "4_Renewable Transition Readiness Score", "#002060", [1.2, 1.4, 1.0, 1.6, 1.8]  # bounce
+    ),
+    "Infrastructure Activity Index (IAI)": (
+        "5_Infrastructure Activity Index (IAI)", "#4B575F", [1.0, 1.3, 1.7, 2.5, 2.9]  # strong growth
+    ),
+    "IMP Index": (
+        "6_IMP Index", "#60AEB3", [2.0, 2.5, 1.8, 2.8, 2.2]  # volatile
+    ),
 }
 
 cols = st.columns(3)
-for i, (name, (page, color)) in enumerate(indices.items()):
+for i, (name, (page, color, trend)) in enumerate(indices.items()):
     with cols[i % 3]:
         st.subheader(name)
 
-        # Mini line chart with custom color
+        # Mini chart with unique trend and color
         fig = go.Figure()
-        fig.add_trace(go.Scatter(y=[1, 2, 1.5, 2.5, 3], mode="lines", line=dict(color=color)))
+        fig.add_trace(go.Scatter(y=trend, mode="lines", line=dict(color=color)))
         fig.update_layout(
             height=150,
             margin=dict(l=10, r=10, t=10, b=10),
@@ -34,7 +46,7 @@ for i, (name, (page, color)) in enumerate(indices.items()):
 
         st.caption("An overview of recent trends in " + name.split('(')[0].strip())
 
-        # Stylized button
+        # Stylized button linking to the index dashboard
         button_html = f"""
             <a href="/pages/{page}.py" target="_self">
                 <button style='background-color:{color};color:white;padding:0.5rem 1rem;border:none;border-radius:0.5rem;width:100%;margin-top:0.5rem;'>
