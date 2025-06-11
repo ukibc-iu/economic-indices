@@ -48,4 +48,4 @@ for i, (name, (page, color, trend)) in enumerate(indices.items()):
  
         # Correct navigation using Streamlit
         if st.button("Open detailed view of the index →", key=f"button-{i}"):
-            st.switch_page(f"pages/{page}.py"
+            st.switch_page(f"pages/{page}.py")
