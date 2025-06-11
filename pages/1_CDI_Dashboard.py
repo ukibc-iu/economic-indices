@@ -140,6 +140,7 @@ with col1:
 
 # RIGHT: Pie chart
 # RIGHT: Pie chart
+# RIGHT: Pie chart
 with col2:
     st.markdown("### Feature Contributions to CDI")
     pca_weights = pca.components_[0]
@@ -169,29 +170,35 @@ with col2:
             contrib_df = None
 
     if contrib_df is not None:
-        selected_feature = st.selectbox(
-            "🔎 Highlight a feature", contrib_df['Feature'])
-
-        # Generate 'pull' values: 0.1 for selected, 0 for others
-        pull_values = [
-            0.1 if feature == selected_feature else 0
-            for feature in contrib_df['Feature']
-        ]
-
         pie_fig = go.Figure(data=[go.Pie(
             labels=contrib_df['Feature'],
             values=contrib_df['Abs_Contribution'],
             hoverinfo='label+percent+value',
             textinfo='label+percent',
-            marker=dict(colors=['#62C8CE', '#E85412', '#007381', '#002060', '#4B575F'],
-                        line=dict(color='white', width=1.5)),
-            pull=pull_values
+            sort=False,
+            insidetextorientation='radial',
+            marker=dict(
+                colors=['#62C8CE', '#E85412', '#007381', '#002060', '#4B575F'],
+                line=dict(color='white', width=2)
+            ),
+            opacity=0.9,  # Slight opacity to simulate subtle background
+            hoverlabel=dict(
+                bgcolor='white',
+                font_size=14,
+                font_family="Arial"
+            )
         )])
+
         pie_fig.update_layout(
             title=f"Contribution Breakdown: {display_label}",
-            height=400, margin=dict(l=30, r=30, t=40, b=30)
+            height=400,
+            margin=dict(l=30, r=30, t=40, b=30),
+            uniformtext_minsize=12,
+            uniformtext_mode='hide'
         )
+
         st.plotly_chart(pie_fig, use_container_width=True)
+
 # --- Raw Data ---
 if st.checkbox("🔍 Show raw data with CDI"):
     st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI_Real', 'CDI_Scaled'] + features])
