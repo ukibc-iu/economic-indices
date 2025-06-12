@@ -4,7 +4,6 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import plotly.graph_objects as go
 
-# Streamlit settings
 st.set_page_config(layout="wide")
 st.title("Consumer Demand Index (CDI)")
 
@@ -21,7 +20,7 @@ df.columns = df.columns.str.strip()
 df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
 df = df.dropna(subset=['Date'])
 
-# Features to include in the index
+# Features
 features = ['UPI Transactions', 'GST Revenue', 'Vehicle Sales', 'Housing Sales', 'Power Consumption']
 missing_cols = [col for col in features if col not in df.columns]
 if missing_cols:
@@ -57,20 +56,27 @@ def get_fiscal_quarter(date):
 
 df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 
-# --- Sidebar: Time slider ---
-st.sidebar.markdown("### ⏳ Select Date Range")
-min_date, max_date = df['Date'].min(), df['Date'].max()
-selected_range = st.sidebar.slider("Date Range", min_value=min_date, max_value=max_date,
-                                   value=(min_date, max_date), format="MM/YYYY")
+# --- TIME RANGE SLIDER ---
+min_date = df['Date'].min()
+max_date = df['Date'].max()
 
-# --- Filter dataframe based on time slider ---
+selected_range = st.sidebar.slider(
+    "Select Date Range", 
+    min_value=min_date, 
+    max_value=max_date, 
+    value=(min_date, max_date)
+)
+
+# Filter data by selected date range
 df = df[(df['Date'] >= selected_range[0]) & (df['Date'] <= selected_range[1])]
-scaled_features = scaler_std.transform(df[features])  # re-transform after filtering
+scaled_features = scaler_std.fit_transform(df[features])  # re-standardize after filtering
+pca_components = pca.fit_transform(scaled_features)
+df['CDI_Real'] = pca_components[:, 0]
+df['CDI_Scaled'] = df['CDI_Real'].clip(-5, 5)
 
-# --- View mode toggle ---
+# View mode
 mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True)
 
-# --- View logic ---
 if mode == 'Monthly':
     selected_month = st.selectbox("Select a month", df['Month'].unique())
     selected_row = df[df['Month'] == selected_month].iloc[0]
