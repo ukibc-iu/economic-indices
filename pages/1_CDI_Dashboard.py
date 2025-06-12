@@ -142,11 +142,11 @@ latest_period = latest_row['period_label'] if 'period_label' in latest_row else 
 # === DELTA FOR LATEST CDI ===
 delta = latest_value_real - previous_row['CDI_Real']
 if delta > 0:
-    delta_display = f"<div class='kpi-delta' style='color: green;'>⬆️ {delta:+.2f}</div>"
+    delta_display = f"<div class='kpi-delta' style='color: green;'> {delta:+.2f}</div>"
 elif delta < 0:
-    delta_display = f"<div class='kpi-delta' style='color: red;'>⬇️ {delta:+.2f}</div>"
+    delta_display = f"<div class='kpi-delta' style='color: red;'> {delta:+.2f}</div>"
 else:
-    delta_display = f"<div class='kpi-delta' style='color: gray;'>⏺️ {delta:+.2f}</div>"
+    delta_display = f"<div class='kpi-delta' style='color: gray;'> {delta:+.2f}</div>"
 
 # === RENDER KPI CARDS ===
 st.markdown(f"""
