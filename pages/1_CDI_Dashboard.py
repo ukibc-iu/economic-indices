@@ -213,14 +213,20 @@ col1, col2 = st.columns(2)
 with col1:
     line_fig = go.Figure()
     line_fig.add_trace(go.Scatter(
-        x=line_x, y=line_y, mode='lines+markers',
-        line=dict(color='#007381', width=3),
-        marker=dict(size=6, color='#E85412'), name='CDI'
+        x=line_x,
+        y=line_y,
+        mode='lines+markers',
+        name='CDI',
+        line=dict(color=kpi_theme_colors[0], width=3),   # Purple (or whichever from the palette)
+        marker=dict(size=6, color=kpi_theme_colors[1])   # Pink (contrasting marker)
     ))
     line_fig.update_layout(
-        title=line_title, xaxis_title=xaxis_title,
-        yaxis_title="CDI (Actual)", yaxis=dict(zeroline=True),
-        xaxis=dict(type=xaxis_type), height=400,
+        title=line_title,
+        xaxis_title=xaxis_title,
+        yaxis_title="CDI (Actual)",
+        yaxis=dict(zeroline=True),
+        xaxis=dict(type=xaxis_type),
+        height=400,
         margin=dict(l=40, r=40, t=50, b=40)
     )
     st.plotly_chart(line_fig, use_container_width=True)
