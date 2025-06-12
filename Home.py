@@ -1,10 +1,32 @@
 import streamlit as st
 import plotly.graph_objects as go
- 
+
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
 st.title("📊 Economic Indices Dashboard")
 st.markdown("*Select an index below to explore its detailed trends and analysis.*")
- 
+
+# Inject CSS for center dividing line
+st.markdown("""
+    <style>
+    .reportview-container .main .block-container {
+        display: flex;
+        flex-direction: row;
+        gap: 3rem;
+    }
+    .divider-column {
+        border-left: 2px solid #888;
+        padding-left: 1.5rem;
+    }
+    .card-box {
+        background-color: #111111;
+        border: 1px solid #444444;
+        padding: 1.2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Color map for the scale bars
 color_map = {
     -5: ("#800000", "Extremely Low"), -4: ("#bd0026", "Severely Low"),
@@ -14,8 +36,8 @@ color_map = {
     3: ("#31a354", "Very High"), 4: ("#006837", "Severely High"),
     5: ("#004529", "Extremely High")
 }
- 
-# Index dictionary: filename, color, trend data, icon, and overview
+
+# Index info
 indices = {
     "Consumer Demand Index (CDI)": (
         "1_CDI_Dashboard", "#00FFF7", [1.0, 0.2, 0.74, 1.6, 1.8], "🛍️",
@@ -42,20 +64,26 @@ indices = {
         "India’s Macroeconomic Performance (IMP) Index measures India's overall economic well-being, taking into consideration significant economic parameters such as inflation rate, unemployment rate, etc."
     ),
 }
- 
-# Two-column layout for index cards
-cols = st.columns(2)
+
+# Render two columns: second one gets the divider style
+left_col, right_col = st.columns([1, 1])
+col_refs = [left_col, right_col]
+
 for i, (name, (page, color, trend, icon, overview)) in enumerate(indices.items()):
-    with cols[i % 2]:
+    col = col_refs[i % 2]
+
+    # Add class for right column to enable divider
+    with col:
+        container_style = "class='card-box'"
+        st.markdown(f"<div {container_style}>", unsafe_allow_html=True)
+
         st.subheader(f"{icon} {name}")
- 
-        # Scale bar generation
+
+        # === Scale bar ===
         latest_real = trend[-1]
         latest_scaled = max(min(round(latest_real), 5), -5)
- 
+
         fig = go.Figure()
- 
-        # Draw background color blocks
         for val in range(-5, 6):
             fill_color, label = color_map[val]
             fig.add_shape(type="rect", x0=val - 0.5, x1=val + 0.5, y0=-0.3, y1=0.3,
@@ -63,16 +91,15 @@ for i, (name, (page, color, trend, icon, overview)) in enumerate(indices.items()
             fig.add_trace(go.Scatter(x=[val], y=[0], mode='text', text=[str(val)],
                                      hovertext=[f"{label} ({val})"], showlegend=False,
                                      textfont=dict(color='white', size=14)))
- 
-        # Add red box indicator for current score
+
         fig.add_shape(type="rect", x0=latest_scaled - 0.5, x1=latest_scaled + 0.5,
                       y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
                       fillcolor="rgba(0,0,0,0)", layer="above")
- 
+
         fig.add_trace(go.Scatter(x=[latest_scaled], y=[0.45], mode='text',
                                  text=[f"{latest_real:.2f}"], showlegend=False,
                                  textfont=dict(size=14, color='crimson')))
- 
+
         fig.update_layout(
             xaxis=dict(range=[-5.5, 5.5], title='Scale (-5 to +5)',
                        showticklabels=False, showgrid=False),
@@ -80,12 +107,14 @@ for i, (name, (page, color, trend, icon, overview)) in enumerate(indices.items()
             height=200, margin=dict(l=10, r=10, t=10, b=10),
             plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", showlegend=False
         )
- 
+
         st.plotly_chart(fig, use_container_width=True, key=f"scale-{i}")
- 
-        # Overview description
-        overview_text = f"<p style='color:{color}; margin-bottom: 0.5rem;'><em>{overview}</em></p>"
-        st.markdown(overview_text, unsafe_allow_html=True)
- 
+
+        # Overview paragraph
+        st.markdown(f"<p style='color:{color};'><em>{overview}</em></p>", unsafe_allow_html=True)
+
+        # Navigation button
         if st.button("Open detailed view of the index →", key=f"button-{i}"):
             st.switch_page(f"pages/{page}.py")
+
+        st.markdown("</div>", unsafe_allow_html=True)
