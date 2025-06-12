@@ -242,8 +242,7 @@ with col2:
 
     contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
 
-    # KPI-theme-inspired gradient shades
-        kpi_theme_colors = [
+    kpi_theme_colors = [
         'rgba(160, 102, 255, 0.9)',   # Purple
         'rgba(233, 102, 255, 0.9)',   # Pink
         'rgba(0, 198, 255, 0.9)',     # Light Blue
