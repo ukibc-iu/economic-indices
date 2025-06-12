@@ -135,12 +135,16 @@ else:
     xaxis_type = "category"
 
 # --- Delta Display ---
+# === DELTA STYLE (bolded for first KPI card) ===
 if delta > 0:
-    delta_display = f"<div class='kpi-delta' style='color: green;'> {delta:+.2f}</div>"
+    delta_display = f"<div class='kpi-delta' style='color: green; font-weight: bold;'> {delta:+.2f}</div>"
 elif delta < 0:
-    delta_display = f"<div class='kpi-delta' style='color: red;'> {delta:+.2f}</div>"
+    delta_display = f"<div class='kpi-delta' style='color: red; font-weight: bold;'> {delta:+.2f}</div>"
 else:
-    delta_display = f"<div class='kpi-delta' style='color: gray;'> {delta:+.2f}</div>"
+    delta_display = f"<div class='kpi-delta' style='color: gray; font-weight: bold;'> {delta:+.2f}</div>"
+
+# === Mode selector with unique key ===
+mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True, key="view_mode_radio")
 
 # --- KPI Cards ---
 st.markdown(f"""
