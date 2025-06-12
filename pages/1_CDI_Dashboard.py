@@ -56,37 +56,35 @@ df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 # === VIEW MODE ===
 mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True)
 
-if mode == 'Monthly':
-    selected_month = st.selectbox("Select a month", df['Month'].unique())
-    selected_row = df[df['Month'] == selected_month].iloc[0]
-    selected_value_real = selected_row['CDI_Real']
-    selected_value_scaled = selected_row['CDI_Scaled']
-    selected_idx = selected_row.name
-    display_label = selected_month
-    line_x = df['Date']
-    line_y = df['CDI_Real']
-    line_title = "CDI Over Time (Monthly)"
-    xaxis_type = "date"
-    xaxis_title = "Date"
+# === KPI CARDS BASED ON LATEST PERIOD FOR SELECTED MODE ===
+df_sorted = df.sort_values("Date")
+
+if mode == "Monthly":
+    latest_row = df_sorted.iloc[-1]
+    prev_row = df_sorted.iloc[-2] if len(df_sorted) >= 2 else latest_row
+    latest_value_real = latest_row['CDI_Real']
+    latest_value_scaled = latest_row['CDI_Scaled']
+    latest_period = latest_row['Month']
+    delta = latest_value_real - prev_row['CDI_Real']
+    period_label = "Month"
 else:
     quarter_df = df.groupby('Fiscal_Quarter', sort=False)['CDI_Real'].mean().reset_index()
-    selected_quarter = st.selectbox("Select a fiscal quarter", quarter_df['Fiscal_Quarter'].unique())
-    selected_value_real = quarter_df.loc[quarter_df['Fiscal_Quarter'] == selected_quarter, 'CDI_Real'].values[0]
-    quarter_indices = df[df['Fiscal_Quarter'] == selected_quarter].index
-    selected_idx = quarter_indices[0]
-    display_label = selected_quarter
-    line_x = quarter_df['Fiscal_Quarter']
-    line_y = quarter_df['CDI_Real']
-    line_title = "CDI Over Time (Quarterly)"
-    xaxis_type = "category"
-    xaxis_title = "Fiscal Quarter"
-    selected_value_scaled = df.loc[quarter_indices, 'CDI_Scaled'].mean()
+    quarter_scaled = df.groupby('Fiscal_Quarter', sort=False)['CDI_Scaled'].mean().reset_index()
+    latest_q = quarter_df.iloc[-1]
+    prev_q = quarter_df.iloc[-2] if len(quarter_df) >= 2 else latest_q
+    latest_value_real = latest_q['CDI_Real']
+    latest_value_scaled = quarter_scaled.iloc[-1]['CDI_Scaled']
+    latest_period = latest_q['Fiscal_Quarter']
+    delta = latest_value_real - prev_q['CDI_Real']
+    period_label = "Quarter"
 
-# --- Custom Colorful KPI Cards (after values are defined) ---
-# === KPI CARDS STYLE ===
-# === KPI CARDS STYLE ===
-# === RENDER KPI CARDS ===
-# === KPI CARD STYLING ===
+if delta > 0:
+    delta_display = f"<div class='kpi-delta' style='color: green;'>⬆️ {delta:+.2f}</div>"
+elif delta < 0:
+    delta_display = f"<div class='kpi-delta' style='color: red;'>⬇️ {delta:+.2f}</div>"
+else:
+    delta_display = f"<div class='kpi-delta' style='color: gray;'>⏺️ {delta:+.2f}</div>"
+
 st.markdown("""
 <style>
 .kpi-container {
@@ -130,26 +128,6 @@ st.markdown("""
 .bg-2 { background-color: #e1f5fe; }
 .bg-3 { background-color: #e0f2f1; }
 </style>
-""", unsafe_allow_html=True)
-
-# === LATEST DATA POINT ===
-latest_row = df.sort_values('Date').iloc[-1]
-prev_row = df.sort_values('Date').iloc[-2] if len(df) >= 2 else latest_row
-
-latest_value_real = latest_row['CDI_Real']
-latest_value_scaled = latest_row['CDI_Scaled']
-latest_period = latest_row['Month']  # already exists in df
-
-delta = latest_value_real - prev_row['CDI_Real']
-if delta > 0:
-    delta_display = f"<div class='kpi-delta' style='color: green;'> {delta:+.2f}</div>"
-elif delta < 0:
-    delta_display = f"<div class='kpi-delta' style='color: red;'> {delta:+.2f}</div>"
-else:
-    delta_display = f"<div class='kpi-delta' style='color: gray;'> {delta:+.2f}</div>"
-
-# === RENDER LATEST MONTH KPI CARDS ===
-st.markdown(f"""
 <div class="kpi-container">
     <div class="kpi-card bg-1">
         <div class="kpi-title">Actual CDI</div>
@@ -157,7 +135,7 @@ st.markdown(f"""
         {delta_display}
     </div>
     <div class="kpi-card bg-2">
-        <div class="kpi-title">Month</div>
+        <div class="kpi-title">{period_label}</div>
         <div class="kpi-value">{latest_period}</div>
     </div>
     <div class="kpi-card bg-3">
@@ -168,7 +146,34 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 st.markdown("---")
-# --- CDI SCALE ---
+
+# --- CHARTS AND INTERACTION ---
+if mode == 'Monthly':
+    selected_month = st.selectbox("Select a month", df['Month'].unique())
+    selected_row = df[df['Month'] == selected_month].iloc[0]
+    selected_value_real = selected_row['CDI_Real']
+    selected_value_scaled = selected_row['CDI_Scaled']
+    selected_idx = selected_row.name
+    display_label = selected_month
+    line_x = df['Date']
+    line_y = df['CDI_Real']
+    line_title = "CDI Over Time (Monthly)"
+    xaxis_type = "date"
+    xaxis_title = "Date"
+else:
+    quarter_df = df.groupby('Fiscal_Quarter', sort=False)['CDI_Real'].mean().reset_index()
+    selected_quarter = st.selectbox("Select a fiscal quarter", quarter_df['Fiscal_Quarter'].unique())
+    selected_value_real = quarter_df.loc[quarter_df['Fiscal_Quarter'] == selected_quarter, 'CDI_Real'].values[0]
+    quarter_indices = df[df['Fiscal_Quarter'] == selected_quarter].index
+    selected_idx = quarter_indices[0]
+    display_label = selected_quarter
+    line_x = quarter_df['Fiscal_Quarter']
+    line_y = quarter_df['CDI_Real']
+    line_title = "CDI Over Time (Quarterly)"
+    xaxis_type = "category"
+    xaxis_title = "Fiscal Quarter"
+    selected_value_scaled = df.loc[quarter_indices, 'CDI_Scaled'].mean()
+
 fig = go.Figure()
 color_map = {
     -5: ("#800000", "Extremely Low"), -4: ("#bd0026", "Severely Low"),
