@@ -225,7 +225,7 @@ with col1:
 with col2:
     st.markdown("### Feature Contributions to CDI")
     pca_weights = pca.components_[0]
-    
+
     if mode == 'Monthly':
         scaled_row = scaled_features[selected_idx]
         contrib_df = pd.DataFrame({
@@ -239,11 +239,17 @@ with col2:
             'Feature': features,
             'Contribution': avg_scaled * pca_weights
         })
-    
+
     contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
 
-    # Use more distinct colors and black border
-    distinct_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']  # Plotly default palette
+    # KPI-theme-inspired gradient shades
+    kpi_theme_colors = [
+        'rgba(160, 102, 255, 0.9)',  # Purple
+        'rgba(233, 102, 255, 0.9)',  # Pink
+        'rgba(0, 198, 255, 0.9)',    # Cyan
+        'rgba(0, 114, 255, 0.9)',    # Blue
+        'rgba(0, 255, 231, 0.9)'     # Teal
+    ]
 
     pie_fig = go.Figure(data=[go.Pie(
         labels=contrib_df['Feature'],
@@ -251,10 +257,11 @@ with col2:
         hoverinfo='label+percent+value',
         textinfo='label+percent',
         marker=dict(
-            colors=distinct_colors,
+            colors=kpi_theme_colors,
             line=dict(color='black', width=0.8)
         )
     )])
+
     pie_fig.update_layout(
         title=f"Contribution Breakdown: {label_period}",
         height=400,
