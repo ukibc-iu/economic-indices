@@ -85,12 +85,12 @@ else:
 # --- Custom Colorful KPI Cards (after values are defined) ---
 st.markdown("""
 <style>
-.kpi-container {
+.kpi-container {{
     display: flex;
     gap: 1rem;
     margin-top: 20px;
-}
-.kpi-card {
+}}
+.kpi-card {{
     flex: 1;
     padding: 1.5rem;
     border-radius: 20px;
@@ -99,19 +99,19 @@ st.markdown("""
     text-align: center;
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     font-family: 'Segoe UI', sans-serif;
-}
-.kpi-card h2 {
+}}
+.kpi-card h2 {{
     font-size: 2rem;
     margin: 0.5rem 0;
-}
-.kpi-card p {
+}}
+.kpi-card p {{
     font-size: 1rem;
     margin: 0;
-}
-.kpi-icon {
+}}
+.kpi-icon {{
     font-size: 2rem;
     margin-bottom: 0.5rem;
-}
+}}
 </style>
 
 <div class="kpi-container">
