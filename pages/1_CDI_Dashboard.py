@@ -48,15 +48,15 @@ st.markdown("""
 
 /* Vibrant translucent gradients for each card */
 .bg-1 {
-    background: linear-gradient(135deg, rgba(160, 102, 255, 0.6), rgba(233, 102, 255, 0.6)); /* Purple → Magenta */
+    background: linear-gradient(135deg, rgba(160, 102, 255, 0.15), rgba(233, 102, 255, 0.6)); /* Purple → Magenta */
 }
 
 .bg-2 {
-    background: linear-gradient(135deg, rgba(0, 198, 255, 0.6), rgba(0, 114, 255, 0.6)); /* Aqua → Blue */
+    background: linear-gradient(135deg, rgba(0, 198, 255, 0.15), rgba(0, 114, 255, 0.6)); /* Aqua → Blue */
 }
 
 .bg-3 {
-    background: linear-gradient(135deg, rgba(0, 255, 231, 0.6), rgba(0, 195, 255, 0.6)); /* Cyan → Teal */
+    background: linear-gradient(135deg, rgba(0, 255, 231, 0.15), rgba(0, 195, 255, 0.6)); /* Cyan → Teal */
 }
 """, unsafe_allow_html=True)
 
