@@ -83,66 +83,74 @@ else:
     selected_value_scaled = df.loc[quarter_indices, 'CDI_Scaled'].mean()
 
 # --- Custom Colorful KPI Cards (after values are defined) ---
+# === KPI CARDS STYLE ===
 st.markdown("""
 <style>
 .kpi-container {
     display: flex;
-    justify-content: space-between;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: stretch;
     gap: 1rem;
     width: 100%;
     margin-top: 20px;
 }
 .kpi-card {
-    flex: 1;
-    padding: 1rem 1rem 0.5rem 1rem;
+    flex-grow: 1;
+    padding: 1rem;
     border-radius: 1rem;
-    color: white;
+    color: #1c1c1c;
     text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     font-family: 'Segoe UI', sans-serif;
-}
-.kpi-icon {
-    font-size: 1.6rem;
-    margin-bottom: 0.3rem;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 .kpi-title {
     font-size: 0.9rem;
+    font-weight: 500;
     margin-bottom: 0.2rem;
 }
 .kpi-value {
     font-size: 2rem;
-    margin-bottom: 0.2rem;
+    font-weight: bold;
+    margin-bottom: 0.1rem;
 }
 .kpi-delta {
     font-size: 1rem;
+    margin-top: 0.2rem;
     font-weight: 500;
 }
-.card-purple { background: #B10DC9; }
-.card-blue { background: #0074D9; }
-.card-pink { background: #FF69B4; color: black; }
+.bg-1 { background-color: #f5e9f7; }  /* Neon Purple (light) */
+.bg-2 { background-color: #e3f2fd; }  /* Neon Blue (light) */
+.bg-3 { background-color: #e7fbe9; }  /* Neon Green (light) */
 </style>
 """, unsafe_allow_html=True)
 
-# Delta icon and color
+# === DELTA CALCULATION ===
 delta = selected_value_real - df['CDI_Real'].iloc[selected_idx - 1] if selected_idx > 0 else 0
-delta_color = "limegreen" if delta > 0 else "red"
-delta_icon = "⬆️" if delta > 0 else "⬇️" if delta < 0 else "⏺"
+if delta > 0:
+    delta_display = f"<span class='kpi-delta' style='color: green;'>⬆️ {delta:+.2f}</span>"
+elif delta < 0:
+    delta_display = f"<span class='kpi-delta' style='color: red;'>⬇️ {delta:+.2f}</span>"
+else:
+    delta_display = f"<span class='kpi-delta' style='color: gray;'>⏺️ {delta:+.2f}</span>"
 
+# === RENDER CARDS ===
 st.markdown(f"""
 <div class="kpi-container">
-    <div class="kpi-card card-purple">
-        <div class="kpi-icon">📊</div>
+    <div class="kpi-card bg-1">
         <div class="kpi-title">Actual CDI</div>
         <div class="kpi-value">{selected_value_real:.2f}</div>
-        <div class="kpi-delta" style="color: {delta_color};">{delta_icon} {delta:+.2f}</div>
+        {delta_display}
     </div>
-    <div class="kpi-card card-blue">
-        <div class="kpi-icon">📅</div>
+    <div class="kpi-card bg-2">
         <div class="kpi-title">Period</div>
         <div class="kpi-value">{display_label}</div>
     </div>
-    <div class="kpi-card card-pink">
-        <div class="kpi-icon">🔢</div>
+    <div class="kpi-card bg-3">
         <div class="kpi-title">Scaled CDI</div>
         <div class="kpi-value">{selected_value_scaled:.2f}</div>
     </div>
