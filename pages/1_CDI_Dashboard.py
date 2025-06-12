@@ -86,27 +86,25 @@ df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True)
 
 # === Monthly Mode Selection ===
+# === Get latest month/quarter for KPI cards ===
 if mode == 'Monthly':
-    selected_month = st.selectbox("Select a month", df['Month'].unique())
-    selected_row = df[df['Month'] == selected_month].iloc[0]
-    selected_value_real = selected_row['CDI_Real']
-    selected_value_scaled = selected_row['CDI_Scaled']
-    selected_idx = selected_row.name
-    label_period = selected_month
-    prev_row = df.iloc[selected_idx - 1] if selected_idx > 0 else selected_row
-    delta = selected_value_real - prev_row['CDI_Real']
+    df_sorted = df.sort_values(by='Date')
+    latest_row = df_sorted.iloc[-1]
+    latest_real = latest_row['CDI_Real']
+    latest_scaled = latest_row['CDI_Scaled']
+    label_period = latest_row['Month']
+    prev_row = df_sorted.iloc[-2] if len(df_sorted) > 1 else latest_row
+    delta = latest_real - prev_row['CDI_Real']
 else:
     quarter_df = df.groupby('Fiscal_Quarter', sort=False)['CDI_Real'].mean().reset_index()
-    selected_quarter = st.selectbox("Select a fiscal quarter", quarter_df['Fiscal_Quarter'].unique())
-    selected_value_real = quarter_df[quarter_df['Fiscal_Quarter'] == selected_quarter]['CDI_Real'].values[0]
-    quarter_indices = df[df['Fiscal_Quarter'] == selected_quarter].index
-    selected_value_scaled = df.loc[quarter_indices, 'CDI_Scaled'].mean()
-    label_period = selected_quarter
+    quarter_df['CDI_Scaled'] = df.groupby('Fiscal_Quarter', sort=False)['CDI_Scaled'].mean().values
+    latest_quarter = quarter_df.iloc[-1]
+    label_period = latest_quarter['Fiscal_Quarter']
+    latest_real = latest_quarter['CDI_Real']
+    latest_scaled = latest_quarter['CDI_Scaled']
     if len(quarter_df) > 1:
-        current_idx = quarter_df[quarter_df['Fiscal_Quarter'] == selected_quarter].index[0]
-        prev_idx = current_idx - 1 if current_idx > 0 else current_idx
-        prev_value = quarter_df.iloc[prev_idx]['CDI_Real']
-        delta = selected_value_real - prev_value
+        prev_value = quarter_df.iloc[-2]['CDI_Real']
+        delta = latest_real - prev_value
     else:
         delta = 0
 
@@ -123,7 +121,7 @@ st.markdown(f"""
 <div class="kpi-container">
     <div class="kpi-card bg-1">
         <div class="kpi-title">Actual CDI</div>
-        <div class="kpi-value">{selected_value_real:.2f}</div>
+        <div class="kpi-value">{latest_real:.2f}</div>
         {delta_display}
     </div>
     <div class="kpi-card bg-2">
@@ -132,11 +130,10 @@ st.markdown(f"""
     </div>
     <div class="kpi-card bg-3">
         <div class="kpi-title">Scaled CDI</div>
-        <div class="kpi-value">{selected_value_scaled:.2f}</div>
+        <div class="kpi-value">{latest_scaled:.2f}</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
-
 st.markdown("---")
 
 # === Visualizations (same as before) ===
