@@ -142,11 +142,11 @@ latest_period = latest_row['Month']  # already exists in df
 
 delta = latest_value_real - prev_row['CDI_Real']
 if delta > 0:
-    delta_display = f"<div class='kpi-delta' style='color: green;'>⬆️ {delta:+.2f}</div>"
+    delta_display = f"<div class='kpi-delta' style='color: green;'> {delta:+.2f}</div>"
 elif delta < 0:
-    delta_display = f"<div class='kpi-delta' style='color: red;'>⬇️ {delta:+.2f}</div>"
+    delta_display = f"<div class='kpi-delta' style='color: red;'> {delta:+.2f}</div>"
 else:
-    delta_display = f"<div class='kpi-delta' style='color: gray;'>⏺️ {delta:+.2f}</div>"
+    delta_display = f"<div class='kpi-delta' style='color: gray;'> {delta:+.2f}</div>"
 
 # === RENDER LATEST MONTH KPI CARDS ===
 st.markdown(f"""
