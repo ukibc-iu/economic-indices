@@ -62,13 +62,50 @@ prev_cdi = prev_row['CDI_Real']
 delta_cdi = latest_cdi - prev_cdi
 latest_date = latest_row['Date'].strftime("%b %Y")
 
+# --- KPI Card Style ---
+card_style = """
+    <style>
+    .metric-card {
+        background-color: #f9f9f9;
+        padding: 1rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    </style>
+"""
+st.markdown(card_style, unsafe_allow_html=True)
+
+# --- KPI Cards in columns ---
 col1, col2, col3 = st.columns(3)
+
 with col1:
-    st.metric(label="📊 Latest CDI", value=f"{latest_cdi:.2f}", delta=f"{delta_cdi:+.2f}")
+    st.markdown(f"""
+        <div class="metric-card">
+            <h4>📊 Latest CDI</h4>
+            <h2>{latest_cdi:.2f}</h2>
+            <p style='color:{"green" if delta_cdi > 0 else "red"}; font-weight: bold;'>
+                {'+' if delta_cdi > 0 else ''}{delta_cdi:.2f}
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
 with col2:
-    st.metric(label="📅 Period", value=latest_date)
+    st.markdown(f"""
+        <div class="metric-card">
+            <h4>📅 Period</h4>
+            <h2>{latest_date}</h2>
+        </div>
+    """, unsafe_allow_html=True)
+
 with col3:
-    st.metric(label="🟰 Scaled CDI", value=f"{latest_row['CDI_Scaled']:.2f}")
+    st.markdown(f"""
+        <div class="metric-card">
+            <h4>🟰 Scaled CDI</h4>
+            <h2>{latest_row['CDI_Scaled']:.2f}</h2>
+        </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("---")
 
