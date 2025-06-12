@@ -85,64 +85,69 @@ else:
 # --- Custom Colorful KPI Cards (after values are defined) ---
 st.markdown("""
 <style>
-.kpi-container {{
+.kpi-container {
     display: flex;
+    justify-content: space-between;
     gap: 1rem;
+    width: 100%;
     margin-top: 20px;
-    flex-wrap: wrap;
-}}
-.kpi-card {{
+}
+.kpi-card {
     flex: 1;
-    min-width: 200px;
-    max-width: 300px;
-    padding: 1rem;
-    border-radius: 15px;
+    padding: 1rem 1rem 0.5rem 1rem;
+    border-radius: 1rem;
     color: white;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     font-family: 'Segoe UI', sans-serif;
-}}
-.kpi-card h2 {{
+}
+.kpi-icon {
     font-size: 1.6rem;
-    margin: 0.3rem 0;
-}}
-.kpi-card p {{
-    font-size: 0.9rem;
-    margin: 0;
-}}
-.kpi-icon {{
-    font-size: 1.5rem;
     margin-bottom: 0.3rem;
-}}
-.card-1 {{ background: #F7A072; }}   /* Soft Coral */
-.card-2 {{ background: #FDBA74; }}   /* Light Peach */
-.card-3 {{ background: #ECCFCF; color: black; }}  /* Nude/Blush */
+}
+.kpi-title {
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+}
+.kpi-value {
+    font-size: 2rem;
+    margin-bottom: 0.2rem;
+}
+.kpi-delta {
+    font-size: 1rem;
+    font-weight: 500;
+}
+.card-purple { background: #B10DC9; }
+.card-blue { background: #0074D9; }
+.card-pink { background: #FF69B4; color: black; }
 </style>
+""", unsafe_allow_html=True)
 
+# Delta icon and color
+delta = selected_value_real - df['CDI_Real'].iloc[selected_idx - 1] if selected_idx > 0 else 0
+delta_color = "limegreen" if delta > 0 else "red"
+delta_icon = "⬆️" if delta > 0 else "⬇️" if delta < 0 else "⏺"
+
+st.markdown(f"""
 <div class="kpi-container">
-    <div class="kpi-card card-1">
+    <div class="kpi-card card-purple">
         <div class="kpi-icon">📊</div>
-        <p>Actual CDI</p>
-        <h2>{:.2f}</h2>
-        <p style="color: #d0ffe4;">{:+.2f}</p>
+        <div class="kpi-title">Actual CDI</div>
+        <div class="kpi-value">{selected_value_real:.2f}</div>
+        <div class="kpi-delta" style="color: {delta_color};">{delta_icon} {delta:+.2f}</div>
     </div>
-    <div class="kpi-card card-2">
+    <div class="kpi-card card-blue">
         <div class="kpi-icon">📅</div>
-        <p>Period</p>
-        <h2>{}</h2>
+        <div class="kpi-title">Period</div>
+        <div class="kpi-value">{display_label}</div>
     </div>
-    <div class="kpi-card card-3">
+    <div class="kpi-card card-pink">
         <div class="kpi-icon">🔢</div>
-        <p>Scaled CDI</p>
-        <h2>{:.2f}</h2>
+        <div class="kpi-title">Scaled CDI</div>
+        <div class="kpi-value">{selected_value_scaled:.2f}</div>
     </div>
 </div>
-""".format(
-    selected_value_real,
-    selected_value_real - df['CDI_Real'].iloc[selected_idx-1] if selected_idx > 0 else 0,
-    display_label,
-    selected_value_scaled
-), unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 st.markdown("---")
 
