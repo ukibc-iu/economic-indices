@@ -209,21 +209,25 @@ st.plotly_chart(fig, use_container_width=True)
 # === Line and Pie Charts ===
 col1, col2 = st.columns(2)
 
+# Line Chart
 with col1:
     line_fig = go.Figure()
     line_fig.add_trace(go.Scatter(
         x=line_x, y=line_y, mode='lines+markers',
-        line=dict(color='#A066FF', width=3),
-        marker=dict(size=6, color='#E966FF'), name='CDI'
+        line=dict(color='#007381', width=3),
+        marker=dict(size=6, color='#E85412'), name='CDI'
     ))
-    line_fig.update_layout(title=line_title, xaxis_title=xaxis_title,
-                           yaxis_title="CDI (Actual)", yaxis=dict(zeroline=True),
-                           xaxis=dict(type=xaxis_type), height=400,
-                           margin=dict(l=40, r=40, t=50, b=40))
+    line_fig.update_layout(
+        title=line_title, xaxis_title=xaxis_title,
+        yaxis_title="CDI (Actual)", yaxis=dict(zeroline=True),
+        xaxis=dict(type=xaxis_type), height=400,
+        margin=dict(l=40, r=40, t=50, b=40)
+    )
     st.plotly_chart(line_fig, use_container_width=True)
 
+# Doughnut Chart (Feature Contributions)
 with col2:
-    st.markdown("### Feature Contributions to CDI")
+    st.markdown("### Contribution Breakdown")
     pca_weights = pca.components_[0]
 
     if mode == 'Monthly':
@@ -242,6 +246,7 @@ with col2:
 
     contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
 
+    # KPI-themed colors
     kpi_theme_colors = [
         'rgba(160, 102, 255, 0.9)',   # Purple
         'rgba(233, 102, 255, 0.9)',   # Pink
@@ -250,31 +255,29 @@ with col2:
         'rgba(0, 255, 150, 0.9)'      # Aqua Green
     ]
 
-pie_fig = go.Figure()
+    pie_fig = go.Figure()
+    pie_fig.add_trace(go.Pie(
+        labels=contrib_df['Feature'],
+        values=contrib_df['Abs_Contribution'],
+        hole=0.45,
+        hoverinfo='label+percent+value',
+        textinfo='label+percent',
+        marker=dict(
+            colors=kpi_theme_colors,
+            line=dict(color='black', width=0.8)
+        )
+    ))
 
-pie_fig.add_trace(go.Pie(
-    labels=contrib_df['Feature'],
-    values=contrib_df['Abs_Contribution'],
-    hoverinfo='label+percent+value',
-    textinfo='label+percent',
-    hole=0.45,  # This creates the doughnut
-    marker=dict(
-        colors=kpi_theme_colors,
-        line=dict(color='black', width=0.8)
+    pie_fig.update_traces(textposition='inside', textfont_size=14)
+
+    pie_fig.update_layout(
+        height=400,
+        title_text=f"Contribution Breakdown: {label_period}",
+        margin=dict(l=30, r=30, t=40, b=30),
+        showlegend=True
     )
-))
 
-pie_fig.update_traces(textposition='inside', textfont_size=14)
-
-pie_fig.update_layout(
-    title_text=f"Contribution Breakdown: {label_period}",
-    height=400,
-    margin=dict(l=30, r=30, t=40, b=30),
-    showlegend=True  # Optional
-)
-
-st.plotly_chart(pie_fig, use_container_width=True)
-
+    st.plotly_chart(pie_fig, use_container_width=True)
 # === Raw Data ===
 if st.checkbox("🔍 Show raw data with CDI"):
     st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI_Real', 'CDI_Scaled'] + features])
