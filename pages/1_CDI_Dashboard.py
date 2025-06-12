@@ -243,12 +243,12 @@ with col2:
     contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
 
     # KPI-theme-inspired gradient shades
-    kpi_theme_colors = [
-        'rgba(160, 102, 255, 0.9)',  # Purple
-        'rgba(233, 102, 255, 0.9)',  # Pink
-        'rgba(0, 198, 255, 0.9)',    # Cyan
-        'rgba(0, 114, 255, 0.9)',    # Blue
-        'rgba(0, 255, 231, 0.9)'     # Teal
+        kpi_theme_colors = [
+        'rgba(160, 102, 255, 0.9)',   # Purple
+        'rgba(233, 102, 255, 0.9)',   # Pink
+        'rgba(0, 198, 255, 0.9)',     # Light Blue
+        'rgba(0, 114, 200, 0.9)',     # Deep Blue
+        'rgba(0, 255, 150, 0.9)'      # Aqua Green
     ]
 
     pie_fig = go.Figure(data=[go.Pie(
