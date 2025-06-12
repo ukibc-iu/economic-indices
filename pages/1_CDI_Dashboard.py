@@ -85,69 +85,6 @@ else:
 # --- Custom Colorful KPI Cards (after values are defined) ---
 # === KPI CARDS STYLE ===
 # === KPI CARDS STYLE ===
-st.markdown("""
-<style>
-.kpi-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    align-items: stretch;
-    gap: 1rem;
-    width: 100%;
-    margin-top: 20px;
-}
-.kpi-card {
-    flex-grow: 1;
-    padding: 1rem;
-    border-radius: 1rem;
-    color: #1a1a1a;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    font-family: 'Segoe UI', sans-serif;
-    min-height: 100px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-.kpi-title {
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 0.2rem;
-}
-.kpi-value {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 0.1rem;
-}
-.kpi-delta {
-    font-size: 1rem;
-    margin-top: 0.2rem;
-    font-weight: 500;
-}
-.bg-1 { background-color: #f3e5f5; }  /* Light Neon Purple */
-.bg-2 { background-color: #e1f5fe; }  /* Light Neon Blue */
-.bg-3 { background-color: #e0f2f1; }  /* Light Mint Cyan */
-</style>
-""", unsafe_allow_html=True)
-
-# === USE LATEST DATA POINT ===
-latest_idx = df.index[-1]
-latest_row = df.iloc[-1]
-previous_row = df.iloc[-2] if len(df) >= 2 else latest_row
-
-latest_value_real = latest_row['CDI_Real']
-latest_value_scaled = latest_row['CDI_Scaled']
-latest_period = latest_row['period_label'] if 'period_label' in latest_row else latest_row['Date'].strftime('%b-%Y')
-
-# === DELTA FOR LATEST CDI ===
-delta = latest_value_real - previous_row['CDI_Real']
-if delta > 0:
-    delta_display = f"<div class='kpi-delta' style='color: green;'> {delta:+.2f}</div>"
-elif delta < 0:
-    delta_display = f"<div class='kpi-delta' style='color: red;'> {delta:+.2f}</div>"
-else:
-    delta_display = f"<div class='kpi-delta' style='color: gray;'> {delta:+.2f}</div>"
-
 # === RENDER KPI CARDS ===
 st.markdown(f"""
 <div class="kpi-container">
@@ -157,7 +94,7 @@ st.markdown(f"""
         {delta_display}
     </div>
     <div class="kpi-card bg-2">
-        <div class="kpi-title">Month</div>
+        <div class="kpi-title">Month</div>  <!-- ✅ Make sure this is updated -->
         <div class="kpi-value">{latest_period}</div>
     </div>
     <div class="kpi-card bg-3">
