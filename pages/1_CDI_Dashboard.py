@@ -39,9 +39,9 @@ st.markdown("""
     font-size: 1.2rem;
     margin-top: 0.2rem;
 }
-.bg-1 { background-color: rgba(0, 153, 255, 0.3); }    /* Neon Blue */
-.bg-2 { background-color: rgba(102, 255, 102, 0.3); }  /* Bright Lime */
-.bg-3 { background-color: rgba(255, 102, 0, 0.3); }    /* Vivid Orange */
+.bg-1 { background-color: rgba(65, 105, 225, 0.15); }    /* Royal Blue */
+.bg-2 { background-color: rgba(60, 179, 113, 0.15); }    /* Medium Sea Green */
+.bg-3 { background-color: rgba(255, 99, 71, 0.15); }     /* Tomato Red */
 </style>
 """, unsafe_allow_html=True)
 
