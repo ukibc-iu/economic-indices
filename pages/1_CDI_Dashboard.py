@@ -57,7 +57,7 @@ def get_fiscal_quarter(date):
 df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
  
 # View mode
-mode = st.radio("📅 View Mode", ['Monthly', 'Quarterly'], horizontal=True)
+mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True)
  
 if mode == 'Monthly':
     selected_month = st.selectbox("Select a month", df['Month'].unique())
