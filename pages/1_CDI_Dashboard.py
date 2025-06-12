@@ -56,62 +56,9 @@ df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 # === VIEW MODE ===
 mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True)
 
-# === KPI CARDS BASED ON LATEST PERIOD FOR SELECTED MODE ===
+# --- CHARTS AND INTERACTION ---
 df_sorted = df.sort_values("Date")
 
-# === KPI CARD DATA BASED ON VIEW MODE ===
-if mode == 'Monthly':
-    latest_row = df[df['Month'] == selected_month].iloc[0]
-    prev_idx = latest_row.name - 1 if latest_row.name > 0 else latest_row.name
-    prev_row = df.iloc[prev_idx]
-
-    actual_value = latest_row['CDI_Real']
-    scaled_value = latest_row['CDI_Scaled']
-    label_period = latest_row['Month']
-    delta = actual_value - prev_row['CDI_Real']
-
-else:  # Quarterly
-    latest_quarter_df = df[df['Fiscal_Quarter'] == selected_quarter]
-    if len(latest_quarter_df) < 2:
-        prev_row = latest_quarter_df.iloc[0]
-        delta = 0
-    else:
-        prev_row = df[df['Fiscal_Quarter'] == selected_quarter].iloc[-2]
-        delta = selected_value_real - prev_row['CDI_Real']
-
-    actual_value = selected_value_real
-    scaled_value = selected_value_scaled
-    label_period = selected_quarter
-
-# === DELTA STYLING ===
-if delta > 0:
-    delta_display = f"<div class='kpi-delta' style='color: green;'> {delta:+.2f}</div>"
-elif delta < 0:
-    delta_display = f"<div class='kpi-delta' style='color: red;'> {delta:+.2f}</div>"
-else:
-    delta_display = f"<div class='kpi-delta' style='color: gray;'> {delta:+.2f}</div>"
-
-# === RENDER KPI CARDS ===
-st.markdown(f"""
-<div class="kpi-container">
-    <div class="kpi-card bg-1">
-        <div class="kpi-title">Actual CDI</div>
-        <div class="kpi-value">{actual_value:.2f}</div>
-        {delta_display}
-    </div>
-    <div class="kpi-card bg-2">
-        <div class="kpi-title">{'Month' if mode == 'Monthly' else 'Fiscal Quarter'}</div>
-        <div class="kpi-value">{label_period}</div>
-    </div>
-    <div class="kpi-card bg-3">
-        <div class="kpi-title">Scaled CDI</div>
-        <div class="kpi-value">{scaled_value:.2f}</div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-st.markdown("---")
-
-# --- CHARTS AND INTERACTION ---
 if mode == 'Monthly':
     selected_month = st.selectbox("Select a month", df['Month'].unique())
     selected_row = df[df['Month'] == selected_month].iloc[0]
@@ -138,6 +85,57 @@ else:
     xaxis_title = "Fiscal Quarter"
     selected_value_scaled = df.loc[quarter_indices, 'CDI_Scaled'].mean()
 
+# === KPI CARDS ===
+if mode == 'Monthly':
+    latest_row = df[df['Month'] == selected_month].iloc[0]
+    prev_idx = latest_row.name - 1 if latest_row.name > 0 else latest_row.name
+    prev_row = df.iloc[prev_idx]
+    actual_value = latest_row['CDI_Real']
+    scaled_value = latest_row['CDI_Scaled']
+    label_period = latest_row['Month']
+    delta = actual_value - prev_row['CDI_Real']
+else:
+    latest_quarter_df = df[df['Fiscal_Quarter'] == selected_quarter]
+    if len(latest_quarter_df) < 2:
+        delta = 0
+    else:
+        quarter_idx = latest_quarter_df.index
+        prev_idx = quarter_idx[0] - 1 if quarter_idx[0] > 0 else quarter_idx[0]
+        prev_row = df.iloc[prev_idx]
+        delta = selected_value_real - prev_row['CDI_Real']
+
+    actual_value = selected_value_real
+    scaled_value = selected_value_scaled
+    label_period = selected_quarter
+
+if delta > 0:
+    delta_display = f"<div class='kpi-delta' style='color: green;'> {delta:+.2f}</div>"
+elif delta < 0:
+    delta_display = f"<div class='kpi-delta' style='color: red;'> {delta:+.2f}</div>"
+else:
+    delta_display = f"<div class='kpi-delta' style='color: gray;'> {delta:+.2f}</div>"
+
+st.markdown(f"""
+<div class="kpi-container">
+    <div class="kpi-card bg-1">
+        <div class="kpi-title">Actual CDI</div>
+        <div class="kpi-value">{actual_value:.2f}</div>
+        {delta_display}
+    </div>
+    <div class="kpi-card bg-2">
+        <div class="kpi-title">{'Month' if mode == 'Monthly' else 'Fiscal Quarter'}</div>
+        <div class="kpi-value">{label_period}</div>
+    </div>
+    <div class="kpi-card bg-3">
+        <div class="kpi-title">Scaled CDI</div>
+        <div class="kpi-value">{scaled_value:.2f}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# === CDI SCALE PLOT ===
 fig = go.Figure()
 color_map = {
     -5: ("#800000", "Extremely Low"), -4: ("#bd0026", "Severely Low"),
