@@ -100,11 +100,11 @@ st.markdown("""
     flex-grow: 1;
     padding: 1rem;
     border-radius: 1rem;
-    color: #1c1c1c;
+    color: #1a1a1a;
     text-align: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     font-family: 'Segoe UI', sans-serif;
-    min-height: 110px;
+    min-height: 100px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -124,9 +124,9 @@ st.markdown("""
     margin-top: 0.2rem;
     font-weight: 500;
 }
-.bg-1 { background-color: #f5e9f7; }  /* Neon Purple */
-.bg-2 { background-color: #e3f2fd; }  /* Neon Blue */
-.bg-3 { background-color: #e7fbe9; }  /* Neon Green */
+.bg-1 { background-color: #f3e5f5; }  /* Light Neon Purple */
+.bg-2 { background-color: #e1f5fe; }  /* Light Neon Blue */
+.bg-3 { background-color: #e0f2f1; }  /* Light Mint Cyan */
 </style>
 """, unsafe_allow_html=True)
 
@@ -137,16 +137,16 @@ previous_row = df.iloc[-2] if len(df) >= 2 else latest_row
 
 latest_value_real = latest_row['CDI_Real']
 latest_value_scaled = latest_row['CDI_Scaled']
-latest_period = latest_row['period_label'] if 'period_label' in latest_row else latest_row['date'].strftime('%b-%Y')
+latest_period = latest_row['period_label'] if 'period_label' in latest_row else latest_row['Date'].strftime('%b-%Y')
 
 # === DELTA FOR LATEST CDI ===
 delta = latest_value_real - previous_row['CDI_Real']
 if delta > 0:
-    delta_display = f"<span class='kpi-delta' style='color: green;'>⬆️ {delta:+.2f}</span>"
+    delta_display = f"<div class='kpi-delta' style='color: green;'>⬆️ {delta:+.2f}</div>"
 elif delta < 0:
-    delta_display = f"<span class='kpi-delta' style='color: red;'>⬇️ {delta:+.2f}</span>"
+    delta_display = f"<div class='kpi-delta' style='color: red;'>⬇️ {delta:+.2f}</div>"
 else:
-    delta_display = f"<span class='kpi-delta' style='color: gray;'>⏺️ {delta:+.2f}</span>"
+    delta_display = f"<div class='kpi-delta' style='color: gray;'>⏺️ {delta:+.2f}</div>"
 
 # === RENDER KPI CARDS ===
 st.markdown(f"""
@@ -166,7 +166,6 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
 st.markdown("---")
 
 # --- CDI SCALE ---
