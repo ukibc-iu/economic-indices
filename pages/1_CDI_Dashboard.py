@@ -157,7 +157,7 @@ st.markdown(f"""
         {delta_display}
     </div>
     <div class="kpi-card bg-2">
-        <div class="kpi-title">Period</div>
+        <div class="kpi-title">Month</div>
         <div class="kpi-value">{latest_period}</div>
     </div>
     <div class="kpi-card bg-3">
