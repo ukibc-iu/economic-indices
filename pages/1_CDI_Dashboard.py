@@ -8,15 +8,6 @@ import plotly.graph_objects as go
 st.set_page_config(layout="wide")
 st.title("Consumer Demand Index (CDI)")
 
-# === KPI-themed colors ===
-kpi_theme_colors = [
-    'rgba(160, 102, 255, 0.9)',   # Purple
-    'rgba(233, 102, 255, 0.9)',   # Pink
-    'rgba(0, 198, 255, 0.9)',     # Light Blue
-    'rgba(0, 114, 200, 0.9)',     # Deep Blue
-    'rgba(0, 255, 150, 0.9)'      # Aqua Green
-]
-
 # === Custom CSS for KPI Cards ===
 st.markdown("""
 <style>
@@ -104,72 +95,37 @@ def get_fiscal_quarter(date):
 
 df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 
-# === MODE SELECTION ===
+# === KPI-themed colors ===
+kpi_theme_colors = [
+    'rgba(160, 102, 255, 0.9)',
+    'rgba(233, 102, 255, 0.9)',
+    'rgba(0, 198, 255, 0.9)',
+    'rgba(0, 114, 200, 0.9)',
+    'rgba(0, 255, 150, 0.9)'
+]
+
+# === Mode Selection ===
 mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True)
 
-# === Time Period Selection ===
-if mode == 'Monthly':
-    months = sorted(df['Month'].unique())
-    latest_month = df['Month'].max()
-    selected_month = st.selectbox("Select Month", months, index=months.index(latest_month))
-    df_filtered = df[df['Month'] == selected_month]
-    selected_idx = df_filtered.index[0]
+# Get latest row for KPI cards
+latest_row = df.sort_values('Date').iloc[-1]
+latest_real = latest_row['CDI_Real']
+latest_scaled = latest_row['CDI_Scaled']
+latest_month = latest_row['Month']
+latest_quarter = latest_row['Fiscal_Quarter']
 
-    latest_row = df[df['Month'] == latest_month].iloc[0]
-    prev_rows = df[df['Month'] < latest_month].sort_values('Date')
-    prev_row = prev_rows.iloc[-1] if not prev_rows.empty else latest_row
-    delta = latest_row['CDI_Real'] - prev_row['CDI_Real']
-
-    label_period = selected_month
-    latest_real = latest_row['CDI_Real']
-    latest_scaled = latest_row['CDI_Scaled']
-
-    df_sorted = df.sort_values(by='Date')
-    line_x = df_sorted['Date']
-    line_y = df_sorted['CDI_Real']
-    line_title = "CDI Trend - Monthly"
-    xaxis_title = "Month"
-    xaxis_type = "date"
-    selected_quarter = None
-else:
-    quarters = sorted(df['Fiscal_Quarter'].unique())
-    latest_quarter = df['Fiscal_Quarter'].max()
-    selected_quarter = st.selectbox("Select Quarter", quarters, index=quarters.index(latest_quarter))
-
-    quarter_df = df.groupby('Fiscal_Quarter', sort=False)['CDI_Real'].mean().reset_index()
-    quarter_df['CDI_Scaled'] = df.groupby('Fiscal_Quarter', sort=False)['CDI_Scaled'].mean().values
-
-    latest_q_data = quarter_df[quarter_df['Fiscal_Quarter'] == latest_quarter].iloc[0]
-    prev_q_df = quarter_df[quarter_df['Fiscal_Quarter'] < latest_quarter]
-    prev_quarter = prev_q_df.iloc[-1] if not prev_q_df.empty else latest_q_data
-    delta = latest_q_data['CDI_Real'] - prev_quarter['CDI_Real']
-
-    label_period = selected_quarter
-    selected_q_data = quarter_df[quarter_df['Fiscal_Quarter'] == selected_quarter].iloc[0]
-    latest_real = selected_q_data['CDI_Real']
-    latest_scaled = selected_q_data['CDI_Scaled']
-
-    line_x = quarter_df['Fiscal_Quarter']
-    line_y = quarter_df['CDI_Real']
-    line_title = "CDI Trend - Quarterly"
-    xaxis_title = "Fiscal Quarter"
-    xaxis_type = "category"
-    selected_idx = None
+df_sorted = df.sort_values(by='Date')
 
 # === KPI Cards ===
-delta_color = "green" if delta > 0 else "red" if delta < 0 else "gray"
-delta_display = f"<div class='kpi-delta' style='color: {delta_color}; font-weight: bold;'> {delta:+.2f}</div>"
-
 st.markdown(f"""
 <div class="kpi-container">
     <div class="kpi-card bg-1">
         <div class="kpi-title">Actual CDI</div>
         <div class="kpi-value">{latest_real:.2f}</div>
-        {delta_display}
     </div>
     <div class="kpi-card bg-2">
         <div class="kpi-title">{'Month' if mode == 'Monthly' else 'Fiscal Quarter'}</div>
-        <div class="kpi-value">{label_period}</div>
+        <div class="kpi-value">{latest_month if mode == 'Monthly' else latest_quarter}</div>
     </div>
     <div class="kpi-card bg-3">
         <div class="kpi-title">Scaled CDI</div>
@@ -179,6 +135,35 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 st.markdown("---")
+
+# === Time Period Selection ===
+if mode == 'Monthly':
+    months = sorted(df['Month'].unique())
+    selected_month = st.selectbox("Select Month", months, index=months.index(latest_month))
+    df_filtered = df[df['Month'] == selected_month]
+    selected_idx = df_filtered.index[0]
+
+    label_period = selected_month
+    line_x = df_sorted['Date']
+    line_y = df_sorted['CDI_Real']
+    line_title = "CDI Trend - Monthly"
+    xaxis_title = "Month"
+    xaxis_type = "date"
+    selected_quarter = None
+else:
+    quarters = sorted(df['Fiscal_Quarter'].unique())
+    selected_quarter = st.selectbox("Select Quarter", quarters, index=quarters.index(latest_quarter))
+
+    quarter_df = df.groupby('Fiscal_Quarter', sort=False)['CDI_Real'].mean().reset_index()
+    quarter_df['CDI_Scaled'] = df.groupby('Fiscal_Quarter', sort=False)['CDI_Scaled'].mean().values
+
+    label_period = selected_quarter
+    line_x = quarter_df['Fiscal_Quarter']
+    line_y = quarter_df['CDI_Real']
+    line_title = "CDI Trend - Quarterly"
+    xaxis_title = "Fiscal Quarter"
+    xaxis_type = "category"
+    selected_idx = None
 
 # === CDI Scale Bar ===
 fig = go.Figure()
@@ -217,7 +202,6 @@ st.plotly_chart(fig, use_container_width=True)
 # === Charts ===
 col1, col2 = st.columns(2)
 
-# Line Chart
 with col1:
     line_fig = go.Figure()
     line_fig.add_trace(go.Scatter(
@@ -239,7 +223,6 @@ with col1:
     )
     st.plotly_chart(line_fig, use_container_width=True)
 
-# Doughnut Chart
 with col2:
     st.markdown("### Contribution Breakdown")
     pca_weights = pca.components_[0]
