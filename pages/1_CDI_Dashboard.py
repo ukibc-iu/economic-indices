@@ -205,6 +205,14 @@ fig.update_layout(title=f"Consumer Demand Index for {label_period} (Real: {lates
                   margin=dict(l=30, r=30, t=60, b=30), showlegend=False)
 
 st.plotly_chart(fig, use_container_width=True)
+    # KPI-themed colors
+    kpi_theme_colors = [
+        'rgba(160, 102, 255, 0.9)',   # Purple
+        'rgba(233, 102, 255, 0.9)',   # Pink
+        'rgba(0, 198, 255, 0.9)',     # Light Blue
+        'rgba(0, 114, 200, 0.9)',     # Deep Blue
+        'rgba(0, 255, 150, 0.9)'      # Aqua Green
+    ]
 
 # === Line and Pie Charts ===
 col1, col2 = st.columns(2)
@@ -252,14 +260,6 @@ with col2:
 
     contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
 
-    # KPI-themed colors
-    kpi_theme_colors = [
-        'rgba(160, 102, 255, 0.9)',   # Purple
-        'rgba(233, 102, 255, 0.9)',   # Pink
-        'rgba(0, 198, 255, 0.9)',     # Light Blue
-        'rgba(0, 114, 200, 0.9)',     # Deep Blue
-        'rgba(0, 255, 150, 0.9)'      # Aqua Green
-    ]
 
     pie_fig = go.Figure()
     pie_fig.add_trace(go.Pie(
