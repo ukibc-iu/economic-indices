@@ -59,92 +59,56 @@ mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True)
 # === KPI CARDS BASED ON LATEST PERIOD FOR SELECTED MODE ===
 df_sorted = df.sort_values("Date")
 
-if mode == "Monthly":
-    latest_row = df_sorted.iloc[-1]
-    prev_row = df_sorted.iloc[-2] if len(df_sorted) >= 2 else latest_row
-    latest_value_real = latest_row['CDI_Real']
-    latest_value_scaled = latest_row['CDI_Scaled']
-    latest_period = latest_row['Month']
-    delta = latest_value_real - prev_row['CDI_Real']
-    period_label = "Month"
-else:
-    quarter_df = df.groupby('Fiscal_Quarter', sort=False)['CDI_Real'].mean().reset_index()
-    quarter_scaled = df.groupby('Fiscal_Quarter', sort=False)['CDI_Scaled'].mean().reset_index()
-    latest_q = quarter_df.iloc[-1]
-    prev_q = quarter_df.iloc[-2] if len(quarter_df) >= 2 else latest_q
-    latest_value_real = latest_q['CDI_Real']
-    latest_value_scaled = quarter_scaled.iloc[-1]['CDI_Scaled']
-    latest_period = latest_q['Fiscal_Quarter']
-    delta = latest_value_real - prev_q['CDI_Real']
-    period_label = "Quarter"
+# === KPI CARD DATA BASED ON VIEW MODE ===
+if mode == 'Monthly':
+    latest_row = df[df['Month'] == selected_month].iloc[0]
+    prev_idx = latest_row.name - 1 if latest_row.name > 0 else latest_row.name
+    prev_row = df.iloc[prev_idx]
 
+    actual_value = latest_row['CDI_Real']
+    scaled_value = latest_row['CDI_Scaled']
+    label_period = latest_row['Month']
+    delta = actual_value - prev_row['CDI_Real']
+
+else:  # Quarterly
+    latest_quarter_df = df[df['Fiscal_Quarter'] == selected_quarter]
+    if len(latest_quarter_df) < 2:
+        prev_row = latest_quarter_df.iloc[0]
+        delta = 0
+    else:
+        prev_row = df[df['Fiscal_Quarter'] == selected_quarter].iloc[-2]
+        delta = selected_value_real - prev_row['CDI_Real']
+
+    actual_value = selected_value_real
+    scaled_value = selected_value_scaled
+    label_period = selected_quarter
+
+# === DELTA STYLING ===
 if delta > 0:
-    delta_display = f"<div class='kpi-delta' style='color: green;'>⬆️ {delta:+.2f}</div>"
+    delta_display = f"<div class='kpi-delta' style='color: green;'> {delta:+.2f}</div>"
 elif delta < 0:
-    delta_display = f"<div class='kpi-delta' style='color: red;'>⬇️ {delta:+.2f}</div>"
+    delta_display = f"<div class='kpi-delta' style='color: red;'> {delta:+.2f}</div>"
 else:
-    delta_display = f"<div class='kpi-delta' style='color: gray;'>⏺️ {delta:+.2f}</div>"
+    delta_display = f"<div class='kpi-delta' style='color: gray;'> {delta:+.2f}</div>"
 
-st.markdown("""
-<style>
-.kpi-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    align-items: stretch;
-    gap: 1rem;
-    width: 100%;
-    margin-top: 20px;
-}
-.kpi-card {
-    flex-grow: 1;
-    padding: 1rem;
-    border-radius: 1rem;
-    color: #1a1a1a;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    font-family: 'Segoe UI', sans-serif;
-    min-height: 100px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-.kpi-title {
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 0.2rem;
-}
-.kpi-value {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-bottom: 0.1rem;
-}
-.kpi-delta {
-    font-size: 1rem;
-    margin-top: 0.2rem;
-    font-weight: 500;
-}
-.bg-1 { background-color: #f3e5f5; }
-.bg-2 { background-color: #e1f5fe; }
-.bg-3 { background-color: #e0f2f1; }
-</style>
+# === RENDER KPI CARDS ===
+st.markdown(f"""
 <div class="kpi-container">
     <div class="kpi-card bg-1">
         <div class="kpi-title">Actual CDI</div>
-        <div class="kpi-value">{latest_value_real:.2f}</div>
+        <div class="kpi-value">{actual_value:.2f}</div>
         {delta_display}
     </div>
     <div class="kpi-card bg-2">
-        <div class="kpi-title">{period_label}</div>
-        <div class="kpi-value">{latest_period}</div>
+        <div class="kpi-title">{'Month' if mode == 'Monthly' else 'Fiscal Quarter'}</div>
+        <div class="kpi-value">{label_period}</div>
     </div>
     <div class="kpi-card bg-3">
         <div class="kpi-title">Scaled CDI</div>
-        <div class="kpi-value">{latest_value_scaled:.2f}</div>
+        <div class="kpi-value">{scaled_value:.2f}</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
-
 st.markdown("---")
 
 # --- CHARTS AND INTERACTION ---
