@@ -250,24 +250,30 @@ with col2:
         'rgba(0, 255, 150, 0.9)'      # Aqua Green
     ]
 
-    pie_fig = go.Figure(data=[go.Pie(
-        labels=contrib_df['Feature'],
-        values=contrib_df['Abs_Contribution'],
-        hoverinfo='label+percent+value',
-        textinfo='label+percent',
-        hole= 0.45,
-        marker=dict(
-            colors=kpi_theme_colors,
-            line=dict(color='black', width=0.8)
-        )
-    )])
+pie_fig = go.Figure()
 
-    pie_fig.update_layout(
-        title=f"Contribution Breakdown: {label_period}",
-        height=400,
-        margin=dict(l=30, r=30, t=40, b=30)
+pie_fig.add_trace(go.Pie(
+    labels=contrib_df['Feature'],
+    values=contrib_df['Abs_Contribution'],
+    hoverinfo='label+percent+value',
+    textinfo='label+percent',
+    hole=0.45,  # This creates the doughnut
+    marker=dict(
+        colors=kpi_theme_colors,
+        line=dict(color='black', width=0.8)
     )
-    st.plotly_chart(pie_fig, use_container_width=True)
+))
+
+pie_fig.update_traces(textposition='inside', textfont_size=14)
+
+pie_fig.update_layout(
+    title_text=f"Contribution Breakdown: {label_period}",
+    height=400,
+    margin=dict(l=30, r=30, t=40, b=30),
+    showlegend=True  # Optional
+)
+
+st.plotly_chart(pie_fig, use_container_width=True)
 
 # === Raw Data ===
 if st.checkbox("🔍 Show raw data with CDI"):
