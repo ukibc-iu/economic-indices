@@ -31,7 +31,7 @@ indices = {
     ),
     "IMP Index": (
         "6_IMP_Index", "#8A2BE2", [2.0, 2.5, 1.8, 2.8, 2.3], "💰",
-        "India’s Macroeconomic Performance (IMP) Index measures India's overall economic well-being, taking into consideration significant economic parameters such as inflation rate, unemployment rate, etc."
+        "India’s Macroeconomic Performance (IMP) Index provides a comprehensive snapshot of the nation’s economic health by combining inflation, employment, credit, and industrial output into one robust indicator."
     ),
 }
 
