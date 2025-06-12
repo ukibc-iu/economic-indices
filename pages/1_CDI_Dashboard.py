@@ -78,34 +78,62 @@ card_style = """
 st.markdown(card_style, unsafe_allow_html=True)
 
 # --- KPI Cards in columns ---
-col1, col2, col3 = st.columns(3)
+# --- Custom KPI Cards Section ---
+st.markdown("""
+<style>
+.kpi-container {
+    display: flex;
+    gap: 1rem;
+    margin-top: 20px;
+}
+.kpi-card {
+    flex: 1;
+    padding: 1.5rem;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    color: white;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    font-family: 'Segoe UI', sans-serif;
+}
+.kpi-card h2 {
+    font-size: 2rem;
+    margin: 0.5rem 0;
+}
+.kpi-card p {
+    font-size: 1rem;
+    margin: 0;
+}
+.kpi-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+</style>
 
-with col1:
-    st.markdown(f"""
-        <div class="metric-card">
-            <h4>📊 Latest CDI</h4>
-            <h2>{latest_cdi:.2f}</h2>
-            <p style='color:{"green" if delta_cdi > 0 else "red"}; font-weight: bold;'>
-                {'+' if delta_cdi > 0 else ''}{delta_cdi:.2f}
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    st.markdown(f"""
-        <div class="metric-card">
-            <h4>📅 Period</h4>
-            <h2>{latest_date}</h2>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    st.markdown(f"""
-        <div class="metric-card">
-            <h4>🟰 Scaled CDI</h4>
-            <h2>{latest_row['CDI_Scaled']:.2f}</h2>
-        </div>
-    """, unsafe_allow_html=True)
+<div class="kpi-container">
+    <div class="kpi-card">
+        <div class="kpi-icon">📊</div>
+        <p>Actual CDI</p>
+        <h2>{:.2f}</h2>
+        <p style="color: lightgreen;">{:+.2f}</p>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon">📅</div>
+        <p>Period</p>
+        <h2>{}</h2>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon">🔢</div>
+        <p>Scaled CDI</p>
+        <h2>{:.2f}</h2>
+    </div>
+</div>
+""".format(
+    selected_value_real,
+    selected_value_real - df['CDI_Real'].iloc[selected_idx-1] if selected_idx > 0 else 0,
+    display_label,
+    selected_value_scaled
+), unsafe_allow_html=True)
 
 st.markdown("---")
 
