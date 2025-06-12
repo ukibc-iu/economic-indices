@@ -20,12 +20,12 @@ st.markdown("""
     flex: 1;
     padding: 1rem;
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.08); /* fallback semi-transparent */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     color: white;
     min-width: 200px;
     border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -44,20 +44,22 @@ st.markdown("""
 .kpi-delta {
     font-size: 1.2rem;
     margin-top: 0.2rem;
+    font-weight: bold;  /* 👈 Bold percentage delta */
 }
 
-/* Vibrant translucent gradients for each card */
+/* Vibrant translucent gradients for KPI cards */
 .bg-1 {
-    background: linear-gradient(135deg, rgba(160, 102, 255, 0.08), rgba(233, 102, 255, 0.6)); /* Purple → Magenta */
+    background: linear-gradient(135deg, rgba(0, 255, 102, 0.15), rgba(50, 255, 100, 0.25)); /* Bright neon green */
 }
 
 .bg-2 {
-    background: linear-gradient(135deg, rgba(0, 198, 255, 0.08), rgba(0, 114, 255, 0.6)); /* Aqua → Blue */
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.15), rgba(255, 80, 0, 0.3)); /* Bright orange */
 }
 
 .bg-3 {
-    background: linear-gradient(135deg, rgba(0, 255, 231, 0.08), rgba(0, 195, 255, 0.6)); /* Cyan → Teal */
+    background: linear-gradient(135deg, rgba(255, 255, 0, 0.15), rgba(255, 255, 102, 0.3)); /* Neon yellow */
 }
+</style>
 """, unsafe_allow_html=True)
 
 DEFAULT_DATA_PATH = "data/Consumer_Demand_Index.csv"
