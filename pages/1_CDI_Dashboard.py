@@ -84,6 +84,7 @@ else:
 
 # --- Custom Colorful KPI Cards (after values are defined) ---
 # === KPI CARDS STYLE ===
+# === KPI CARDS STYLE ===
 st.markdown("""
 <style>
 .kpi-container {
@@ -123,14 +124,23 @@ st.markdown("""
     margin-top: 0.2rem;
     font-weight: 500;
 }
-.bg-1 { background-color: #f5e9f7; }  /* Neon Purple (light) */
-.bg-2 { background-color: #e3f2fd; }  /* Neon Blue (light) */
-.bg-3 { background-color: #e7fbe9; }  /* Neon Green (light) */
+.bg-1 { background-color: #f5e9f7; }  /* Neon Purple */
+.bg-2 { background-color: #e3f2fd; }  /* Neon Blue */
+.bg-3 { background-color: #e7fbe9; }  /* Neon Green */
 </style>
 """, unsafe_allow_html=True)
 
-# === DELTA CALCULATION ===
-delta = selected_value_real - df['CDI_Real'].iloc[selected_idx - 1] if selected_idx > 0 else 0
+# === USE LATEST DATA POINT ===
+latest_idx = df.index[-1]
+latest_row = df.iloc[-1]
+previous_row = df.iloc[-2] if len(df) >= 2 else latest_row
+
+latest_value_real = latest_row['CDI_Real']
+latest_value_scaled = latest_row['CDI_Scaled']
+latest_period = latest_row['period_label'] if 'period_label' in latest_row else latest_row['date'].strftime('%b-%Y')
+
+# === DELTA FOR LATEST CDI ===
+delta = latest_value_real - previous_row['CDI_Real']
 if delta > 0:
     delta_display = f"<span class='kpi-delta' style='color: green;'>⬆️ {delta:+.2f}</span>"
 elif delta < 0:
@@ -138,21 +148,21 @@ elif delta < 0:
 else:
     delta_display = f"<span class='kpi-delta' style='color: gray;'>⏺️ {delta:+.2f}</span>"
 
-# === RENDER CARDS ===
+# === RENDER KPI CARDS ===
 st.markdown(f"""
 <div class="kpi-container">
     <div class="kpi-card bg-1">
         <div class="kpi-title">Actual CDI</div>
-        <div class="kpi-value">{selected_value_real:.2f}</div>
+        <div class="kpi-value">{latest_value_real:.2f}</div>
         {delta_display}
     </div>
     <div class="kpi-card bg-2">
         <div class="kpi-title">Period</div>
-        <div class="kpi-value">{display_label}</div>
+        <div class="kpi-value">{latest_period}</div>
     </div>
     <div class="kpi-card bg-3">
         <div class="kpi-title">Scaled CDI</div>
-        <div class="kpi-value">{selected_value_scaled:.2f}</div>
+        <div class="kpi-value">{latest_value_scaled:.2f}</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
