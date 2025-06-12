@@ -35,7 +35,6 @@ indices = {
     ),
 }
 
-# Create columns and render each index card
 # Create columns and render each index card with 2 per row
 cols = st.columns(2)
 for i, (name, (page, color, trend, icon, overview)) in enumerate(indices.items()):
@@ -65,8 +64,8 @@ for i, (name, (page, color, trend, icon, overview)) in enumerate(indices.items()
         )
         st.plotly_chart(fig, use_container_width=True, key=f"chart-{i}")
 
-        # New detailed overview text with same color
-        overview_text = f"<p style='color:{color}; margin-bottom: 0.5rem;'>{overview}</p>"
+        # Updated: Italic + colored overview text
+        overview_text = f"<p style='color:{color}; margin-bottom: 0.5rem;'><em>{overview}</em></p>"
         st.markdown(overview_text, unsafe_allow_html=True)
 
         if st.button("Open detailed view of the index →", key=f"button-{i}"):
