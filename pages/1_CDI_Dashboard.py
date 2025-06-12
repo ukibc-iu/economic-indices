@@ -119,7 +119,7 @@ fig.update_layout(title=f"Consumer Demand Index for {display_label} (Real: {sele
                   margin=dict(l=30, r=30, t=60, b=30), showlegend=False)
  
 st.plotly_chart(fig, use_container_width=True)
-st.caption("Note: CDI scale is clipped to -5 to +5 for consistent visualization. Actual values shown in graphs and data.")
+st.caption("Note: CDI scale is clipped to -5 to +5 for consistent visualization. Actual values shown in line graph and raw data.")
  
 # --- 2-COLUMN LAYOUT ---
 col1, col2 = st.columns(2)
