@@ -95,20 +95,27 @@ def get_fiscal_quarter(date):
 
 df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 
-# === MODE SELECTION (only once) ===
-mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True, key="view_mode_radio")
+# === MODE SELECTION ===
+mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True)
 
-# === Compute Stats ===
+# === Time Period Selection ===
 if mode == 'Monthly':
-    df_sorted = df.sort_values(by='Date')
-    latest_row = df_sorted.iloc[-1]
-    prev_row = df_sorted.iloc[-2] if len(df_sorted) > 1 else latest_row
-    delta = latest_row['CDI_Real'] - prev_row['CDI_Real']
+    months = sorted(df['Month'].unique())
+    latest_month = df['Month'].max()
+    selected_month = st.selectbox("Select Month", months, index=months.index(latest_month))
+    df_filtered = df[df['Month'] == selected_month]
+    selected_idx = df_filtered.index[0]
     
-    label_period = latest_row['Month']
+    latest_row = df[df['Month'] == latest_month].iloc[0]
+    prev_rows = df[df['Month'] < latest_month].sort_values('Date')
+    prev_row = prev_rows.iloc[-1] if not prev_rows.empty else latest_row
+    delta = latest_row['CDI_Real'] - prev_row['CDI_Real']
+
+    label_period = selected_month
     latest_real = latest_row['CDI_Real']
     latest_scaled = latest_row['CDI_Scaled']
-    selected_idx = df_sorted.index[-1]
+
+    df_sorted = df.sort_values(by='Date')
     line_x = df_sorted['Date']
     line_y = df_sorted['CDI_Real']
     line_title = "CDI Trend - Monthly"
@@ -116,22 +123,29 @@ if mode == 'Monthly':
     xaxis_type = "date"
     selected_quarter = None
 else:
+    quarters = sorted(df['Fiscal_Quarter'].unique())
+    latest_quarter = df['Fiscal_Quarter'].max()
+    selected_quarter = st.selectbox("Select Quarter", quarters, index=quarters.index(latest_quarter))
+
     quarter_df = df.groupby('Fiscal_Quarter', sort=False)['CDI_Real'].mean().reset_index()
     quarter_df['CDI_Scaled'] = df.groupby('Fiscal_Quarter', sort=False)['CDI_Scaled'].mean().values
-    latest_quarter = quarter_df.iloc[-1]
-    prev_quarter = quarter_df.iloc[-2] if len(quarter_df) > 1 else latest_quarter
-    delta = latest_quarter['CDI_Real'] - prev_quarter['CDI_Real']
-    
-    label_period = latest_quarter['Fiscal_Quarter']
-    latest_real = latest_quarter['CDI_Real']
-    latest_scaled = latest_quarter['CDI_Scaled']
+
+    latest_q_data = quarter_df[quarter_df['Fiscal_Quarter'] == latest_quarter].iloc[0]
+    prev_q_df = quarter_df[quarter_df['Fiscal_Quarter'] < latest_quarter]
+    prev_quarter = prev_q_df.iloc[-1] if not prev_q_df.empty else latest_q_data
+    delta = latest_q_data['CDI_Real'] - prev_quarter['CDI_Real']
+
+    label_period = selected_quarter
+    selected_q_data = quarter_df[quarter_df['Fiscal_Quarter'] == selected_quarter].iloc[0]
+    latest_real = selected_q_data['CDI_Real']
+    latest_scaled = selected_q_data['CDI_Scaled']
+
     line_x = quarter_df['Fiscal_Quarter']
     line_y = quarter_df['CDI_Real']
     line_title = "CDI Trend - Quarterly"
     xaxis_title = "Fiscal Quarter"
     xaxis_type = "category"
     selected_idx = None
-    selected_quarter = label_period
 
 # === Delta Display Formatting ===
 delta_color = "green" if delta > 0 else "red" if delta < 0 else "gray"
@@ -192,16 +206,15 @@ fig.update_layout(title=f"Consumer Demand Index for {label_period} (Real: {lates
 
 st.plotly_chart(fig, use_container_width=True)
 
-# === Line + Pie Charts ===
+# === Line and Pie Charts ===
 col1, col2 = st.columns(2)
 
-# Line Chart
 with col1:
     line_fig = go.Figure()
     line_fig.add_trace(go.Scatter(
         x=line_x, y=line_y, mode='lines+markers',
-        line=dict(color='#007381', width=3),
-        marker=dict(size=6, color='#E85412'), name='CDI'
+        line=dict(color='#A066FF', width=3),
+        marker=dict(size=6, color='#E966FF'), name='CDI'
     ))
     line_fig.update_layout(title=line_title, xaxis_title=xaxis_title,
                            yaxis_title="CDI (Actual)", yaxis=dict(zeroline=True),
@@ -209,11 +222,9 @@ with col1:
                            margin=dict(l=40, r=40, t=50, b=40))
     st.plotly_chart(line_fig, use_container_width=True)
 
-# Pie Chart (Feature Contributions)
 with col2:
     st.markdown("### Feature Contributions to CDI")
     pca_weights = pca.components_[0]
-
     if mode == 'Monthly':
         scaled_row = scaled_features[selected_idx]
         contrib_df = pd.DataFrame({
@@ -227,14 +238,14 @@ with col2:
             'Feature': features,
             'Contribution': avg_scaled * pca_weights
         })
-
     contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
+
     pie_fig = go.Figure(data=[go.Pie(
         labels=contrib_df['Feature'],
         values=contrib_df['Abs_Contribution'],
         hoverinfo='label+percent+value',
         textinfo='label+percent',
-        marker=dict(colors=['#62C8CE', '#E85412', '#007381', '#002060', '#4B575F'],
+        marker=dict(colors=['#A066FF', '#0072FF', '#00C6FF', '#E966FF', '#62C8CE'],
                     line=dict(color='white', width=1.5))
     )])
     pie_fig.update_layout(
@@ -243,6 +254,6 @@ with col2:
     )
     st.plotly_chart(pie_fig, use_container_width=True)
 
-# === Raw Data Display ===
+# === Raw Data ===
 if st.checkbox("🔍 Show raw data with CDI"):
     st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI_Real', 'CDI_Scaled'] + features])
