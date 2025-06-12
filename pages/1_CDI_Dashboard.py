@@ -8,6 +8,15 @@ import plotly.graph_objects as go
 st.set_page_config(layout="wide")
 st.title("Consumer Demand Index (CDI)")
 
+# === KPI-themed colors ===
+kpi_theme_colors = [
+    'rgba(160, 102, 255, 0.9)',   # Purple
+    'rgba(233, 102, 255, 0.9)',   # Pink
+    'rgba(0, 198, 255, 0.9)',     # Light Blue
+    'rgba(0, 114, 200, 0.9)',     # Deep Blue
+    'rgba(0, 255, 150, 0.9)'      # Aqua Green
+]
+
 # === Custom CSS for KPI Cards ===
 st.markdown("""
 <style>
@@ -105,7 +114,7 @@ if mode == 'Monthly':
     selected_month = st.selectbox("Select Month", months, index=months.index(latest_month))
     df_filtered = df[df['Month'] == selected_month]
     selected_idx = df_filtered.index[0]
-    
+
     latest_row = df[df['Month'] == latest_month].iloc[0]
     prev_rows = df[df['Month'] < latest_month].sort_values('Date')
     prev_row = prev_rows.iloc[-1] if not prev_rows.empty else latest_row
@@ -147,11 +156,10 @@ else:
     xaxis_type = "category"
     selected_idx = None
 
-# === Delta Display Formatting ===
+# === KPI Cards ===
 delta_color = "green" if delta > 0 else "red" if delta < 0 else "gray"
 delta_display = f"<div class='kpi-delta' style='color: {delta_color}; font-weight: bold;'> {delta:+.2f}</div>"
 
-# === KPI Cards ===
 st.markdown(f"""
 <div class="kpi-container">
     <div class="kpi-card bg-1">
@@ -205,16 +213,8 @@ fig.update_layout(title=f"Consumer Demand Index for {label_period} (Real: {lates
                   margin=dict(l=30, r=30, t=60, b=30), showlegend=False)
 
 st.plotly_chart(fig, use_container_width=True)
-    # KPI-themed colors
-    kpi_theme_colors = [
-        'rgba(160, 102, 255, 0.9)',   # Purple
-        'rgba(233, 102, 255, 0.9)',   # Pink
-        'rgba(0, 198, 255, 0.9)',     # Light Blue
-        'rgba(0, 114, 200, 0.9)',     # Deep Blue
-        'rgba(0, 255, 150, 0.9)'      # Aqua Green
-    ]
 
-# === Line and Pie Charts ===
+# === Charts ===
 col1, col2 = st.columns(2)
 
 # Line Chart
@@ -225,8 +225,8 @@ with col1:
         y=line_y,
         mode='lines+markers',
         name='CDI',
-        line=dict(color=kpi_theme_colors[0], width=3),   # Purple (or whichever from the palette)
-        marker=dict(size=6, color=kpi_theme_colors[1])   # Pink (contrasting marker)
+        line=dict(color=kpi_theme_colors[0], width=3),
+        marker=dict(size=6, color=kpi_theme_colors[1])
     ))
     line_fig.update_layout(
         title=line_title,
@@ -239,7 +239,7 @@ with col1:
     )
     st.plotly_chart(line_fig, use_container_width=True)
 
-# Doughnut Chart (Feature Contributions)
+# Doughnut Chart
 with col2:
     st.markdown("### Contribution Breakdown")
     pca_weights = pca.components_[0]
@@ -260,7 +260,6 @@ with col2:
 
     contrib_df['Abs_Contribution'] = contrib_df['Contribution'].abs()
 
-
     pie_fig = go.Figure()
     pie_fig.add_trace(go.Pie(
         labels=contrib_df['Feature'],
@@ -275,7 +274,6 @@ with col2:
     ))
 
     pie_fig.update_traces(textposition='inside', textfont_size=14)
-
     pie_fig.update_layout(
         height=400,
         title_text=f"Contribution Breakdown: {label_period}",
@@ -284,6 +282,7 @@ with col2:
     )
 
     st.plotly_chart(pie_fig, use_container_width=True)
+
 # === Raw Data ===
-if st.checkbox("🔍 Show raw data with CDI"):
+if st.checkbox("\U0001F50D Show raw data with CDI"):
     st.dataframe(df[['Date', 'Month', 'Fiscal_Quarter', 'CDI_Real', 'CDI_Scaled'] + features])
