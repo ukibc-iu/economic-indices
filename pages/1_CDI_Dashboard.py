@@ -6,6 +6,27 @@ import plotly.graph_objects as go
  
 st.set_page_config(layout="wide")
 st.title("Consumer Demand Index (CDI)")
+# === KPI CARDS ===
+latest_row = df.sort_values('Date').iloc[-1]
+prev_row = df.sort_values('Date').iloc[-2]
+
+latest_cdi = latest_row['CDI_Real']
+prev_cdi = prev_row['CDI_Real']
+delta_cdi = latest_cdi - prev_cdi
+
+latest_date = latest_row['Date'].strftime("%b %Y")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric(label="📊 Latest CDI", value=f"{latest_cdi:.2f}", delta=f"{delta_cdi:+.2f}")
+
+with col2:
+    st.metric(label="📅 Period", value=latest_date)
+
+with col3:
+    st.metric(label="🟰 Scaled CDI", value=f"{latest_row['CDI_Scaled']:.2f}")
+
  
 DEFAULT_DATA_PATH = "data/Consumer_Demand_Index.csv"
  
