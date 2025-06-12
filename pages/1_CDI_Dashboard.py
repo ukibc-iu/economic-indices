@@ -89,44 +89,49 @@ st.markdown("""
     display: flex;
     gap: 1rem;
     margin-top: 20px;
+    flex-wrap: wrap;
 }}
 .kpi-card {{
     flex: 1;
-    padding: 1.5rem;
-    border-radius: 20px;
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    min-width: 200px;
+    max-width: 300px;
+    padding: 1rem;
+    border-radius: 15px;
     color: white;
     text-align: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
     font-family: 'Segoe UI', sans-serif;
 }}
 .kpi-card h2 {{
-    font-size: 2rem;
-    margin: 0.5rem 0;
+    font-size: 1.6rem;
+    margin: 0.3rem 0;
 }}
 .kpi-card p {{
-    font-size: 1rem;
+    font-size: 0.9rem;
     margin: 0;
 }}
 .kpi-icon {{
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
 }}
+.card-1 {{ background: #F7A072; }}   /* Soft Coral */
+.card-2 {{ background: #FDBA74; }}   /* Light Peach */
+.card-3 {{ background: #ECCFCF; color: black; }}  /* Nude/Blush */
 </style>
 
 <div class="kpi-container">
-    <div class="kpi-card">
+    <div class="kpi-card card-1">
         <div class="kpi-icon">📊</div>
         <p>Actual CDI</p>
         <h2>{:.2f}</h2>
-        <p style="color: lightgreen;">{:+.2f}</p>
+        <p style="color: #d0ffe4;">{:+.2f}</p>
     </div>
-    <div class="kpi-card">
+    <div class="kpi-card card-2">
         <div class="kpi-icon">📅</div>
         <p>Period</p>
         <h2>{}</h2>
     </div>
-    <div class="kpi-card">
+    <div class="kpi-card card-3">
         <div class="kpi-icon">🔢</div>
         <p>Scaled CDI</p>
         <h2>{:.2f}</h2>
