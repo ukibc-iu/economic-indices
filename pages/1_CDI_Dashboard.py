@@ -85,8 +85,7 @@ df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 
 mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True)
 
-# === Monthly Mode Selection ===
-# === Get latest month/quarter for KPI cards ===
+# === Mode-Specific Processing ===
 if mode == 'Monthly':
     df_sorted = df.sort_values(by='Date')
     latest_row = df_sorted.iloc[-1]
@@ -95,6 +94,15 @@ if mode == 'Monthly':
     label_period = latest_row['Month']
     prev_row = df_sorted.iloc[-2] if len(df_sorted) > 1 else latest_row
     delta = latest_real - prev_row['CDI_Real']
+    
+    # For plots
+    selected_idx = df_sorted.index[-1]
+    line_x = df_sorted['Date']
+    line_y = df_sorted['CDI_Real']
+    line_title = f"CDI Trend - Monthly"
+    xaxis_title = "Month"
+    xaxis_type = "date"
+    selected_quarter = None
 else:
     quarter_df = df.groupby('Fiscal_Quarter', sort=False)['CDI_Real'].mean().reset_index()
     quarter_df['CDI_Scaled'] = df.groupby('Fiscal_Quarter', sort=False)['CDI_Scaled'].mean().values
@@ -107,6 +115,15 @@ else:
         delta = latest_real - prev_value
     else:
         delta = 0
+
+    # For plots
+    selected_idx = None
+    selected_quarter = label_period
+    line_x = quarter_df['Fiscal_Quarter']
+    line_y = quarter_df['CDI_Real']
+    line_title = f"CDI Trend - Quarterly"
+    xaxis_title = "Fiscal Quarter"
+    xaxis_type = "category"
 
 # === DELTA STYLE ===
 if delta > 0:
@@ -136,9 +153,6 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 st.markdown("---")
 
-# === Visualizations (same as before) ===
-# (You can reuse your chart + pie chart code below this block)
-
 # === CDI SCALE PLOT ===
 fig = go.Figure()
 color_map = {
@@ -157,15 +171,15 @@ for val in range(-5, 6):
                              hovertext=[f"{label} ({val})"], showlegend=False,
                              textfont=dict(color='white', size=16)))
 
-fig.add_shape(type="rect", x0=selected_value_scaled-0.5, x1=selected_value_scaled+0.5,
+fig.add_shape(type="rect", x0=latest_scaled-0.5, x1=latest_scaled+0.5,
               y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
               fillcolor="rgba(0,0,0,0)", layer="above")
 
-fig.add_trace(go.Scatter(x=[selected_value_scaled], y=[0.45], mode='text',
-                         text=[f"{selected_value_real:.2f}"], showlegend=False,
+fig.add_trace(go.Scatter(x=[latest_scaled], y=[0.45], mode='text',
+                         text=[f"{latest_real:.2f}"], showlegend=False,
                          textfont=dict(size=16, color='crimson')))
 
-fig.update_layout(title=f"Consumer Demand Index for {display_label} (Real: {selected_value_real:.2f})",
+fig.update_layout(title=f"Consumer Demand Index for {label_period} (Real: {latest_real:.2f})",
                   xaxis=dict(range=[-5.5, 5.5], title='CDI Scale (-5 to +5)',
                              showticklabels=False, showgrid=False),
                   yaxis=dict(visible=False), height=280,
@@ -230,7 +244,7 @@ with col2:
                         line=dict(color='white', width=1.5))
         )])
         pie_fig.update_layout(
-            title=f"Contribution Breakdown: {display_label}",
+            title=f"Contribution Breakdown: {label_period}",
             height=400, margin=dict(l=30, r=30, t=40, b=30)
         )
         st.plotly_chart(pie_fig, use_container_width=True)
