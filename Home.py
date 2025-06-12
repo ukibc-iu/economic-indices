@@ -47,45 +47,53 @@ indices = {
 cols = st.columns(2)
 for i, (name, (page, color, trend, icon, overview)) in enumerate(indices.items()):
     with cols[i % 2]:
-        st.subheader(f"{icon} {name}")
-
-        # Scale bar generation
-        latest_real = trend[-1]
-        latest_scaled = max(min(round(latest_real), 5), -5)
-
-        fig = go.Figure()
-
-        # Draw background color blocks
-        for val in range(-5, 6):
-            fill_color, label = color_map[val]
-            fig.add_shape(type="rect", x0=val - 0.5, x1=val + 0.5, y0=-0.3, y1=0.3,
-                          line=dict(color="black", width=1), fillcolor=fill_color, layer="below")
-            fig.add_trace(go.Scatter(x=[val], y=[0], mode='text', text=[str(val)],
-                                     hovertext=[f"{label} ({val})"], showlegend=False,
-                                     textfont=dict(color='white', size=14)))
-
-        # Add red box indicator for current score
-        fig.add_shape(type="rect", x0=latest_scaled - 0.5, x1=latest_scaled + 0.5,
-                      y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
-                      fillcolor="rgba(0,0,0,0)", layer="above")
-
-        fig.add_trace(go.Scatter(x=[latest_scaled], y=[0.45], mode='text',
-                                 text=[f"{latest_real:.2f}"], showlegend=False,
-                                 textfont=dict(size=14, color='crimson')))
-
-        fig.update_layout(
-            xaxis=dict(range=[-5.5, 5.5], title='Scale (-5 to +5)',
-                       showticklabels=False, showgrid=False),
-            yaxis=dict(visible=False),
-            height=200, margin=dict(l=10, r=10, t=10, b=10),
-            plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", showlegend=False
+        st.markdown(
+            f"""
+            <div style="
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 12px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                background: rgba(255, 255, 255, 0.03);
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            ">
+            <h3 style="margin-top: 0;">{icon} {name}</h3>
+            """,
+            unsafe_allow_html=True
         )
 
-        st.plotly_chart(fig, use_container_width=True, key=f"scale-{i}")
+        # Neon-style mini line chart (you can swap this for the scale preview if ready)
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            y=trend,
+            mode="lines+markers",
+            line=dict(color=color, width=4),
+            marker=dict(
+                size=8,
+                color=color,
+                line=dict(width=2, color=color),
+                symbol="circle-open"
+            )
+        ))
+        fig.update_layout(
+            height=150,
+            margin=dict(l=10, r=10, t=10, b=10),
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=False),
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+        )
+        st.plotly_chart(fig, use_container_width=True, key=f"chart-{i}")
 
-        # Overview description
+        # Overview
         overview_text = f"<p style='color:{color}; margin-bottom: 0.5rem;'><em>{overview}</em></p>"
         st.markdown(overview_text, unsafe_allow_html=True)
 
         if st.button("Open detailed view of the index →", key=f"button-{i}"):
             st.switch_page(f"pages/{page}.py")
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # Horizontal divider between rows
+    if i % 2 == 1:
+        st.markdown("<hr style='border: 1px solid #444; margin: 2rem 0;'>", unsafe_allow_html=True)
