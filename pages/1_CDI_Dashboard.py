@@ -39,9 +39,17 @@ st.markdown("""
     font-size: 1.2rem;
     margin-top: 0.2rem;
 }
-.bg-1 { background-color: rgba(102, 255, 0, 0.20); }   /* Electric Green */
-.bg-2 { background-color: rgba(255, 0, 144, 0.20); }     /* Bright Magenta */
-.bg-3 { background-color: rgba(0, 255, 255, 0.20); }     /* Hot Cyan */
+.bg-1 {
+  background: linear-gradient(135deg, #a066ff, #e966ff); /* Purple → Magenta */
+}
+
+.bg-2 {
+  background: linear-gradient(135deg, #00c6ff, #0072ff); /* Aqua → Blue */
+}
+
+.bg-3 {
+  background: linear-gradient(135deg, #00ffe7, #00c3ff); /* Cyan → Teal */
+}
 </style>
 """, unsafe_allow_html=True)
 
