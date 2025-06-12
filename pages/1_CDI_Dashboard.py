@@ -7,9 +7,46 @@ import plotly.graph_objects as go
 st.set_page_config(layout="wide")
 st.title("Consumer Demand Index (CDI)")
 
+# === Custom CSS for KPI Cards ===
+st.markdown("""
+<style>
+.kpi-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+.kpi-card {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    background: #1e1e1e;
+    color: white;
+    min-width: 200px;
+}
+.kpi-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: #ccc;
+}
+.kpi-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+.kpi-delta {
+    font-size: 1.2rem;
+    margin-top: 0.2rem;
+}
+.bg-1 { background-color: #2b2b2b; }
+.bg-2 { background-color: #333; }
+.bg-3 { background-color: #3b3b3b; }
+</style>
+""", unsafe_allow_html=True)
+
 DEFAULT_DATA_PATH = "data/Consumer_Demand_Index.csv"
 
-# --- LOAD DATA ---
 try:
     df = pd.read_csv(DEFAULT_DATA_PATH)
 except Exception as e:
@@ -20,16 +57,13 @@ df.columns = df.columns.str.strip()
 df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
 df = df.dropna(subset=['Date'])
 
-# --- FEATURES ---
 features = ['UPI Transactions', 'GST Revenue', 'Vehicle Sales', 'Housing Sales', 'Power Consumption']
-missing_cols = [col for col in features if col not in df.columns]
-if missing_cols:
-    st.error(f"Missing columns: {missing_cols}")
+if any(col not in df.columns for col in features):
+    st.error("Missing required feature columns.")
     st.stop()
 
 df = df.dropna(subset=features)
 
-# --- PCA & CDI CALCULATION ---
 scaler_std = StandardScaler()
 scaled_features = scaler_std.fit_transform(df[features])
 pca = PCA(n_components=1)
@@ -41,73 +75,42 @@ df['Month'] = df['Date'].dt.strftime('%b-%Y')
 
 def get_fiscal_quarter(date):
     m, y = date.month, date.year
-    if m in [4, 5, 6]:
-        q, fy = 'Q1', y
-    elif m in [7, 8, 9]:
-        q, fy = 'Q2', y
-    elif m in [10, 11, 12]:
-        q, fy = 'Q3', y
-    else:
-        q, fy = 'Q4', y - 1
+    if m in [4, 5, 6]: q, fy = 'Q1', y
+    elif m in [7, 8, 9]: q, fy = 'Q2', y
+    elif m in [10, 11, 12]: q, fy = 'Q3', y
+    else: q, fy = 'Q4', y - 1
     return f"{q} {fy}-{str(fy+1)[-2:]}"
 
 df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 
-# === VIEW MODE ===
 mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True)
 
-# --- CHARTS AND INTERACTION ---
-df_sorted = df.sort_values("Date")
-
+# === Monthly Mode Selection ===
 if mode == 'Monthly':
     selected_month = st.selectbox("Select a month", df['Month'].unique())
     selected_row = df[df['Month'] == selected_month].iloc[0]
     selected_value_real = selected_row['CDI_Real']
     selected_value_scaled = selected_row['CDI_Scaled']
     selected_idx = selected_row.name
-    display_label = selected_month
-    line_x = df['Date']
-    line_y = df['CDI_Real']
-    line_title = "CDI Over Time (Monthly)"
-    xaxis_type = "date"
-    xaxis_title = "Date"
+    label_period = selected_month
+    prev_row = df.iloc[selected_idx - 1] if selected_idx > 0 else selected_row
+    delta = selected_value_real - prev_row['CDI_Real']
 else:
     quarter_df = df.groupby('Fiscal_Quarter', sort=False)['CDI_Real'].mean().reset_index()
     selected_quarter = st.selectbox("Select a fiscal quarter", quarter_df['Fiscal_Quarter'].unique())
-    selected_value_real = quarter_df.loc[quarter_df['Fiscal_Quarter'] == selected_quarter, 'CDI_Real'].values[0]
+    selected_value_real = quarter_df[quarter_df['Fiscal_Quarter'] == selected_quarter]['CDI_Real'].values[0]
     quarter_indices = df[df['Fiscal_Quarter'] == selected_quarter].index
-    selected_idx = quarter_indices[0]
-    display_label = selected_quarter
-    line_x = quarter_df['Fiscal_Quarter']
-    line_y = quarter_df['CDI_Real']
-    line_title = "CDI Over Time (Quarterly)"
-    xaxis_type = "category"
-    xaxis_title = "Fiscal Quarter"
     selected_value_scaled = df.loc[quarter_indices, 'CDI_Scaled'].mean()
-
-# === KPI CARDS ===
-if mode == 'Monthly':
-    latest_row = df[df['Month'] == selected_month].iloc[0]
-    prev_idx = latest_row.name - 1 if latest_row.name > 0 else latest_row.name
-    prev_row = df.iloc[prev_idx]
-    actual_value = latest_row['CDI_Real']
-    scaled_value = latest_row['CDI_Scaled']
-    label_period = latest_row['Month']
-    delta = actual_value - prev_row['CDI_Real']
-else:
-    latest_quarter_df = df[df['Fiscal_Quarter'] == selected_quarter]
-    if len(latest_quarter_df) < 2:
-        delta = 0
-    else:
-        quarter_idx = latest_quarter_df.index
-        prev_idx = quarter_idx[0] - 1 if quarter_idx[0] > 0 else quarter_idx[0]
-        prev_row = df.iloc[prev_idx]
-        delta = selected_value_real - prev_row['CDI_Real']
-
-    actual_value = selected_value_real
-    scaled_value = selected_value_scaled
     label_period = selected_quarter
+    if len(quarter_df) > 1:
+        current_idx = quarter_df[quarter_df['Fiscal_Quarter'] == selected_quarter].index[0]
+        prev_idx = current_idx - 1 if current_idx > 0 else current_idx
+        prev_value = quarter_df.iloc[prev_idx]['CDI_Real']
+        delta = selected_value_real - prev_value
+    else:
+        delta = 0
 
+# === DELTA STYLE ===
 if delta > 0:
     delta_display = f"<div class='kpi-delta' style='color: green;'> {delta:+.2f}</div>"
 elif delta < 0:
@@ -115,11 +118,12 @@ elif delta < 0:
 else:
     delta_display = f"<div class='kpi-delta' style='color: gray;'> {delta:+.2f}</div>"
 
+# === KPI CARDS ===
 st.markdown(f"""
 <div class="kpi-container">
     <div class="kpi-card bg-1">
         <div class="kpi-title">Actual CDI</div>
-        <div class="kpi-value">{actual_value:.2f}</div>
+        <div class="kpi-value">{selected_value_real:.2f}</div>
         {delta_display}
     </div>
     <div class="kpi-card bg-2">
@@ -128,12 +132,15 @@ st.markdown(f"""
     </div>
     <div class="kpi-card bg-3">
         <div class="kpi-title">Scaled CDI</div>
-        <div class="kpi-value">{scaled_value:.2f}</div>
+        <div class="kpi-value">{selected_value_scaled:.2f}</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
+
+# === Visualizations (same as before) ===
+# (You can reuse your chart + pie chart code below this block)
 
 # === CDI SCALE PLOT ===
 fig = go.Figure()
