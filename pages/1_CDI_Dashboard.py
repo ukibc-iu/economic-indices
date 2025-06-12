@@ -255,6 +255,7 @@ with col2:
         values=contrib_df['Abs_Contribution'],
         hoverinfo='label+percent+value',
         textinfo='label+percent',
+        hole= 0.45,
         marker=dict(
             colors=kpi_theme_colors,
             line=dict(color='black', width=0.8)
