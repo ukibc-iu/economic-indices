@@ -101,18 +101,40 @@ contrib_weights = {
     "Unemployment": 10
 }
 
+# === IMP Contribution Bar with Gradient Colors ===
+st.markdown("### Contribution Breakdown")
+
+# Define contributions
+contrib_weights = {
+    "Real GDP": 40,
+    "Balance of Trade": 20,
+    "Inflation": 20,
+    "Fiscal Balance": 10,
+    "Unemployment": 10
+}
+
 # Sort by weight descending
 contrib_df = pd.DataFrame({
     "Factor": list(contrib_weights.keys()),
     "Weight": list(contrib_weights.values())
 }).sort_values(by="Weight", ascending=False)
 
+# Simulated gradient colors (darker to lighter blues)
+gradient_colors = [
+    'rgba(0, 123, 255, 1)',
+    'rgba(51, 153, 255, 0.9)',
+    'rgba(102, 178, 255, 0.8)',
+    'rgba(153, 204, 255, 0.7)',
+    'rgba(204, 229, 255, 0.6)'
+]
+
+# Plot bar chart
 funnel_fig = go.Figure(go.Bar(
     y=contrib_df["Factor"],
     x=contrib_df["Weight"],
     orientation='h',
     marker=dict(
-        color=['#003f5c', '#58508d', '#bc5090', '#ff6361', '#ffa600'],
+        color=gradient_colors,
         line=dict(color='black', width=1)
     ),
     text=[f"{w}%" for w in contrib_df["Weight"]],
