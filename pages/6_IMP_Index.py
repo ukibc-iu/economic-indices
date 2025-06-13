@@ -113,28 +113,40 @@ contrib_weights = {
     "Unemployment": 10
 }
 
-# Sort by weight descending
+# === IMP Contribution Bar with Blue Gradient Colors ===
+st.markdown("### Contribution Breakdown")
+
+# Define contributions and sort descending
+contrib_weights = {
+    "Real GDP": 40,
+    "Balance of Trade": 20,
+    "Inflation": 20,
+    "Fiscal Balance": 10,
+    "Unemployment": 10
+}
+
 contrib_df = pd.DataFrame({
     "Factor": list(contrib_weights.keys()),
     "Weight": list(contrib_weights.values())
 }).sort_values(by="Weight", ascending=False)
 
-# Simulated gradient colors (darker to lighter blues)
-gradient_colors = [
-    'rgba(0, 123, 255, 1)',
-    'rgba(51, 153, 255, 0.9)',
-    'rgba(102, 178, 255, 0.8)',
-    'rgba(153, 204, 255, 0.7)',
-    'rgba(204, 229, 255, 0.6)'
-]
+# Blue gradient: darkest to lightest (for 40%, 20%, 20%, 10%, 10%)
+blue_gradient = {
+    40: 'rgba(0, 51, 102, 1)',    # very dark blue
+    20: 'rgba(51, 102, 204, 0.9)',# medium blue
+    10: 'rgba(153, 204, 255, 0.8)'# light blue
+}
 
-# Plot bar chart
+# Map each weight to a color (use same color for equal weights)
+bar_colors = [blue_gradient[w] for w in contrib_df['Weight']]
+
+# Plot
 funnel_fig = go.Figure(go.Bar(
     y=contrib_df["Factor"],
     x=contrib_df["Weight"],
     orientation='h',
     marker=dict(
-        color=gradient_colors,
+        color=bar_colors,
         line=dict(color='black', width=1)
     ),
     text=[f"{w}%" for w in contrib_df["Weight"]],
@@ -145,12 +157,12 @@ funnel_fig.update_layout(
     height=400,
     title=f"Factor Contributions to IMP Index",
     xaxis_title="Weight (%)",
-    yaxis_title="",
     yaxis=dict(categoryorder='total ascending'),
     margin=dict(l=30, r=30, t=40, b=30),
 )
 
 st.plotly_chart(funnel_fig, use_container_width=True)
+
 # === Show Raw Data ===
 if st.checkbox("\U0001F50D Show raw IMP data"):
     st.dataframe(imp_df)
