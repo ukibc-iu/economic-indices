@@ -166,6 +166,7 @@ else:
     selected_idx = None
 
 # === CDI Scale Bar ===
+# === CDI Scale Bar ===
 fig = go.Figure()
 color_map = {
     -5: ("#800000", "Extremely Low"), -4: ("#bd0026", "Severely Low"),
@@ -183,15 +184,16 @@ for val in range(-5, 6):
                              hovertext=[f"{label} ({val})"], showlegend=False,
                              textfont=dict(color='white', size=16)))
 
-fig.add_shape(type="rect", x0=latest_scaled-0.5, x1=latest_scaled+0.5,
+# ✅ USE selected_real & selected_scaled (NOT latest)
+fig.add_shape(type="rect", x0=selected_scaled-0.5, x1=selected_scaled+0.5,
               y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
               fillcolor="rgba(0,0,0,0)", layer="above")
 
-fig.add_trace(go.Scatter(x=[latest_scaled], y=[0.45], mode='text',
-                         text=[f"{latest_real:.2f}"], showlegend=False,
+fig.add_trace(go.Scatter(x=[selected_scaled], y=[0.45], mode='text',
+                         text=[f"{selected_real:.2f}"], showlegend=False,
                          textfont=dict(size=16, color='crimson')))
 
-fig.update_layout(title=f"Consumer Demand Index for {label_period} (Real: {latest_real:.2f})",
+fig.update_layout(title=f"Consumer Demand Index for {label_period} (Real: {selected_real:.2f})",
                   xaxis=dict(range=[-5.5, 5.5], title='CDI Scale (-5 to +5)',
                              showticklabels=False, showgrid=False),
                   yaxis=dict(visible=False), height=280,
