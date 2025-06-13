@@ -92,30 +92,6 @@ st.plotly_chart(fig, use_container_width=True)
 # === IMP Contribution Bar (like funnel) ===
 st.markdown("### Contribution Breakdown")
 
-# Define contributions
-contrib_weights = {
-    "Real GDP": 40,
-    "Balance of Trade": 20,
-    "Inflation": 20,
-    "Fiscal Balance": 10,
-    "Unemployment": 10
-}
-
-# === IMP Contribution Bar with Gradient Colors ===
-st.markdown("### Contribution Breakdown")
-
-# Define contributions
-contrib_weights = {
-    "Real GDP": 40,
-    "Balance of Trade": 20,
-    "Inflation": 20,
-    "Fiscal Balance": 10,
-    "Unemployment": 10
-}
-
-# === IMP Contribution Bar with Blue Gradient Colors ===
-st.markdown("### Contribution Breakdown")
-
 # Define contributions and sort descending
 contrib_weights = {
     "Real GDP": 40,
