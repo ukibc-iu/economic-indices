@@ -89,35 +89,46 @@ fig.update_layout(title=f"IMP Index for {label_period} (Scale: {selected_value:.
 
 st.plotly_chart(fig, use_container_width=True)
 
-# === Contribution Funnel Chart ===
-weights = {
-    'Real GDP': 0.40,
-    'Fiscal Balance': 0.10,
-    'Balance of Trade': 0.20,
-    'Inflation': 0.20,
-    'Unemployment': 0.10
+# === IMP Contribution Bar (like funnel) ===
+st.markdown("### Contribution Breakdown")
+
+# Define contributions
+contrib_weights = {
+    "Real GDP": 40,
+    "Balance of Trade": 20,
+    "Inflation": 20,
+    "Fiscal Balance": 10,
+    "Unemployment": 10
 }
 
-# Sort weights descending
-sorted_items = sorted(weights.items(), key=lambda x: x[1], reverse=True)
-labels = [item[0] for item in sorted_items]
-values = [item[1] for item in sorted_items]
-colors = ['#08306B', '#08519C', '#2171B5', '#4292C6', '#6BAED6']
+# Sort by weight descending
+contrib_df = pd.DataFrame({
+    "Factor": list(contrib_weights.keys()),
+    "Weight": list(contrib_weights.values())
+}).sort_values(by="Weight", ascending=False)
 
-funnel_fig = go.Figure(go.Funnel(
-    y=labels,
-    x=values,
-    textinfo="value+percent previous",
-    marker=dict(color=colors)
+funnel_fig = go.Figure(go.Bar(
+    y=contrib_df["Factor"],
+    x=contrib_df["Weight"],
+    orientation='h',
+    marker=dict(
+        color=['#003f5c', '#58508d', '#bc5090', '#ff6361', '#ffa600'],
+        line=dict(color='black', width=1)
+    ),
+    text=[f"{w}%" for w in contrib_df["Weight"]],
+    textposition='auto'
 ))
 
 funnel_fig.update_layout(
-    title="IMP Index - Contribution Breakdown",
-    height=400
+    height=400,
+    title=f"Factor Contributions to IMP Index",
+    xaxis_title="Weight (%)",
+    yaxis_title="",
+    yaxis=dict(categoryorder='total ascending'),
+    margin=dict(l=30, r=30, t=40, b=30),
 )
 
 st.plotly_chart(funnel_fig, use_container_width=True)
-
 # === Show Raw Data ===
 if st.checkbox("\U0001F50D Show raw IMP data"):
     st.dataframe(imp_df)
