@@ -150,6 +150,11 @@ if mode == 'Monthly':
     xaxis_title = "Month"
     xaxis_type = "date"
     selected_quarter = None
+
+    # ✅ Add these two lines:
+    selected_real = df_filtered['CDI_Real'].values[0]
+    selected_scaled = df_filtered['CDI_Scaled'].values[0]
+
 else:
     quarters = sorted(df['Fiscal_Quarter'].unique())
     selected_quarter = st.selectbox("Select Quarter", quarters, index=quarters.index(latest_quarter))
@@ -164,6 +169,10 @@ else:
     xaxis_title = "Fiscal Quarter"
     xaxis_type = "category"
     selected_idx = None
+
+    # ✅ Add these two lines:
+    selected_real = quarter_df[quarter_df['Fiscal_Quarter'] == selected_quarter]['CDI_Real'].values[0]
+    selected_scaled = quarter_df[quarter_df['Fiscal_Quarter'] == selected_quarter]['CDI_Scaled'].values[0]
 
 # === CDI Scale Bar ===
 # === CDI Scale Bar ===
