@@ -115,36 +115,49 @@ color_map = {
      3: ("#006837", "Very High")
 }
 
+# === Fixed Scale Bar ===
 fig = go.Figure()
+
+# Draw scale segments
 for val in range(-3, 4):
     clr, txt = color_map[val]
-    fig.add_shape(type="rect", x0=val-0.5, x1=val+0.5, y0=-0.3, y1=0.3,
-                  fillcolor=clr, line=dict(color="black", width=1))
+    fig.add_shape(
+        type="rect", x0=val - 0.5, x1=val + 0.5, y0=-0.3, y1=0.3,
+        fillcolor=clr, line=dict(color="black", width=1)
+    )
+    # Add label below each scale tick
     fig.add_trace(go.Scatter(
-        x=[val], y=[0], mode='text', text=[str(val)],
-        hovertext=[f"{txt} ({val})"], showlegend=False,
-        textfont=dict(color='white', size=16)
+        x=[val], y=[-0.45], mode='text', 
+        text=[str(val)], 
+        textfont=dict(color='white', size=14),
+        showlegend=False, hoverinfo='skip'
     ))
 
-# Highlight box — restored like CDI
-fig.add_shape(type="rect", x0=sel_value-0.25, x1=sel_value+0.25, y0=-0.4, y1=0.4,
-              fillcolor='rgba(255,0,0,0.2)', line=dict(color="red", width=2))
+# Dotted outline box around the selected value
+fig.add_shape(
+    type="rect", x0=sel_value - 0.25, x1=sel_value + 0.25, y0=-0.4, y1=0.4,
+    line=dict(color="red", width=2, dash='dot'), fillcolor='rgba(0,0,0,0)'
+)
 
+# Display selected value above the box
 fig.add_trace(go.Scatter(
     x=[sel_value], y=[0.5], mode='text',
-    text=[f"{sel_value:.2f}"], showlegend=False,
-    textfont=dict(size=16, color='crimson')
+    text=[f"{sel_value:.2f}"],
+    textfont=dict(size=16, color='crimson'),
+    showlegend=False, hoverinfo='skip'
 ))
 
 fig.update_layout(
     title=f"IMP Index Scale Bar – {selected_label}",
-    xaxis=dict(range=[-3.5, 3.5], title='IMP Index Scale (-3 to +3)',
-               showticklabels=False, showgrid=False),
+    xaxis=dict(range=[-3.5, 3.5], showticklabels=False, showgrid=False, zeroline=False),
     yaxis=dict(visible=False),
     height=280,
     margin=dict(l=30, r=30, t=60, b=30),
+    plot_bgcolor='rgba(0,0,0,0)',
+    paper_bgcolor='rgba(0,0,0,0)',
     showlegend=False
 )
+
 st.plotly_chart(fig, use_container_width=True)
 
 # === Contribution Chart ===
