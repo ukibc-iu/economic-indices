@@ -274,7 +274,7 @@ line_fig.update_layout(
     yaxis_title="IMP Index Value",
     margin=dict(l=30, r=30, t=50, b=30),
     xaxis=dict(showgrid=False),
-    yaxis=dict(showgrid=True, zeroline=True),
+    yaxis=dict(showgrid=False),
     plot_bgcolor="rgba(0,0,0,0)",
     paper_bgcolor="rgba(0,0,0,0)",
 )
