@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 st.set_page_config(layout="wide")
 st.title("IMP Index Dashboard")
 
-st.markdown("India’s Macroeconomic Performance (IMP) Index measures India's overall economic well-being, taking into consideration significant economic parameters such as inflation rate, unemployment rate, etc.")
+st.markdown('<p style="font-style: italic;">India’s Macroeconomic Performance (IMP) Index measures India's overall economic well-being, taking into consideration significant economic parameters such as inflation rate, unemployment rate, etc.</p>', unsafe_allow_html=True)
 
 # === Load IMP Index Data ===
 imp_data_path = "data/IMP_Index.csv"
