@@ -265,7 +265,8 @@ line_fig.add_trace(go.Scatter(
     y=time_series["Scale"],
     mode="lines",
     line=dict(color="#1f77b4", width=3),
-    name="IMP Index"
+    name="IMP Index",
+    showlegend=False
 ))
 
 # --- Transparent marker trace for hover effect ---
