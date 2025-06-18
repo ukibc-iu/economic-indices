@@ -278,7 +278,7 @@ line_fig.add_trace(go.Scatter(
         size=8,
         symbol="circle-open",
         line=dict(width=2, color="#203a43"),  # Outline color matches line
-        opacity=1
+        opacity=0.8
     ),
     name="",
     hovertemplate="Date: %{x}<br>IMP Index: %{y:.2f}<extra></extra>",
