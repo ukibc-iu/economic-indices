@@ -259,28 +259,12 @@ else:
 # === Build Line Chart ===
 line_fig = go.Figure()
 
-# --- Line trace (no markers) ---
 line_fig.add_trace(go.Scatter(
     x=x_vals,
     y=time_series["Scale"],
-    mode="lines",
+    mode="lines",  # <== Only lines, no markers
     line=dict(color="#203a43", width=3),
     name="IMP Index",
-    showlegend=False
-))
-
-# --- Hollow marker trace for hover effect ---
-line_fig.add_trace(go.Scatter(
-    x=x_vals,
-    y=time_series["Scale"],
-    mode="markers",
-    marker=dict(
-        size=8,
-        symbol="circle-open",
-        line=dict(width=2, color="#203a43"),  # Outline color matches line
-        opacity=0.8
-    ),
-    name="",
     hovertemplate="Date: %{x}<br>IMP Index: %{y:.2f}<extra></extra>",
     showlegend=False
 ))
