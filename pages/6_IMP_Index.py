@@ -115,25 +115,24 @@ color_map = {
      3: ("#006837", "Very High")
 }
 
-# === Fixed Scale Bar ===
+# === Fixed Scale Bar with Labels Inside ===
 fig = go.Figure()
 
-# Draw scale segments
+# Draw scale segments and place label inside each block
 for val in range(-3, 4):
     clr, txt = color_map[val]
     fig.add_shape(
         type="rect", x0=val - 0.5, x1=val + 0.5, y0=-0.3, y1=0.3,
         fillcolor=clr, line=dict(color="black", width=1)
     )
-    # Add label below each scale tick
     fig.add_trace(go.Scatter(
-        x=[val], y=[-0.45], mode='text', 
+        x=[val], y=[0], mode='text', 
         text=[str(val)], 
-        textfont=dict(color='white', size=14),
+        textfont=dict(color='white', size=16),
         showlegend=False, hoverinfo='skip'
     ))
 
-# Dotted outline box around the selected value
+# Dotted red outline box around selected value
 fig.add_shape(
     type="rect", x0=sel_value - 0.25, x1=sel_value + 0.25, y0=-0.4, y1=0.4,
     line=dict(color="red", width=2, dash='dot'), fillcolor='rgba(0,0,0,0)'
@@ -159,7 +158,6 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
-
 # === Contribution Chart ===
 st.markdown("### Contribution Breakdown")
 
