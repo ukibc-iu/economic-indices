@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")
 
-# === CSS for KPI Cards ===
+# === KPI Styling ===
 st.markdown("""
 <style>
 .kpi-container {
@@ -65,7 +65,7 @@ df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 # === Mode Selection ===
 mode = st.radio("Select View Mode", ["Monthly", "Quarterly"], horizontal=True)
 
-# === Filtered Data ===
+# === Prepare Data for KPIs and Dropdown ===
 if mode == "Monthly":
     latest_row = df.sort_values("Date").iloc[-1]
     latest_value = latest_row["Scale"]
@@ -98,11 +98,13 @@ st.markdown(f"""
 # === Dropdown Selector Below KPIs ===
 selected_label = st.selectbox(f"Select {mode}", options=all_labels, index=all_labels.index(latest_label))
 
-# === Value Based on Selection ===
+# === Selected Value & Label ===
 if mode == "Monthly":
-    sel_value = df[df['Month'] == selected_label]['Scale'].values[0]
+    selected_value = df[df['Month'] == selected_label]['Scale'].values[0]
+    label_period = selected_label
 else:
-    sel_value = df[df['Fiscal_Quarter'] == selected_label]['Scale'].mean()
+    selected_value = df[df['Fiscal_Quarter'] == selected_label]['Scale'].mean()
+    label_period = selected_label
 
 # === Scale Bar ===
 color_map = {
@@ -115,21 +117,8 @@ color_map = {
      3: ("#006837", "Very High")
 }
 
-# === Fixed Scale Bar with Labels Inside ===
 fig = go.Figure()
 
-# Color map with color + description
-color_map = {
-    -3: ("#800000", "Very Low"),
-    -2: ("#fc4e2a", "Low"),
-    -1: ("#fd8d3c", "Slightly Low"),
-     0: ("#fecc5c", "Neutral"),        # Yellow: needs dark text
-     1: ("#78c679", "Slightly High"),
-     2: ("#31a354", "High"),
-     3: ("#006837", "Very High")
-}
-
-# Build the scale blocks with value labels inside
 for val in range(-3, 4):
     color, label = color_map[val]
     
@@ -143,10 +132,9 @@ for val in range(-3, 4):
         layer="below"
     )
     
-    # Decide text color based on background
     text_color = 'black' if val == 0 else 'white'
     
-    # Draw scale number inside block
+    # Value label inside each block
     fig.add_trace(go.Scatter(
         x=[val], y=[0], 
         mode='text', 
@@ -156,7 +144,7 @@ for val in range(-3, 4):
         textfont=dict(color=text_color, size=16),
     ))
 
-# Draw dotted red outline box around selected value
+# Red dotted box for selected value
 fig.add_shape(
     type="rect", 
     x0=selected_value - 0.5, x1=selected_value + 0.5,
@@ -166,7 +154,7 @@ fig.add_shape(
     layer="above"
 )
 
-# Display selected value above the block
+# Show selected value above the block
 fig.add_trace(go.Scatter(
     x=[selected_value], y=[0.5], 
     mode='text',
@@ -225,6 +213,6 @@ bar_fig.update_layout(
 )
 st.plotly_chart(bar_fig, use_container_width=True)
 
-# === Optional Raw Table ===
+# === Raw Table (optional) ===
 if st.checkbox("🔍 Show IMP Index Data Table"):
     st.dataframe(df)
