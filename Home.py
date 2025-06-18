@@ -100,35 +100,44 @@ with col_mid:
     st.markdown("""<div style="height: 1000px; width: 1px; background-color: lightgray; margin: auto;"></div>""",
                 unsafe_allow_html=True)
 
-# ========== RENDER FUNCTION ==========
 def render_index(col, name, data, key):
     page, color, trend, icon, overview = data
     with col:
         st.subheader(f"{icon} {name}")
         latest_real = trend[-1]
-        latest_scaled = max(min(round(latest_real), 5), -5)
+
+        # Determine scale range based on index name
+        if name == "IMP Index":
+            scale_min, scale_max = -3, 3
+        else:
+            scale_min, scale_max = -5, 5
+
+        latest_scaled = max(min(round(latest_real), scale_max), scale_min)
 
         fig = go.Figure()
-        for val in range(-5, 6):
+        for val in range(scale_min, scale_max + 1):
             fill_color, label = color_map[val]
             fig.add_shape(type="rect", x0=val - 0.5, x1=val + 0.5, y0=-0.3, y1=0.3,
                           line=dict(color="black", width=1), fillcolor=fill_color, layer="below")
             fig.add_trace(go.Scatter(x=[val], y=[0], mode='text', text=[str(val)],
                                      hovertext=[f"{label} ({val})"], showlegend=False,
                                      textfont=dict(color='white', size=14)))
+
         fig.add_shape(type="rect", x0=latest_scaled - 0.5, x1=latest_scaled + 0.5,
                       y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
                       fillcolor="rgba(0,0,0,0)", layer="above")
+
         fig.add_trace(go.Scatter(x=[latest_scaled], y=[0.45], mode='text',
                                  text=[f"{latest_real:.2f}"], showlegend=False,
                                  textfont=dict(size=14, color='crimson')))
 
         fig.update_layout(
-            xaxis=dict(range=[-5.5, 5.5], showticklabels=False, showgrid=False),
+            xaxis=dict(range=[scale_min - 0.5, scale_max + 0.5], showticklabels=False, showgrid=False),
             yaxis=dict(visible=False),
             height=200, margin=dict(l=10, r=10, t=10, b=10),
             plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", showlegend=False
         )
+
         st.plotly_chart(fig, use_container_width=True, key=f"scale-{key}")
 
         overview_text = f"<p style='color:{color}; margin-bottom: 0.5rem;'><em>{overview}</em></p>"
@@ -136,7 +145,6 @@ def render_index(col, name, data, key):
 
         if st.button("Open detailed view of the index →", key=f"btn-{key}"):
             st.switch_page(f"pages/{page}.py")
-
 # ========== RENDER ALL INDICES ==========
 index_items = list(indices.items())
 mid = len(index_items) // 2
