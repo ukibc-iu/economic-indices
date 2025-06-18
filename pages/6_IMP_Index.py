@@ -181,6 +181,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # === Contribution Chart ===
+# === Contribution Chart ===
 st.markdown("### Contribution Breakdown")
 
 contrib_weights = {
@@ -195,15 +196,23 @@ contrib_df = pd.DataFrame({
     "Weight": list(contrib_weights.values())
 }).sort_values(by="Weight", ascending=False)
 
-colors = ['#003366', '#0055aa', '#3399ff', '#66ccff', '#99ddff']
+# Assign color by weight group
+color_map = {
+    40: "#2a004f",  # Dark violet
+    20: "#6a0dad",  # Medium purple
+    10: "#b57edc"   # Light purple
+}
+bar_colors = contrib_df["Weight"].map(color_map)
+
 bar_fig = go.Figure(go.Bar(
     y=contrib_df["Factor"],
     x=contrib_df["Weight"],
     orientation='h',
-    marker=dict(color=colors, line=dict(color='black', width=1)),
+    marker=dict(color=bar_colors, line=dict(color='black', width=1)),
     text=[f"{w}%" for w in contrib_df["Weight"]],
     textposition='auto'
 ))
+
 bar_fig.update_layout(
     height=400,
     title="Factor Contributions to IMP Index",
