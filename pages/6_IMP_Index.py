@@ -62,7 +62,7 @@ color_map = {
     -3: ("#800000", "Very Low"),
     -2: ("#fc4e2a", "Low"),
     -1: ("#fd8d3c", "Slightly Low"),
-     0: ("#fecc5c", "Neutral"),
+     0: ("#fecc5c", "Neutral"),        # Yellow: white text might not be visible
      1: ("#78c679", "Slightly High"),
      2: ("#31a354", "High"),
      3: ("#006837", "Very High")
@@ -70,24 +70,61 @@ color_map = {
 
 for val in range(-3, 4):
     color, label = color_map[val]
-    fig.add_shape(type="rect", x0=val-0.5, x1=val+0.5, y0=-0.3, y1=0.3,
-                  line=dict(color="black", width=1), fillcolor=color)
-    fig.add_trace(go.Scatter(x=[val], y=[0], mode='text', text=[str(val)],
-                             hovertext=[f"{label} ({val})"], showlegend=False,
-                             textfont=dict(color='white', size=16)))
+    
+    # Draw colored block
+    fig.add_shape(
+        type="rect", 
+        x0=val - 0.5, x1=val + 0.5, 
+        y0=-0.3, y1=0.3,
+        line=dict(color="black", width=1), 
+        fillcolor=color,
+        layer="below"
+    )
+    
+    # Choose text color based on background (override for yellow block)
+    text_color = 'black' if val == 0 else 'white'
+    
+    # Draw scale number
+    fig.add_trace(go.Scatter(
+        x=[val], y=[0], 
+        mode='text', 
+        text=[str(val)],
+        hovertext=[f"{label} ({val})"],
+        showlegend=False,
+        textfont=dict(color=text_color, size=16),
+    ))
 
-fig.add_shape(type="rect", x0=selected_value-0.5, x1=selected_value+0.5,
-              y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
-              fillcolor="rgba(0,0,0,0)", layer="above")
-fig.add_trace(go.Scatter(x=[selected_value], y=[0.45], mode='text',
-                         text=[f"{selected_value:.2f}"], showlegend=False,
-                         textfont=dict(size=16, color='crimson')))
+# Draw selected value box
+fig.add_shape(
+    type="rect", 
+    x0=selected_value - 0.5, x1=selected_value + 0.5,
+    y0=-0.35, y1=0.35,
+    line=dict(color="crimson", width=3, dash="dot"),
+    fillcolor="rgba(0,0,0,0)", 
+    layer="above"
+)
 
-fig.update_layout(title=f"IMP Index for {label_period} (Scale: {selected_value:.2f})",
-                  xaxis=dict(range=[-3.5, 3.5], title='IMP Index Scale (-3 to +3)',
-                             showticklabels=False, showgrid=False),
-                  yaxis=dict(visible=False), height=280,
-                  margin=dict(l=30, r=30, t=60, b=30), showlegend=False)
+# Add selected value label
+fig.add_trace(go.Scatter(
+    x=[selected_value], y=[0.45], 
+    mode='text',
+    text=[f"{selected_value:.2f}"],
+    showlegend=False,
+    textfont=dict(size=16, color='crimson')
+))
+
+fig.update_layout(
+    title=f"IMP Index for {label_period} (Scale: {selected_value:.2f})",
+    xaxis=dict(
+        range=[-3.5, 3.5], 
+        title='IMP Index Scale (-3 to +3)',
+        showticklabels=False, showgrid=False
+    ),
+    yaxis=dict(visible=False), 
+    height=280,
+    margin=dict(l=30, r=30, t=60, b=30), 
+    showlegend=False
+)
 
 st.plotly_chart(fig, use_container_width=True)
 
