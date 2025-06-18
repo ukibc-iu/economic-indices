@@ -198,9 +198,9 @@ contrib_df = pd.DataFrame({
 
 # Assign color by weight group
 color_map = {
-    40: "#2a004f",  # Dark violet
-    20: "#6a0dad",  # Medium purple
-    10: "#b57edc"   # Light purple
+    40: "#003366",  # Dark navy blue
+    20: "#3399cc",  # Medium blue
+    10: "#99ccff"   # Light sky blue
 }
 bar_colors = contrib_df["Weight"].map(color_map)
 
