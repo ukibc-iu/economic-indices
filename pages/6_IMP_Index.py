@@ -118,46 +118,80 @@ color_map = {
 # === Fixed Scale Bar with Labels Inside ===
 fig = go.Figure()
 
-# Draw scale segments and place label inside each block
+# Color map with color + description
+color_map = {
+    -3: ("#800000", "Very Low"),
+    -2: ("#fc4e2a", "Low"),
+    -1: ("#fd8d3c", "Slightly Low"),
+     0: ("#fecc5c", "Neutral"),        # Yellow: needs dark text
+     1: ("#78c679", "Slightly High"),
+     2: ("#31a354", "High"),
+     3: ("#006837", "Very High")
+}
+
+# Build the scale blocks with value labels inside
 for val in range(-3, 4):
-    clr, txt = color_map[val]
+    color, label = color_map[val]
+    
+    # Draw colored block
     fig.add_shape(
-        type="rect", x0=val - 0.5, x1=val + 0.5, y0=-0.3, y1=0.3,
-        fillcolor=clr, line=dict(color="black", width=1)
+        type="rect", 
+        x0=val - 0.5, x1=val + 0.5, 
+        y0=-0.3, y1=0.3,
+        line=dict(color="black", width=1), 
+        fillcolor=color,
+        layer="below"
     )
+    
+    # Decide text color based on background
+    text_color = 'black' if val == 0 else 'white'
+    
+    # Draw scale number inside block
     fig.add_trace(go.Scatter(
-        x=[val], y=[0], mode='text', 
-        text=[str(val)], 
-        textfont=dict(color='white', size=16),
-        showlegend=False, hoverinfo='skip'
+        x=[val], y=[0], 
+        mode='text', 
+        text=[str(val)],
+        hovertext=[f"{label} ({val})"],
+        showlegend=False,
+        textfont=dict(color=text_color, size=16),
     ))
 
-# Dotted red outline box around selected value
+# Draw dotted red outline box around selected value
 fig.add_shape(
-    type="rect", x0=sel_value - 0.25, x1=sel_value + 0.25, y0=-0.4, y1=0.4,
-    line=dict(color="red", width=2, dash='dot'), fillcolor='rgba(0,0,0,0)'
+    type="rect", 
+    x0=selected_value - 0.5, x1=selected_value + 0.5,
+    y0=-0.35, y1=0.35,
+    line=dict(color="crimson", width=2.5, dash="dot"),
+    fillcolor="rgba(0,0,0,0)", 
+    layer="above"
 )
 
-# Display selected value above the box
+# Display selected value above the block
 fig.add_trace(go.Scatter(
-    x=[sel_value], y=[0.5], mode='text',
-    text=[f"{sel_value:.2f}"],
-    textfont=dict(size=16, color='crimson'),
-    showlegend=False, hoverinfo='skip'
+    x=[selected_value], y=[0.5], 
+    mode='text',
+    text=[f"{selected_value:.2f}"],
+    showlegend=False,
+    textfont=dict(size=16, color='crimson')
 ))
 
 fig.update_layout(
-    title=f"IMP Index Scale Bar – {selected_label}",
-    xaxis=dict(range=[-3.5, 3.5], showticklabels=False, showgrid=False, zeroline=False),
-    yaxis=dict(visible=False),
+    title=f"IMP Index for {label_period} (Scale: {selected_value:.2f})",
+    xaxis=dict(
+        range=[-3.5, 3.5], 
+        title='IMP Index Scale (-3 to +3)',
+        showticklabels=False, showgrid=False, zeroline=False
+    ),
+    yaxis=dict(visible=False), 
     height=280,
-    margin=dict(l=30, r=30, t=60, b=30),
+    margin=dict(l=30, r=30, t=60, b=30), 
+    showlegend=False,
     plot_bgcolor='rgba(0,0,0,0)',
     paper_bgcolor='rgba(0,0,0,0)',
-    showlegend=False
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
 # === Contribution Chart ===
 st.markdown("### Contribution Breakdown")
 
