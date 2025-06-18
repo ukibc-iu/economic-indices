@@ -19,7 +19,7 @@ color_map = {
     5: ("#004529", "Extremely High")
 }
 
-# ========== DYNAMIC CDI VALUE ==========
+# ========== CDI VALUE ==========
 def get_latest_cdi_values():
     try:
         df = pd.read_csv("data/Consumer_Demand_Index.csv")
@@ -44,7 +44,27 @@ def get_latest_cdi_values():
         st.error(f"Error loading CDI: {e}")
         return 0.0, 0.0
 
+# ========== IMP INDEX VALUE ==========
+def get_latest_imp_values():
+    try:
+        df = pd.read_csv("data/IMP_Index.csv")
+        df.columns = df.columns.str.strip()
+        df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
+        df = df.dropna(subset=['Date', 'Scale'])
+
+        df = df.sort_values('Date')
+        latest_row = df.iloc[-1]
+
+        latest_real = latest_row['Scale']
+        latest_scaled = max(min(round(latest_real), 5), -5)
+
+        return latest_real, latest_scaled
+    except Exception as e:
+        st.error(f"Error loading IMP Index: {e}")
+        return 0.0, 0.0
+
 latest_cdi_real, latest_cdi_scaled = get_latest_cdi_values()
+latest_imp_real, latest_imp_scaled = get_latest_imp_values()
 
 # ========== INDEX DATA ==========
 indices = {
@@ -52,7 +72,6 @@ indices = {
         "1_CDI_Dashboard", "#00FFF7", [latest_cdi_real], "🛍️",
         "The Consumer Demand Index captures shifts in real-time consumer activity..."
     ),
-    # Placeholder dummy data for others:
     "EV Market Adoption Rate": (
         "2_EV_Market_Adoption_Rate", "#FF00D4", [1.7], "🚗",
         "The EV Market Adoption Rate tracks how quickly India is transitioning..."
@@ -70,7 +89,7 @@ indices = {
         "Tracks and forecasts the pace of infrastructure development..."
     ),
     "IMP Index": (
-        "6_IMP_Index", "#8A2BE2", [2.0], "💰",
+        "6_IMP_Index", "#8A2BE2", [latest_imp_real], "💰",
         "India’s Macroeconomic Performance (IMP) Index measures India's overall economic well-being..."
     ),
 }
@@ -81,7 +100,7 @@ with col_mid:
     st.markdown("""<div style="height: 1000px; width: 1px; background-color: lightgray; margin: auto;"></div>""",
                 unsafe_allow_html=True)
 
-# ========== RENDER INDEX FUNCTION ==========
+# ========== RENDER FUNCTION ==========
 def render_index(col, name, data, key):
     page, color, trend, icon, overview = data
     with col:
