@@ -230,9 +230,14 @@ if mode == "Monthly":
     x_vals = time_series["Date"]
 else:
     quarter_df = df.groupby("Fiscal_Quarter")["Scale"].mean().reset_index()
-    quarter_df["Quarter_Start"] = pd.to_datetime(
-        quarter_df["Fiscal_Quarter"].str.extract(r'(Q\d) (\d{4})')[1] + "-04-01"
-    ) + pd.to_timedelta((quarter_df["Fiscal_Quarter"].str.extract(r'Q(\d)')[0].astype(int) - 1) * 3, unit='M')
+    q_info = quarter_df["Fiscal_Quarter"].str.extract(r'Q(?P<q>\d) (?P<year>\d{4})')
+    q_info["q"] = q_info["q"].astype(int)
+    q_info["year"] = q_info["year"].astype(int)
+    quarter_df["Quarter_Start"] = pd.to_datetime({
+        "year": q_info["year"],
+        "month": 4 + (q_info["q"] - 1) * 3,
+        "day": 1
+    })
     time_series = quarter_df.sort_values("Quarter_Start")[["Quarter_Start", "Scale"]]
     x_vals = time_series["Quarter_Start"]
 
