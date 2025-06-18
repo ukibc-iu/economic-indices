@@ -222,6 +222,44 @@ bar_fig.update_layout(
 )
 st.plotly_chart(bar_fig, use_container_width=True)
 
+# === Line Graph of IMP Index Over Time ===
+st.markdown("### IMP Index Over Time")
+
+if mode == "Monthly":
+    time_series = df.sort_values("Date")[["Date", "Scale"]]
+    x_vals = time_series["Date"]
+else:
+    quarter_df = df.groupby("Fiscal_Quarter")["Scale"].mean().reset_index()
+    quarter_df["Quarter_Start"] = pd.to_datetime(
+        quarter_df["Fiscal_Quarter"].str.extract(r'(Q\d) (\d{4})')[1] + "-04-01"
+    ) + pd.to_timedelta((quarter_df["Fiscal_Quarter"].str.extract(r'Q(\d)')[0].astype(int) - 1) * 3, unit='M')
+    time_series = quarter_df.sort_values("Quarter_Start")[["Quarter_Start", "Scale"]]
+    x_vals = time_series["Quarter_Start"]
+
+line_fig = go.Figure()
+line_fig.add_trace(go.Scatter(
+    x=x_vals,
+    y=time_series["Scale"],
+    mode="lines+markers",
+    line=dict(color="#1f77b4", width=3),
+    marker=dict(size=6, color="#1f77b4"),
+    name="IMP Index"
+))
+
+line_fig.update_layout(
+    height=400,
+    title=f"IMP Index Trend Over Time ({mode})",
+    xaxis_title="Date",
+    yaxis_title="IMP Index Value",
+    margin=dict(l=30, r=30, t=50, b=30),
+    xaxis=dict(showgrid=False),
+    yaxis=dict(showgrid=True, zeroline=True),
+    plot_bgcolor="rgba(0,0,0,0)",
+    paper_bgcolor="rgba(0,0,0,0)",
+)
+
+st.plotly_chart(line_fig, use_container_width=True)
+
 # === Raw Table (optional) ===
 if st.checkbox("🔍 Show IMP Index Data Table"):
     st.dataframe(df)
