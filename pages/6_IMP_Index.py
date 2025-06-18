@@ -269,15 +269,20 @@ line_fig.add_trace(go.Scatter(
     showlegend=False
 ))
 
-# --- Transparent marker trace for hover effect ---
+# --- Hollow marker trace for hover effect ---
 line_fig.add_trace(go.Scatter(
     x=x_vals,
     y=time_series["Scale"],
     mode="markers",
-    marker=dict(size=8, color="#1f77b4", fillcolor="rgba(0,0,0,0)", opacity=1),
-    name="IMP Index Points",
+    marker=dict(
+        size=8,
+        symbol="circle-open",
+        line=dict(width=2, color="#203a43"),  # Outline color matches line
+        opacity=1
+    ),
+    name="",
     hovertemplate="Date: %{x}<br>IMP Index: %{y:.2f}<extra></extra>",
-    showlegend=False  # Hide from legend
+    showlegend=False
 ))
 
 line_fig.update_layout(
