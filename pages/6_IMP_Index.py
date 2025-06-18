@@ -223,27 +223,34 @@ bar_fig.update_layout(
 st.plotly_chart(bar_fig, use_container_width=True)
 
 # === Line Graph of IMP Index Over Time ===
-# === Line Graph: IMP Index Trend Over Time ===
 st.markdown("### IMP Index Trend Over Time")
 
 if mode == "Monthly":
     time_series = df.sort_values("Date")[["Date", "Scale"]]
     x_vals = time_series["Date"]
+
 else:
-    # Aggregate by Fiscal Quarter
+    # Group by Fiscal Quarter
     quarter_df = df.groupby("Fiscal_Quarter")["Scale"].mean().reset_index()
 
-    # Extract quarter number and year from label
-    q_extract = quarter_df["Fiscal_Quarter"].str.extract(r'Q(?P<q>\d) (?P<year>\d{4})')
-    q_extract["q"] = q_extract["q"].astype(int)
-    q_extract["year"] = q_extract["year"].astype(int)
+    # Extract quarter (Q1–Q4) and base fiscal year from the label
+    q_info = quarter_df["Fiscal_Quarter"].str.extract(r'Q(?P<q>\d) (?P<year>\d{4})')
+    q_info["q"] = q_info["q"].astype(int)
+    q_info["year"] = q_info["year"].astype(int)
 
-    # Generate Quarter Start dates: Q1 → Apr, Q2 → Jul, Q3 → Oct, Q4 → Jan (next year handled)
+    # Compute actual calendar year and start month
     quarter_start_dates = []
-    for _, row in q_extract.iterrows():
-        month = 4 + (row["q"] - 1) * 3
-        year = row["year"]
-        quarter_start_dates.append(pd.Timestamp(year=year, month=month, day=1))
+    for _, row in q_info.iterrows():
+        q = row["q"]
+        fy = row["year"]  # Fiscal Year start
+
+        # Fiscal Q1 → Apr (FY), Q2 → Jul (FY), Q3 → Oct (FY), Q4 → Jan (FY+1)
+        if q == 4:
+            start_date = pd.Timestamp(year=fy + 1, month=1, day=1)
+        else:
+            start_month = 3 * (q - 1) + 4  # Apr, Jul, Oct
+            start_date = pd.Timestamp(year=fy, month=start_month, day=1)
+        quarter_start_dates.append(start_date)
 
     quarter_df["Quarter_Start"] = quarter_start_dates
     time_series = quarter_df.sort_values("Quarter_Start")[["Quarter_Start", "Scale"]]
