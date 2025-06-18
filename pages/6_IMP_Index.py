@@ -273,8 +273,8 @@ line_fig.update_layout(
     xaxis_title="Date",
     yaxis_title="IMP Index Value",
     margin=dict(l=30, r=30, t=50, b=30),
-    xaxis=dict(showgrid=False),
-    yaxis=dict(showgrid=False),
+    xaxis=dict(showgrid=False, zeroline=False),
+    yaxis=dict(showgrid=False, zeroline=False),
     plot_bgcolor="rgba(0,0,0,0)",
     paper_bgcolor="rgba(0,0,0,0)",
 )
