@@ -263,7 +263,7 @@ line_fig.add_trace(go.Scatter(
     x=x_vals,
     y=time_series["Scale"],
     mode="lines",  # <== Only lines, no markers
-    line=dict(color="#203a43", width=3),
+    line=dict(color="#3f51b5", width=3),
     name="IMP Index",
     hovertemplate="Date: %{x}<br>IMP Index: %{y:.2f}<extra></extra>",
     showlegend=False
