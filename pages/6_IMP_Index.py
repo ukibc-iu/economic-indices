@@ -4,9 +4,51 @@ import plotly.graph_objects as go
 
 # === Streamlit Setup ===
 st.set_page_config(layout="wide")
-st.title("IMP Index Dashboard")
+# CSS for KPI cards
+st.markdown("""
+<style>
+.kpi-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+.kpi-card {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: white;
+    min-width: 200px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+.kpi-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: #ddd;
+}
+.kpi-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+.bg-1 {
+    background: linear-gradient(135deg, rgba(0, 51, 102, 0.3), rgba(51, 102, 204, 0.8));
+}
+.bg-2 {
+    background: linear-gradient(135deg, rgba(0, 198, 255, 0.2), rgba(0, 114, 255, 0.6));
+}
+.bg-3 {
+    background: linear-gradient(135deg, rgba(0, 255, 150, 0.15), rgba(0, 195, 255, 0.6));
+}
+</style>
+""", unsafe_allow_html=True)
 
-st.markdown("*India’s Macroeconomic Performance (IMP) Index measures India's overall economic well-being, taking into consideration significant economic parameters such as inflation rate, unemployment rate, etc.*")
+st.title("IMP Index Dashboard")
+st.markdown("*India’s Macroeconomic Performance (IMP) Index measures India's overall economic well‑being, using indicators like inflation, unemployment, etc.*")
 
 # === Load IMP Index Data ===
 imp_data_path = "data/IMP_Index.csv"
@@ -19,10 +61,8 @@ except Exception as e:
 imp_df.columns = imp_df.columns.str.strip()
 imp_df['Date'] = pd.to_datetime(imp_df['Date'], format='%b-%y', errors='coerce')
 imp_df = imp_df.dropna(subset=['Date'])
-
 imp_df['Month'] = imp_df['Date'].dt.strftime('%b-%Y')
 
-# Get Fiscal Quarter
 def get_fiscal_quarter(date):
     m, y = date.month, date.year
     if m in [4, 5, 6]: q, fy = 'Q1', y
@@ -33,28 +73,43 @@ def get_fiscal_quarter(date):
 
 imp_df['Fiscal_Quarter'] = imp_df['Date'].apply(get_fiscal_quarter)
 
-# === Latest Info ===
 latest_row = imp_df.sort_values('Date').iloc[-1]
-latest_scale = latest_row['Scale']
 latest_month = latest_row['Month']
 latest_quarter = latest_row['Fiscal_Quarter']
 
 # === Mode Selection ===
 mode = st.radio("Select View Mode", ['Monthly', 'Quarterly'], horizontal=True)
 
-# === Time Filter ===
 if mode == 'Monthly':
     months = sorted(imp_df['Month'].unique())
     selected_month = st.selectbox("Select Month", months, index=months.index(latest_month))
-    df_filtered = imp_df[imp_df['Month'] == selected_month]
+    df_selected = imp_df[imp_df['Month'] == selected_month]
     label_period = selected_month
-    selected_value = df_filtered['Scale'].values[0]
+    selected_value = df_selected['Scale'].values[0]
 else:
     quarters = sorted(imp_df['Fiscal_Quarter'].unique())
     selected_quarter = st.selectbox("Select Quarter", quarters, index=quarters.index(latest_quarter))
-    df_filtered = imp_df[imp_df['Fiscal_Quarter'] == selected_quarter]
+    df_selected = imp_df[imp_df['Fiscal_Quarter'] == selected_quarter]
     label_period = selected_quarter
-    selected_value = df_filtered['Scale'].mean()
+    selected_value = df_selected['Scale'].mean()
+
+# === KPI Cards ===
+st.markdown(f"""
+<div class="kpi-container">
+  <div class="kpi-card bg-1">
+    <div class="kpi-title">IMP Index</div>
+    <div class="kpi-value">{selected_value:.2f}</div>
+  </div>
+  <div class="kpi-card bg-2">
+    <div class="kpi-title">{'Month' if mode=='Monthly' else 'Fiscal Quarter'}</div>
+    <div class="kpi-value">{label_period}</div>
+  </div>
+  <div class="kpi-card bg-3">
+    <div class="kpi-title">View Mode</div>
+    <div class="kpi-value">{mode}</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
 # === Scale Bar ===
 fig = go.Figure()
@@ -62,76 +117,40 @@ color_map = {
     -3: ("#800000", "Very Low"),
     -2: ("#fc4e2a", "Low"),
     -1: ("#fd8d3c", "Slightly Low"),
-     0: ("#fecc5c", "Neutral"),        # Yellow: white text might not be visible
+     0: ("#fecc5c", "Neutral"),
      1: ("#78c679", "Slightly High"),
      2: ("#31a354", "High"),
      3: ("#006837", "Very High")
 }
 
 for val in range(-3, 4):
-    color, label = color_map[val]
-    
-    # Draw colored block
-    fig.add_shape(
-        type="rect", 
-        x0=val - 0.5, x1=val + 0.5, 
-        y0=-0.3, y1=0.3,
-        line=dict(color="black", width=1), 
-        fillcolor=color,
-        layer="below"
-    )
-    
-    # Choose text color based on background (override for yellow block)
-    text_color = 'black' if val == 0 else 'white'
-    
-    # Draw scale number
-    fig.add_trace(go.Scatter(
-        x=[val], y=[0], 
-        mode='text', 
-        text=[str(val)],
-        hovertext=[f"{label} ({val})"],
-        showlegend=False,
-        textfont=dict(color=text_color, size=16),
-    ))
+    clr, txt = color_map[val]
+    fig.add_shape(type="rect", x0=val-0.5, x1=val+0.5, y0=-0.3, y1=0.3,
+                  line=dict(color="black", width=1), fillcolor=clr, layer="below")
+    fig.add_trace(go.Scatter(x=[val], y=[0], mode='text', text=[str(val)],
+                             hovertext=[f"{txt} ({val})"], showlegend=False,
+                             textfont=dict(color=('black' if val==0 else 'white'), size=16)))
 
-# Draw selected value box
-fig.add_shape(
-    type="rect", 
-    x0=selected_value - 0.5, x1=selected_value + 0.5,
-    y0=-0.35, y1=0.35,
-    line=dict(color="crimson", width=3, dash="dot"),
-    fillcolor="rgba(0,0,0,0)", 
-    layer="above"
-)
-
-# Add selected value label
-fig.add_trace(go.Scatter(
-    x=[selected_value], y=[0.45], 
-    mode='text',
-    text=[f"{selected_value:.2f}"],
-    showlegend=False,
-    textfont=dict(size=16, color='crimson')
-))
+fig.add_shape(type="rect", x0=selected_value-0.5, x1=selected_value+0.5,
+              y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
+              fillcolor="rgba(0,0,0,0)", layer="above")
+fig.add_trace(go.Scatter(x=[selected_value], y=[0.45], mode='text',
+                         text=[f"{selected_value:.2f}"], showlegend=False,
+                         textfont=dict(size=16, color='crimson')))
 
 fig.update_layout(
     title=f"IMP Index for {label_period} (Scale: {selected_value:.2f})",
-    xaxis=dict(
-        range=[-3.5, 3.5], 
-        title='IMP Index Scale (-3 to +3)',
-        showticklabels=False, showgrid=False
-    ),
-    yaxis=dict(visible=False), 
+    xaxis=dict(range=[-3.5, 3.5], title='IMP Index Scale (-3 to +3)',
+               showticklabels=False, showgrid=False),
+    yaxis=dict(visible=False),
     height=280,
-    margin=dict(l=30, r=30, t=60, b=30), 
+    margin=dict(l=30, r=30, t=60, b=30),
     showlegend=False
 )
-
 st.plotly_chart(fig, use_container_width=True)
 
-# === IMP Contribution Bar (like funnel) ===
+# === Contribution Breakdown ===
 st.markdown("### Contribution Breakdown")
-
-# Define contributions and sort descending
 contrib_weights = {
     "Real GDP": 40,
     "Balance of Trade": 20,
@@ -139,45 +158,35 @@ contrib_weights = {
     "Fiscal Balance": 10,
     "Unemployment": 10
 }
-
 contrib_df = pd.DataFrame({
     "Factor": list(contrib_weights.keys()),
     "Weight": list(contrib_weights.values())
 }).sort_values(by="Weight", ascending=False)
 
-# Blue gradient: darkest to lightest (for 40%, 20%, 20%, 10%, 10%)
 blue_gradient = {
-    40: 'rgba(0, 51, 102, 1)',    # very dark blue
-    20: 'rgba(51, 102, 204, 0.9)',# medium blue
-    10: 'rgba(153, 204, 255, 0.8)'# light blue
+    40: 'rgba(0, 51, 102, 1)',
+    20: 'rgba(51, 102, 204, 0.9)',
+    10: 'rgba(153, 204, 255, 0.8)'
 }
-
-# Map each weight to a color (use same color for equal weights)
 bar_colors = [blue_gradient[w] for w in contrib_df['Weight']]
 
-# Plot
 funnel_fig = go.Figure(go.Bar(
     y=contrib_df["Factor"],
     x=contrib_df["Weight"],
     orientation='h',
-    marker=dict(
-        color=bar_colors,
-        line=dict(color='black', width=1)
-    ),
+    marker=dict(color=bar_colors, line=dict(color='black', width=1)),
     text=[f"{w}%" for w in contrib_df["Weight"]],
     textposition='auto'
 ))
-
 funnel_fig.update_layout(
     height=400,
-    title=f"Factor Contributions to IMP Index",
+    title="Factor Contributions to IMP Index",
     xaxis_title="Weight (%)",
     yaxis=dict(categoryorder='total ascending'),
     margin=dict(l=30, r=30, t=40, b=30),
 )
-
 st.plotly_chart(funnel_fig, use_container_width=True)
 
-# === Show Raw Data ===
+# === Raw Data View ===
 if st.checkbox("\U0001F50D Show raw IMP data"):
     st.dataframe(imp_df)
