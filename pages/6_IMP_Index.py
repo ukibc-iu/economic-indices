@@ -261,11 +261,16 @@ line_fig = go.Figure()
 line_fig.add_trace(go.Scatter(
     x=x_vals,
     y=time_series["Scale"],
-    mode="lines+markers",
+    mode="lines",  # Only lines, no markers shown by default
     line=dict(color="#1f77b4", width=3),
-    marker=dict(size=6, color="#1f77b4"),
-    name="IMP Index"
+    hovertemplate="Date: %{x}<br>IMP Index: %{y}<extra></extra>",  # Custom hover info
+    name="IMP Index",
+    marker=dict(size=6, color="#1f77b4")  # Still define marker for hover
 ))
+
+line_fig.update_traces(marker=dict(opacity=0),  # Keep markers invisible
+                       hoverinfo='x+y',
+                       hoverlabel=dict(bgcolor="white"))
 
 line_fig.update_layout(
     height=400,
