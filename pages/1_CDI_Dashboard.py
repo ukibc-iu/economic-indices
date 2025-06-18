@@ -8,8 +8,7 @@ import plotly.graph_objects as go
 st.set_page_config(layout="wide")
 st.title("Consumer Demand Index (CDI)")
 
-st.markdown("The Consumer Demand Index captures shifts in real-time consumer activity, helping forecast economic momentum through trends in spending, mobility, and energy use.")
-
+st.markdown('<p style="font-style: italic;">The Consumer Demand Index captures shifts in real-time consumer activity, helping forecast economic momentum through trends in spending, mobility, and energy use.</p>', unsafe_allow_html=True)
 
 # === Custom CSS for KPI Cards ===
 st.markdown("""
