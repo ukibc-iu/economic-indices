@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-# === Streamlit Page Setup ===
 st.set_page_config(layout="wide")
 
 # === CSS for KPI Cards ===
@@ -38,6 +37,7 @@ st.markdown("""
 }
 .bg-1 { background: linear-gradient(135deg, #1a2a6c, #b21f1f); }
 .bg-2 { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); }
+.bg-3 { background: linear-gradient(135deg, #134E5E, #71B280); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -52,7 +52,6 @@ df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
 df = df.dropna(subset=['Date'])
 df['Month'] = df['Date'].dt.strftime('%b-%Y')
 
-# Fiscal Quarter Function
 def get_fiscal_quarter(date):
     m, y = date.month, date.year
     if m in [4, 5, 6]: q, fy = 'Q1', y
@@ -63,34 +62,47 @@ def get_fiscal_quarter(date):
 
 df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 
-# Latest Values
-latest_month_row = df.sort_values('Date').iloc[-1]
-latest_month = latest_month_row['Month']
-latest_month_value = latest_month_row['Scale']
-latest_quarter = latest_month_row['Fiscal_Quarter']
-latest_quarter_value = df[df['Fiscal_Quarter'] == latest_quarter]['Scale'].mean()
+# === Mode Selection ===
+mode = st.radio("Select View Mode", ["Monthly", "Quarterly"], horizontal=True)
+
+# === Filtered Data ===
+if mode == "Monthly":
+    latest_row = df.sort_values("Date").iloc[-1]
+    latest_value = latest_row["Scale"]
+    latest_label = latest_row["Month"]
+    all_labels = sorted(df['Month'].unique())
+else:
+    latest_q = df.sort_values("Date")["Fiscal_Quarter"].iloc[-1]
+    latest_value = df[df["Fiscal_Quarter"] == latest_q]["Scale"].mean()
+    latest_label = latest_q
+    all_labels = sorted(df["Fiscal_Quarter"].unique())
 
 # === KPI Cards ===
 st.markdown(f"""
 <div class="kpi-container">
   <div class="kpi-card bg-1">
-    <div class="kpi-title">Latest IMP Index (Monthly)</div>
-    <div class="kpi-value">{latest_month_value:.2f} ({latest_month})</div>
+    <div class="kpi-title">IMP Index Value</div>
+    <div class="kpi-value">{latest_value:.2f}</div>
   </div>
   <div class="kpi-card bg-2">
-    <div class="kpi-title">Latest IMP Index (Quarterly)</div>
-    <div class="kpi-value">{latest_quarter_value:.2f} ({latest_quarter})</div>
+    <div class="kpi-title">Latest Period</div>
+    <div class="kpi-value">{latest_label}</div>
+  </div>
+  <div class="kpi-card bg-3">
+    <div class="kpi-title">View Mode</div>
+    <div class="kpi-value">{mode}</div>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-# === Selector ===
-months = sorted(df['Month'].unique())
-selected_month = st.selectbox("Select Month to View Details", months, index=months.index(latest_month))
+# === Dropdown Selector Below KPIs ===
+selected_label = st.selectbox(f"Select {mode}", options=all_labels, index=all_labels.index(latest_label))
 
-selected_row = df[df['Month'] == selected_month]
-selected_value = selected_row['Scale'].values[0]
-selected_quarter = selected_row['Fiscal_Quarter'].values[0]
+# === Value Based on Selection ===
+if mode == "Monthly":
+    sel_value = df[df['Month'] == selected_label]['Scale'].values[0]
+else:
+    sel_value = df[df['Fiscal_Quarter'] == selected_label]['Scale'].mean()
 
 # === Scale Bar ===
 color_map = {
@@ -107,19 +119,25 @@ fig = go.Figure()
 for val in range(-3, 4):
     clr, txt = color_map[val]
     fig.add_shape(type="rect", x0=val-0.5, x1=val+0.5, y0=-0.3, y1=0.3,
-                  line=dict(color="black", width=1), fillcolor=clr)
-    fig.add_trace(go.Scatter(x=[val], y=[0], mode='text', text=[str(val)],
-                             hovertext=[f"{txt} ({val})"], showlegend=False,
-                             textfont=dict(color='white', size=16)))
+                  fillcolor=clr, line=dict(color="black", width=1))
+    fig.add_trace(go.Scatter(
+        x=[val], y=[0], mode='text', text=[str(val)],
+        hovertext=[f"{txt} ({val})"], showlegend=False,
+        textfont=dict(color='white', size=16)
+    ))
 
-fig.add_shape(type="line", x0=selected_value, x1=selected_value, y0=-0.4, y1=0.4,
-              line=dict(color="crimson", width=3, dash="dot"))
-fig.add_trace(go.Scatter(x=[selected_value], y=[0.5], mode='text',
-                         text=[f"{selected_value:.2f}"], showlegend=False,
-                         textfont=dict(size=16, color='crimson')))
+# Highlight box — restored like CDI
+fig.add_shape(type="rect", x0=sel_value-0.25, x1=sel_value+0.25, y0=-0.4, y1=0.4,
+              fillcolor='rgba(255,0,0,0.2)', line=dict(color="red", width=2))
+
+fig.add_trace(go.Scatter(
+    x=[sel_value], y=[0.5], mode='text',
+    text=[f"{sel_value:.2f}"], showlegend=False,
+    textfont=dict(size=16, color='crimson')
+))
 
 fig.update_layout(
-    title=f"IMP Index Scale Bar – {selected_month}",
+    title=f"IMP Index Scale Bar – {selected_label}",
     xaxis=dict(range=[-3.5, 3.5], title='IMP Index Scale (-3 to +3)',
                showticklabels=False, showgrid=False),
     yaxis=dict(visible=False),
@@ -129,7 +147,7 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
 
-# === Contribution Breakdown ===
+# === Contribution Chart ===
 st.markdown("### Contribution Breakdown")
 
 contrib_weights = {
@@ -162,6 +180,6 @@ bar_fig.update_layout(
 )
 st.plotly_chart(bar_fig, use_container_width=True)
 
-# === Raw Data ===
+# === Optional Raw Table ===
 if st.checkbox("🔍 Show IMP Index Data Table"):
     st.dataframe(df)
