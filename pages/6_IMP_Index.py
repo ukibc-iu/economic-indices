@@ -258,19 +258,26 @@ else:
 
 # === Build Line Chart ===
 line_fig = go.Figure()
+
+# --- Line trace (no markers) ---
 line_fig.add_trace(go.Scatter(
     x=x_vals,
     y=time_series["Scale"],
-    mode="lines",  # Only lines, no markers shown by default
+    mode="lines",
     line=dict(color="#1f77b4", width=3),
-    hovertemplate="Date: %{x}<br>IMP Index: %{y}<extra></extra>",  # Custom hover info
-    name="IMP Index",
-    marker=dict(size=6, color="#1f77b4")  # Still define marker for hover
+    name="IMP Index"
 ))
 
-line_fig.update_traces(marker=dict(opacity=0),  # Keep markers invisible
-                       hoverinfo='x+y',
-                       hoverlabel=dict(bgcolor="white"))
+# --- Transparent marker trace for hover effect ---
+line_fig.add_trace(go.Scatter(
+    x=x_vals,
+    y=time_series["Scale"],
+    mode="markers",
+    marker=dict(size=8, color="#1f77b4", opacity=1),
+    name="IMP Index Points",
+    hovertemplate="Date: %{x}<br>IMP Index: %{y:.2f}<extra></extra>",
+    showlegend=False  # Hide from legend
+))
 
 line_fig.update_layout(
     height=400,
@@ -282,6 +289,7 @@ line_fig.update_layout(
     yaxis=dict(showgrid=True, zeroline=False),
     plot_bgcolor="rgba(0,0,0,0)",
     paper_bgcolor="rgba(0,0,0,0)",
+    hoverlabel=dict(bgcolor="white", font_size=12, font_color="black"),
 )
 
 st.plotly_chart(line_fig, use_container_width=True)
