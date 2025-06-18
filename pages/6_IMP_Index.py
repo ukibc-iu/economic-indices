@@ -264,7 +264,7 @@ line_fig.add_trace(go.Scatter(
     x=x_vals,
     y=time_series["Scale"],
     mode="lines",
-    line=dict(color="#0f2027", width=3),
+    line=dict(color="#203a43", width=3),
     name="IMP Index",
     showlegend=False
 ))
