@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-ALLOWED_EMAILS = ["simran.gupta@ukibc.com", "gunjan.sharma@ukibc.com"]
+import os
+import json
 
 st.set_page_config(layout="wide")
 
@@ -123,7 +124,6 @@ fig = go.Figure()
 for val in range(-3, 4):
     color, label = color_map[val]
     
-    # Draw colored block
     fig.add_shape(
         type="rect", 
         x0=val - 0.5, x1=val + 0.5, 
@@ -135,7 +135,6 @@ for val in range(-3, 4):
     
     text_color = 'black' if val == 0 else 'white'
     
-    # Value label inside each block
     fig.add_trace(go.Scatter(
         x=[val], y=[0], 
         mode='text', 
@@ -145,7 +144,6 @@ for val in range(-3, 4):
         textfont=dict(color=text_color, size=16),
     ))
 
-# Red dotted box for selected value
 fig.add_shape(
     type="rect", 
     x0=selected_value - 0.5, x1=selected_value + 0.5,
@@ -155,7 +153,6 @@ fig.add_shape(
     layer="above"
 )
 
-# Show selected value above the block
 fig.add_trace(go.Scatter(
     x=[selected_value], y=[0.5], 
     mode='text',
@@ -166,11 +163,7 @@ fig.add_trace(go.Scatter(
 
 fig.update_layout(
     title=f"IMP Index for {label_period} (Scale: {selected_value:.2f})",
-    xaxis=dict(
-        range=[-3.5, 3.5], 
-        title='IMP Index Scale (-3 to +3)',
-        showticklabels=False, showgrid=False, zeroline=False
-    ),
+    xaxis=dict(range=[-3.5, 3.5], title='IMP Index Scale (-3 to +3)', showticklabels=False, showgrid=False, zeroline=False),
     yaxis=dict(visible=False), 
     height=280,
     margin=dict(l=30, r=30, t=60, b=30), 
@@ -181,12 +174,9 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
-import os
-import json
+# === Expert Opinion (Simple Editable) ===
+NOTES_FILE = "data/expert_notes.json"
 
-NOTES_FILE = "../data/expert_notes.json"
-
-# Load previous note
 if os.path.exists(NOTES_FILE):
     with open(NOTES_FILE, "r") as f:
         saved_notes = json.load(f)
@@ -198,24 +188,16 @@ latest_note = saved_notes.get(label_period, "")
 st.markdown("### 📝 Expert Opinion")
 st.markdown(f"**{label_period}**")
 
-# If using allowed email check:
-from streamlit import experimental_user
+new_note = st.text_area("Write your opinion below:", value=latest_note, height=150)
 
-user = experimental_user
-user_email = user.email if user else None
-ALLOWED_EMAILS = ["youremail@domain.com", "another@domain.com"]
+if st.button("💾 Save Note"):
+    saved_notes[label_period] = new_note
+    os.makedirs(os.path.dirname(NOTES_FILE), exist_ok=True)
+    with open(NOTES_FILE, "w") as f:
+        json.dump(saved_notes, f, indent=2)
+    st.success("Note saved successfully.")
 
-if user_email and user_email.lower() in [e.lower() for e in ALLOWED_EMAILS]:
-    new_note = st.text_area("Expert Opinion (Editable)", value=latest_note, height=150)
-    if st.button("💾 Save Note"):
-        saved_notes[label_period] = new_note
-        os.makedirs(os.path.dirname(NOTES_FILE), exist_ok=True)  # ✅ this line is key
-        with open(NOTES_FILE, "w") as f:
-            json.dump(saved_notes, f, indent=2)
-        st.success("Note saved successfully.")
-else:
-    st.text_area("Expert Opinion (Read Only)", value=latest_note, height=150, disabled=True)
-
+# === Contribution Breakdown ===
 st.markdown("### Contribution Breakdown")
 
 contrib_weights = {
@@ -230,11 +212,10 @@ contrib_df = pd.DataFrame({
     "Weight": list(contrib_weights.values())
 }).sort_values(by="Weight", ascending=False)
 
-# Assign color by weight group
 color_map = {
-    40: "#003366",  # Dark navy blue
-    20: "#3399cc",  # Medium blue
-    10: "#99ccff"   # Light sky blue
+    40: "#003366",
+    20: "#3399cc",
+    10: "#99ccff"
 }
 bar_colors = contrib_df["Weight"].map(color_map)
 
@@ -262,27 +243,20 @@ st.markdown("### IMP Index Trend Over Time")
 if mode == "Monthly":
     time_series = df.sort_values("Date")[["Date", "Scale"]]
     x_vals = time_series["Date"]
-
 else:
-    # Group by Fiscal Quarter
     quarter_df = df.groupby("Fiscal_Quarter")["Scale"].mean().reset_index()
-
-    # Extract quarter (Q1–Q4) and base fiscal year from the label
     q_info = quarter_df["Fiscal_Quarter"].str.extract(r'Q(?P<q>\d) (?P<year>\d{4})')
     q_info["q"] = q_info["q"].astype(int)
     q_info["year"] = q_info["year"].astype(int)
 
-    # Compute actual calendar year and start month
     quarter_start_dates = []
     for _, row in q_info.iterrows():
         q = row["q"]
-        fy = row["year"]  # Fiscal Year start
-
-        # Fiscal Q1 → Apr (FY), Q2 → Jul (FY), Q3 → Oct (FY), Q4 → Jan (FY+1)
+        fy = row["year"]
         if q == 4:
             start_date = pd.Timestamp(year=fy + 1, month=1, day=1)
         else:
-            start_month = 3 * (q - 1) + 4  # Apr, Jul, Oct
+            start_month = 3 * (q - 1) + 4
             start_date = pd.Timestamp(year=fy, month=start_month, day=1)
         quarter_start_dates.append(start_date)
 
@@ -290,13 +264,11 @@ else:
     time_series = quarter_df.sort_values("Quarter_Start")[["Quarter_Start", "Scale"]]
     x_vals = time_series["Quarter_Start"]
 
-# === Build Line Chart ===
 line_fig = go.Figure()
-
 line_fig.add_trace(go.Scatter(
     x=x_vals,
     y=time_series["Scale"],
-    mode="lines",  # <== Only lines, no markers
+    mode="lines",
     line=dict(color="#3f51b5", width=3),
     name="IMP Index",
     hovertemplate="Date: %{x}<br>IMP Index: %{y:.2f}<extra></extra>",
@@ -311,13 +283,12 @@ line_fig.update_layout(
     margin=dict(l=30, r=30, t=50, b=30),
     xaxis=dict(showgrid=False, zeroline=False),
     yaxis=dict(showgrid=True, zeroline=False),
-    plot_bgcolor="rgba(0,0,0,0)",
-    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor='rgba(0,0,0,0)',
+    paper_bgcolor='rgba(0,0,0,0)',
     hoverlabel=dict(bgcolor="white", font_size=12, font_color="black"),
 )
-
 st.plotly_chart(line_fig, use_container_width=True)
 
-# === Raw Table (optional) ===
+# === Optional Data Table ===
 if st.checkbox("🔍 Show IMP Index Data Table"):
     st.dataframe(df)
