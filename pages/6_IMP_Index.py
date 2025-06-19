@@ -198,12 +198,12 @@ st.markdown(f"""
     border-radius: 12px; 
     padding: 1rem; 
     border: 1px solid rgba(150,150,150,0.3); 
-    color: #333;
+    color: white;
     font-size: 1rem;
     font-weight: 500;
     backdrop-filter: blur(4px);
 ">
-📝 {expert_opinion}
+ {expert_opinion}
 </div>
 """, unsafe_allow_html=True)
 
