@@ -185,9 +185,6 @@ else:
 
 latest_note = saved_notes.get(label_period, "")
 
-st.markdown("### 📝 Expert Opinion")
-st.markdown(f"**{label_period}**")
-
 # === Expert Opinion (Backend Note) ===
 st.markdown("### 📝 Expert Opinion")
 st.markdown(f"**{label_period}**")
