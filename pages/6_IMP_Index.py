@@ -190,7 +190,7 @@ st.markdown("### 📝 Expert Opinion")
 st.markdown(f"**{label_period}**")
 
 # This can later be fetched from a DB or API
-expert_opinion = "IMP Index is currently neutral."
+expert_opinion = "*IMP Index is currently neutral.*"
 
 st.info(expert_opinion)
 
