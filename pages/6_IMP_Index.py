@@ -188,14 +188,14 @@ latest_note = saved_notes.get(label_period, "")
 st.markdown("### 📝 Expert Opinion")
 st.markdown(f"**{label_period}**")
 
-new_note = st.text_area("Write your opinion below:", value=latest_note, height=150)
+# === Expert Opinion (Backend Note) ===
+st.markdown("### 📝 Expert Opinion")
+st.markdown(f"**{label_period}**")
 
-if st.button("💾 Save Note"):
-    saved_notes[label_period] = new_note
-    os.makedirs(os.path.dirname(NOTES_FILE), exist_ok=True)
-    with open(NOTES_FILE, "w") as f:
-        json.dump(saved_notes, f, indent=2)
-    st.success("Note saved successfully.")
+# This can later be fetched from a DB or API
+expert_opinion = "IMP Index is currently neutral."
+
+st.info(expert_opinion)
 
 # === Contribution Breakdown ===
 st.markdown("### Contribution Breakdown")
