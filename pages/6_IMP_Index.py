@@ -174,18 +174,6 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
-# === Expert Opinion (Simple Editable) ===
-NOTES_FILE = "data/expert_notes.json"
-
-if os.path.exists(NOTES_FILE):
-    with open(NOTES_FILE, "r") as f:
-        saved_notes = json.load(f)
-else:
-    saved_notes = {}
-
-latest_note = saved_notes.get(label_period, "")
-
-# === Expert Opinion (Backend Note) ===
 st.markdown("### 📝 Expert Opinion")
 st.markdown(f"**{label_period}**")
 
@@ -201,6 +189,7 @@ st.markdown(f"""
     color: white;
     font-size: 1rem;
     font-weight: 500;
+    font-style: italic;
     backdrop-filter: blur(4px);
 ">
  {expert_opinion}
