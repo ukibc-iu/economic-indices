@@ -1,11 +1,7 @@
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+ALLOWED_EMAILS = ["simran.gupta@ukibc.com", "gunjan.sharma@ukibc.com"]
 
 st.set_page_config(layout="wide")
 
@@ -185,38 +181,41 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
+import os
 import json
 
-# Define path to notes file
-NOTES_FILE = "../data/expert_notes.json"  # adjust path if needed
+# File path to store notes
+NOTES_FILE = "../data/expert_notes.json"
 
-# Load previous notes (once per session)
+# Load existing notes
 if os.path.exists(NOTES_FILE):
     with open(NOTES_FILE, "r") as f:
         saved_notes = json.load(f)
 else:
     saved_notes = {}
 
-# Get note for the current selected period (month or quarter)
+# Get current period's note
 latest_note = saved_notes.get(label_period, "")
 
-# Show section
+# Section title
 st.markdown("### 📝 Expert Opinion")
-st.markdown(f"**Period: {label_period}**")
+st.markdown(f"**{label_period}**")
 
-# Password box to allow editing
-password = st.text_input("🔐 Enter admin password to edit note:", type="password")
+# Email input for permission check
+user_email = st.text_input("Enter your email to edit note (if authorized):")
 
-# If password is correct, allow editing and saving
-if password == ADMIN_PASSWORD:
+# Convert both to lowercase for consistent checking
+if user_email.strip().lower() in [email.lower() for email in ALLOWED_EMAILS]:
+    # Editable text area
     new_note = st.text_area("Expert Opinion (Editable)", value=latest_note, height=150)
-    
+
     if st.button("💾 Save Note"):
         saved_notes[label_period] = new_note
         with open(NOTES_FILE, "w") as f:
             json.dump(saved_notes, f, indent=2)
         st.success("Note saved successfully.")
 else:
+    # Read-only view for others
     st.text_area("Expert Opinion (Read Only)", value=latest_note, height=150, disabled=True)
 
 st.markdown("### Contribution Breakdown")
