@@ -184,38 +184,36 @@ st.plotly_chart(fig, use_container_width=True)
 import os
 import json
 
-# File path to store notes
 NOTES_FILE = "../data/expert_notes.json"
 
-# Load existing notes
+# Load previous note
 if os.path.exists(NOTES_FILE):
     with open(NOTES_FILE, "r") as f:
         saved_notes = json.load(f)
 else:
     saved_notes = {}
 
-# Get current period's note
 latest_note = saved_notes.get(label_period, "")
 
-# Section title
 st.markdown("### 📝 Expert Opinion")
 st.markdown(f"**{label_period}**")
 
-# Email input for permission check
-user_email = st.text_input("Enter your email to edit note (if authorized):")
+# If using allowed email check:
+from streamlit import experimental_user
 
-# Convert both to lowercase for consistent checking
-if user_email.strip().lower() in [email.lower() for email in ALLOWED_EMAILS]:
-    # Editable text area
+user = experimental_user
+user_email = user.email if user else None
+ALLOWED_EMAILS = ["youremail@domain.com", "another@domain.com"]
+
+if user_email and user_email.lower() in [e.lower() for e in ALLOWED_EMAILS]:
     new_note = st.text_area("Expert Opinion (Editable)", value=latest_note, height=150)
-
     if st.button("💾 Save Note"):
         saved_notes[label_period] = new_note
+        os.makedirs(os.path.dirname(NOTES_FILE), exist_ok=True)  # ✅ this line is key
         with open(NOTES_FILE, "w") as f:
             json.dump(saved_notes, f, indent=2)
         st.success("Note saved successfully.")
 else:
-    # Read-only view for others
     st.text_area("Expert Opinion (Read Only)", value=latest_note, height=150, disabled=True)
 
 st.markdown("### Contribution Breakdown")
