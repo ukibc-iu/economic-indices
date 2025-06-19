@@ -1,3 +1,8 @@
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -180,8 +185,40 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
-# === Contribution Chart ===
-# === Contribution Chart ===
+import json
+
+# Define path to notes file
+NOTES_FILE = "../data/expert_notes.json"  # adjust path if needed
+
+# Load previous notes (once per session)
+if os.path.exists(NOTES_FILE):
+    with open(NOTES_FILE, "r") as f:
+        saved_notes = json.load(f)
+else:
+    saved_notes = {}
+
+# Get note for the current selected period (month or quarter)
+latest_note = saved_notes.get(label_period, "")
+
+# Show section
+st.markdown("### 📝 Expert Opinion")
+st.markdown(f"**Period: {label_period}**")
+
+# Password box to allow editing
+password = st.text_input("🔐 Enter admin password to edit note:", type="password")
+
+# If password is correct, allow editing and saving
+if password == ADMIN_PASSWORD:
+    new_note = st.text_area("Expert Opinion (Editable)", value=latest_note, height=150)
+    
+    if st.button("💾 Save Note"):
+        saved_notes[label_period] = new_note
+        with open(NOTES_FILE, "w") as f:
+            json.dump(saved_notes, f, indent=2)
+        st.success("Note saved successfully.")
+else:
+    st.text_area("Expert Opinion (Read Only)", value=latest_note, height=150, disabled=True)
+
 st.markdown("### Contribution Breakdown")
 
 contrib_weights = {
