@@ -212,6 +212,26 @@ fig.update_layout(title=f"Consumer Demand Index for {label_period} (Real: {selec
 
 st.plotly_chart(fig, use_container_width=True)
 
+st.markdown("### 💡 Expert Opinion")
+
+# Expert opinion (static for now)
+expert_opinion = "CDI Index is currently ...."
+
+# Styled display box
+st.markdown(f"""
+<div style="
+    background-color: rgba(100, 100, 100, 0.3);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-style: italic;
+    font-size: 1rem;
+">
+    {expert_opinion}
+</div>
+""", unsafe_allow_html=True)
+
 # === Charts ===
 col1, col2 = st.columns(2)
 
