@@ -174,8 +174,7 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
-st.markdown("### 📝 Expert Opinion")
-st.markdown(f"**{label_period}**")
+st.markdown("### 💡 Expert Opinion")
 
 # Expert opinion (static for now)
 expert_opinion = "IMP Index is currently neutral."
