@@ -177,22 +177,21 @@ st.plotly_chart(fig, use_container_width=True)
 st.markdown("### 📝 Expert Opinion")
 st.markdown(f"**{label_period}**")
 
-# This can later be fetched from a DB or API
+# Expert opinion (static for now)
 expert_opinion = "IMP Index is currently neutral."
 
+# Styled display box
 st.markdown(f"""
 <div style="
-    background: rgba(200, 200, 200, 0.2); 
-    border-radius: 12px; 
-    padding: 1rem; 
-    border: 1px solid rgba(150,150,150,0.3); 
+    background-color: rgba(100, 100, 100, 0.3);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
-    font-size: 1rem;
-    font-weight: 500;
     font-style: italic;
-    backdrop-filter: blur(4px);
+    font-size: 1rem;
 ">
- {expert_opinion}
+    {expert_opinion}
 </div>
 """, unsafe_allow_html=True)
 
