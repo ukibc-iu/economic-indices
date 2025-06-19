@@ -192,7 +192,20 @@ st.markdown(f"**{label_period}**")
 # This can later be fetched from a DB or API
 expert_opinion = "*IMP Index is currently neutral.*"
 
-st.info(expert_opinion)
+st.markdown(f"""
+<div style="
+    background: rgba(200, 200, 200, 0.2); 
+    border-radius: 12px; 
+    padding: 1rem; 
+    border: 1px solid rgba(150,150,150,0.3); 
+    color: #333;
+    font-size: 1rem;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+">
+📝 {expert_opinion}
+</div>
+""", unsafe_allow_html=True)
 
 # === Contribution Breakdown ===
 st.markdown("### Contribution Breakdown")
