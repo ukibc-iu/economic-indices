@@ -7,8 +7,8 @@ st.set_page_config(layout="wide")
 # === Load Data ===
 df = pd.read_csv("data/EV_Adoption.csv")
 df.columns = df.columns.str.strip()
-df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%y', errors='coerce')
-df['Month'] = df['Date'].dt.strftime('%b-%y')
+df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')
+df['Month'] = df['Date'].dt.strftime('%b-%y')  # Jan-23
 df = df.dropna(subset=['Date'])
 
 # === Clean Percent Column ===
