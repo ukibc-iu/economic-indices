@@ -79,23 +79,39 @@ fig.update_layout(height=300)
 st.plotly_chart(fig, use_container_width=True)
 
 # === Line Chart: EV Adoption Over Time ===
-# === Line Chart: EV Adoption Rate Over Time ===
+# === Line Chart: EV Adoption Rate Over Time with Toggle ===
 st.markdown("### 📈 EV Adoption Rate Over Time")
+
+# Toggle for display format
+display_format = st.radio(
+    "Select Display Format for EV Adoption Rate:",
+    options=["Percentage (%)", "Decimal (0–1)"],
+    horizontal=True
+)
 
 line_fig = go.Figure()
 
+if display_format == "Percentage (%)":
+    y_data = df["EV Adoption Rate"] * 100
+    y_title = "EV Adoption Rate (%)"
+    hover_format = "%{y:.2f}%"
+else:
+    y_data = df["EV Adoption Rate"]
+    y_title = "EV Adoption Rate (0–1)"
+    hover_format = "%{y:.3f}"
+
 line_fig.add_trace(go.Scatter(
     x=df["Date"],
-    y=df["EV Adoption Rate"],  # Keeping it as decimal (0–1)
+    y=y_data,
     mode="lines+markers",
     line=dict(color="green"),
     name="EV Adoption Rate",
-    hovertemplate="Date: %{x|%b %Y}<br>Rate: %{y:.3f}<extra></extra>"
+    hovertemplate="Date: %{x|%b %Y}<br>Rate: " + hover_format + "<extra></extra>"
 ))
 
 line_fig.update_layout(
     xaxis_title="Date",
-    yaxis_title="EV Adoption Rate (0–1)",
+    yaxis_title=y_title,
     height=400,
     margin=dict(l=30, r=30, t=40, b=30)
 )
