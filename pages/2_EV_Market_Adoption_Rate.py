@@ -6,32 +6,29 @@ st.set_page_config(layout="wide")
 
 # === Load Data ===
 df = pd.read_csv("data/EV_Adoption.csv")
-df.columns = df.columns.str.strip()
+df.columns = df.columns.str.strip()  # Clean column names
+
+# === Parse Date ===
 df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')
-df['Month'] = df['Date'].dt.strftime('%b-%y')  # Jan-23
 df = df.dropna(subset=['Date'])
+df['Month'] = df['Date'].dt.strftime('%b-%Y')  # e.g., Jan-2023
 
-# First, create a new column that sums EV sales
-df['EV Total Sales'] = (
-    pd.to_numeric(df['EV Four-wheeler Sales'], errors='coerce') +
-    pd.to_numeric(df['EV Two-wheeler Sales'], errors='coerce') +
-    pd.to_numeric(df['EV Three-wheeler Sales'], errors='coerce')
-)
+# === Clean & Convert Numeric Columns ===
 
-# Convert Total Vehicle Sales to numeric (remove commas if needed)
+# Convert EV sales columns to numeric
+ev_cols = ['EV Four-wheeler Sales', 'EV Two-wheeler Sales', 'EV Three-wheeler Sales']
+for col in ev_cols:
+    df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
+
+# Total Vehicle Sales: remove commas and convert
 df['Total Vehicle Sales'] = pd.to_numeric(df['Total Vehicle Sales'].astype(str).str.replace(',', ''), errors='coerce')
 
-# Now safely compute the EV Adoption Rate
-df['EV Adoption Rate'] = df['EV Total Sales'] / df['Total Vehicle Sales']
-
-# === Clean Percent Column ===
-df['Auto Loan Rate'] = df['Auto Loan Rate'].str.replace('%', '').astype(float)
+# Clean Auto Loan Rate: strip % and convert to float
+df['Auto Loan Rate'] = df['Auto Loan Rate'].astype(str).str.replace('%', '').astype(float)
 
 # === Add Calculated Columns ===
 df['EV Total Sales'] = df['EV Four-wheeler Sales'] + df['EV Two-wheeler Sales'] + df['EV Three-wheeler Sales']
 df['EV Adoption Rate'] = df['EV Total Sales'] / df['Total Vehicle Sales']
-
-df['Month'] = df['Date'].dt.strftime('%b-%Y')
 
 # === UI ===
 st.title("EV Market Adoption Rate Dashboard")
