@@ -27,7 +27,7 @@ df['EV Adoption Rate'] = df['EV Total Sales'] / df['Total Vehicle Sales']
 
 # === UI Header ===
 st.title("EV Market Adoption Rate Dashboard")
-st.markdown("📊 **Tracking the growth of Electric Vehicle (EV) adoption across India.**")
+st.markdown("**Tracking the growth of Electric Vehicle (EV) adoption across India.**")
 
 latest_row = df.sort_values("Date").iloc[-1]
 latest_month = latest_row["Month"]
@@ -35,7 +35,6 @@ latest_ev_rate = latest_row["EV Adoption Rate"]
 latest_total_sales = int(latest_row["Total Vehicle Sales"])
 latest_ev_sales = int(latest_row["EV Total Sales"])
 # === KPIs ===
-st.markdown("### 🚘 Key Highlights")
 
 kpi_style = """
 <style>
@@ -66,7 +65,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown(f"""
     <div class="card green-card">
-        <div style="font-size: 16px;">🚗 EV Adoption Rate</div>
+        <div style="font-size: 16px;">EV Adoption Rate</div>
         <div style="font-size: 28px;">{latest_ev_rate*100:.2f}%</div>
     </div>
     """, unsafe_allow_html=True)
@@ -74,7 +73,7 @@ with col1:
 with col2:
     st.markdown(f"""
     <div class="card grey-card">
-        <div style="font-size: 16px;">📆 Latest Month</div>
+        <div style="font-size: 16px;">Latest Month</div>
         <div style="font-size: 28px;">{latest_month}</div>
     </div>
     """, unsafe_allow_html=True)
@@ -82,7 +81,7 @@ with col2:
 with col3:
     st.markdown(f"""
     <div class="card red-card">
-        <div style="font-size: 16px;">🔢 EV Units Sold</div>
+        <div style="font-size: 16px;">EV Units Sold</div>
         <div style="font-size: 24px;">{latest_ev_sales:,}</div>
     </div>
     """, unsafe_allow_html=True)
