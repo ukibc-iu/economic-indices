@@ -47,13 +47,13 @@ kpi_style = """
     text-align: center;
 }
 .green-card {
-    background: linear-gradient(135deg, #00c853, #b2ff59);
+    background: linear-gradient(135deg, #064e3b, #15803d);
 }
 .grey-card {
     background: linear-gradient(135deg, #607d8b, #cfd8dc);
 }
 .red-card {
-    background: linear-gradient(135deg, #d32f2f, #ff8a80);
+    background: linear-gradient(135deg, #7f1d1d, #b91c1c);
 }
 </style>
 """
