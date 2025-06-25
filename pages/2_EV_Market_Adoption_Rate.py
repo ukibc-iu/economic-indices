@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 st.set_page_config(layout="wide")
 
 # === Load Data ===
-df = pd.read_csv("EV_Adoption.csv")
+df = pd.read_csv("data/EV_Adoption.csv")
 df.columns = df.columns.str.strip()
 df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%y', errors='coerce')
 df['Month'] = df['Date'].dt.strftime('%b-%y')
