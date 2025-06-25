@@ -53,7 +53,7 @@ kpi_style = """
     background: linear-gradient(#009900, #669900, #99CC00);
 }
 .red-card {
-    background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+    background: linear-gradient(#CCCC00, #CC9900, #996600);
 }
 </style>
 """
