@@ -37,7 +37,7 @@ st.markdown("""
     font-size: 1.8rem;
     font-weight: bold;
 }
-.bg-1 { background: linear-gradient(#0060C0, #003A74, #002142); }
+.bg-1 { background: linear-gradient(#6F6BC7, #3C3894, #131230); }
 .bg-2 { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); }
 .bg-3 { background: linear-gradient(135deg, #134E5E, #71B280); }
 </style>
