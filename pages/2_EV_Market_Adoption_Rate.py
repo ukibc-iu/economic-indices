@@ -57,7 +57,7 @@ with right_col:
         options=["Percentage", "Decimal"],
         horizontal=True,
         index=0,
-        format_func=lambda x: "💯 Percentage" if x == "Percentage" else "🔢 Decimal"
+        format_func=lambda x: "Percentage" if x == "Percentage" else "Decimal"
     )
 
 # === Gauge Chart ===
