@@ -50,7 +50,7 @@ st.markdown("""
     background: linear-gradient(#320019, #480024, #74003A);
 }
 .bg-2 {
-    background: linear-gradient(135deg, rgba(0, 198, 255, 0.08), rgba(0, 114, 255, 0.6));
+    background: linear-gradient(#B000B0, #920092, #760076);
 }
 .bg-3 {
     background: linear-gradient(135deg, rgba(0, 255, 231, 0.08), rgba(0, 195, 255, 0.6));
