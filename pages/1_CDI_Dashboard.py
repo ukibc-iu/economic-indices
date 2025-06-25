@@ -53,7 +53,7 @@ st.markdown("""
     background: linear-gradient(#FF9BFF, #920092, #760076);
 }
 .bg-3 {
-    background: linear-gradient(135deg, rgba(0, 255, 231, 0.08), rgba(0, 195, 255, 0.6));
+    background: linear-gradient(#6021DF, #7944E4, #A17CEC);
 }
 </style>
 """, unsafe_allow_html=True)
