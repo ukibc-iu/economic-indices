@@ -88,7 +88,7 @@ display_format = st.radio(
     options=["Percentage", "Decimal"],
     horizontal=True,
     index=0,
-    format_func=lambda x: f"🔢 {x}" if x == "Decimal" else "💯 Percentage"
+    format_func=lambda x: f" {x}" if x == "Decimal" else " Percentage"
 )
 
 line_fig = go.Figure()
