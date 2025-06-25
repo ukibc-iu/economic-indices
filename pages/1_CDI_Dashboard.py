@@ -47,7 +47,7 @@ st.markdown("""
     font-weight: bold;
 }
 .bg-1 {
-    background: linear-gradient(135deg, rgba(160, 102, 255, 0.08), rgba(233, 102, 255, 0.6));
+    background: linear-gradient(#320019, #480024, #74003A);
 }
 .bg-2 {
     background: linear-gradient(135deg, rgba(0, 198, 255, 0.08), rgba(0, 114, 255, 0.6));
