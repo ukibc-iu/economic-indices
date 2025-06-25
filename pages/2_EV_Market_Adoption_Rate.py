@@ -80,7 +80,7 @@ st.plotly_chart(fig, use_container_width=True)
 
 # === Line Chart: EV Adoption Over Time ===
 # === Line Chart: EV Adoption Rate Over Time ===
-st.markdown("### 📈 EV Adoption Rate Over Time (as a fraction between 0 and 1)")
+st.markdown("### 📈 EV Adoption Rate Over Time")
 
 line_fig = go.Figure()
 
