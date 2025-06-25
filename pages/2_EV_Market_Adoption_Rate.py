@@ -55,24 +55,25 @@ selected_ev_rate = selected_row["EV Adoption Rate"]
 fig = go.Figure()
 fig.add_trace(go.Indicator(
     mode="gauge+number",
-    value=selected_ev_rate * 100,
-    title={'text': f"EV Adoption Rate - {selected_month}"},
-    gauge={
-        'axis': {'range': [None, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
-        'bar': {'color': "green"},
-        'steps': [
-            {'range': [0, 5], 'color': '#fee5d9'},
-            {'range': [5, 10], 'color': '#fcae91'},
-            {'range': [10, 20], 'color': '#fb6a4a'},
-            {'range': [20, 40], 'color': '#de2d26'},
-            {'range': [40, 100], 'color': '#a50f15'}
-        ],
-        'threshold': {
-            'line': {'color': "red", 'width': 4},
-            'thickness': 0.75,
-            'value': selected_ev_rate * 100
-        }
+    value=selected_ev_rate,
+title={'text': f"EV Adoption Rate (0-1) - {selected_month}"},
+gauge={
+    'axis': {'range': [0, 1], 'tickwidth': 1, 'tickcolor': "darkblue"},
+    'bar': {'color': "green"},
+    'steps': [
+        {'range': [0, 0.05], 'color': '#fee5d9'},
+        {'range': [0.05, 0.10], 'color': '#fcae91'},
+        {'range': [0.10, 0.20], 'color': '#fb6a4a'},
+        {'range': [0.20, 0.40], 'color': '#de2d26'},
+        {'range': [0.40, 1.00], 'color': '#a50f15'}
+    ],
+    'threshold': {
+        'line': {'color': "red", 'width': 4},
+        'thickness': 0.75,
+        'value': selected_ev_rate
     }
+}
+
 ))
 fig.update_layout(height=300)
 st.plotly_chart(fig, use_container_width=True)
