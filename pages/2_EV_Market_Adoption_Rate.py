@@ -78,11 +78,10 @@ gauge={
 fig.update_layout(height=300)
 st.plotly_chart(fig, use_container_width=True)
 
-# === Line Chart: EV Adoption Over Time ===
 # === Line Chart: EV Adoption Rate Over Time with Toggle ===
 st.markdown("### 📈 EV Adoption Rate Over Time")
 
-# Button-style radio using inline markdown
+# Display format toggle
 st.markdown("#### Display Format")
 display_format = st.radio(
     "",
@@ -94,7 +93,8 @@ display_format = st.radio(
 
 line_fig = go.Figure()
 
-if display_format == "Percentage (%)":
+# ✅ Fix the condition
+if display_format == "Percentage":
     y_data = df["EV Adoption Rate"] * 100
     y_title = "EV Adoption Rate (%)"
     hover_format = "%{y:.2f}%"
