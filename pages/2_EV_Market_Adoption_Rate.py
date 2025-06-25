@@ -11,6 +11,19 @@ df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')
 df['Month'] = df['Date'].dt.strftime('%b-%y')  # Jan-23
 df = df.dropna(subset=['Date'])
 
+# First, create a new column that sums EV sales
+df['EV Total Sales'] = (
+    pd.to_numeric(df['EV Four-wheeler Sales'], errors='coerce') +
+    pd.to_numeric(df['EV Two-wheeler Sales'], errors='coerce') +
+    pd.to_numeric(df['EV Three-wheeler Sales'], errors='coerce')
+)
+
+# Convert Total Vehicle Sales to numeric (remove commas if needed)
+df['Total Vehicle Sales'] = pd.to_numeric(df['Total Vehicle Sales'].astype(str).str.replace(',', ''), errors='coerce')
+
+# Now safely compute the EV Adoption Rate
+df['EV Adoption Rate'] = df['EV Total Sales'] / df['Total Vehicle Sales']
+
 # === Clean Percent Column ===
 df['Auto Loan Rate'] = df['Auto Loan Rate'].str.replace('%', '').astype(float)
 
