@@ -79,24 +79,28 @@ fig.update_layout(height=300)
 st.plotly_chart(fig, use_container_width=True)
 
 # === Line Chart: EV Adoption Over Time ===
-st.markdown("### 📈 EV Adoption Rate Over Time")
+# === Line Chart: EV Adoption Rate Over Time ===
+st.markdown("### 📈 EV Adoption Rate Over Time (as a fraction between 0 and 1)")
+
 line_fig = go.Figure()
+
 line_fig.add_trace(go.Scatter(
     x=df["Date"],
-    y=df["EV Adoption Rate"] * 100,
+    y=df["EV Adoption Rate"],  # Keeping it as decimal (0–1)
     mode="lines+markers",
     line=dict(color="green"),
     name="EV Adoption Rate",
-    hovertemplate="Date: %{x|%b %Y}<br>Rate: %{y:.2f}%<extra></extra>"
+    hovertemplate="Date: %{x|%b %Y}<br>Rate: %{y:.3f}<extra></extra>"
 ))
+
 line_fig.update_layout(
     xaxis_title="Date",
-    yaxis_title="EV Adoption Rate (%)",
+    yaxis_title="EV Adoption Rate (0–1)",
     height=400,
     margin=dict(l=30, r=30, t=40, b=30)
 )
-st.plotly_chart(line_fig, use_container_width=True)
 
+st.plotly_chart(line_fig, use_container_width=True)
 # === Optional Data Table ===
 if st.checkbox("🧾 Show Raw Data"):
     st.dataframe(df[['Date', 'Month', 'EV Total Sales', 'Total Vehicle Sales', 'EV Adoption Rate']].sort_values("Date", ascending=False))
