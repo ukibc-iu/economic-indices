@@ -82,11 +82,14 @@ st.plotly_chart(fig, use_container_width=True)
 # === Line Chart: EV Adoption Rate Over Time with Toggle ===
 st.markdown("### 📈 EV Adoption Rate Over Time")
 
-# Toggle for display format
+# Button-style radio using inline markdown
+st.markdown("#### Display Format")
 display_format = st.radio(
-    "Select Display Format for EV Adoption Rate:",
-    options=["Percentage (%)", "Decimal (0–1)"],
-    horizontal=True
+    "",
+    options=["Percentage", "Decimal"],
+    horizontal=True,
+    index=0,
+    format_func=lambda x: f"🔢 {x}" if x == "Decimal" else "💯 Percentage"
 )
 
 line_fig = go.Figure()
