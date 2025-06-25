@@ -50,7 +50,7 @@ kpi_style = """
     background: linear-gradient(#003300, #006600, #339933);
 }
 .grey-card {
-    background: linear-gradient(135deg, #607d8b, #cfd8dc);
+    background: linear-gradient(#009900, #669900, #99CC00);
 }
 .red-card {
     background: linear-gradient(135deg, #7f1d1d, #b91c1c);
