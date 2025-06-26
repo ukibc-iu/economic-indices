@@ -65,7 +65,7 @@ def get_latest_imp_values():
 
 def get_latest_ev_value():
     try:
-        df = pd.read_csv("data/EV_Market_Adoption.csv")
+        df = pd.read_csv("data/EV_Adoption.csv")
         df.columns = df.columns.str.strip()
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
         df = df.dropna(subset=['Date', 'Adoption Rate'])
