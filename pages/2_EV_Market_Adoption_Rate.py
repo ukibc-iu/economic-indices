@@ -80,22 +80,14 @@ with col3:
     </div>
     """, unsafe_allow_html=True)
 
-# === Month & Format Selection in One Row ===
-sel_col1, sel_col2 = st.columns([3, 1.5])
-
+# === Month & Display Format Selection (Dropdowns) ===
+sel_col1, sel_col2 = st.columns(2)
 with sel_col1:
-    selected_month = st.selectbox("Select Month", df['Month'].unique()[::-1])
+    selected_month = st.selectbox("📅 Select Month", df['Month'].unique()[::-1])
     selected_row = df[df['Month'] == selected_month].iloc[0]
     selected_ev_rate = selected_row["EV Adoption Rate"]
-
 with sel_col2:
-    display_format = st.radio(
-        "Display Format",
-        options=["Percentage", "Decimal"],
-        horizontal=True,
-        index=0,
-        format_func=lambda x: "Percentage" if x == "Percentage" else "Decimal"
-    )
+    display_format = st.selectbox("📊 Display Format", ["Percentage", "Decimal"])
 
 # === Donut - Gauge - Donut Layout ===
 donut_left, gauge_col, donut_right = st.columns([2, 2.5, 2])
@@ -124,15 +116,6 @@ with donut_left:
 
 # --- Center Gauge Chart ---
 with gauge_col:
-    st.markdown("#### Display Format")
-    display_format = st.radio(
-        "",
-        options=["Percentage", "Decimal"],
-        horizontal=True,
-        index=0,
-        format_func=lambda x: "Percentage" if x == "Percentage" else "Decimal"
-    )
-
     gauge_fig = go.Figure()
     if display_format == "Percentage":
         gauge_value = selected_ev_rate * 100
@@ -178,7 +161,6 @@ with gauge_col:
 # --- Right Donut Chart: Total Vehicle Category Sales ---
 with donut_right:
     st.markdown("### 🚘 Total Vehicle Sales by Category")
-
     selected_total_sales = selected_row[vehicle_sales_cols]
 
     total_sales_fig = go.Figure(data=[go.Pie(
