@@ -120,7 +120,7 @@ with donut_left:
         labels=["Four-wheeler", "Two-wheeler", "Three-wheeler"],
         values=selected_segment_sales,
         hole=0.5,
-        marker=dict(colors=["#66CC00", "#99FF33", "#CCFF99"]),
+        marker=dict(colors=["#CCFF99", "#99FF33", "#66CC00"]),
         textinfo='percent',
         hoverinfo='label+value+percent'
     )])
