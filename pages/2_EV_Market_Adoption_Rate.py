@@ -95,18 +95,18 @@ selected_segment_sales = selected_row[ev_cols]
 selected_total_sales = selected_row[vehicle_sales_cols]
 
 # === CHART WRAPPER ===
-def wrapped_chart(title, fig, height=400):
+def wrapped_chart(title, fig, height=480):
     chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
     components.html(f"""
     <div style="
         background-color: #1e1e1e;
-        padding: 1.5rem 1.25rem 1rem 1.25rem;
+        padding: 1.25rem;
         border-radius: 12px;
         margin-bottom: 1.5rem;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         color: white;
     ">
-        <h4 style="margin-top: 0; color: white;">{title}</h4>
+        <h4 style="margin-top: 0;">{title}</h4>
         {chart_html}
     </div>
     """, height=height)
@@ -122,18 +122,14 @@ with donut_left:
         hole=0.5,
         marker=dict(colors=["#339933", "#CCCC00", "#a50f15"]),
         textinfo='percent',
-        hoverinfo='label+value+percent',
-        textfont=dict(color='white')
+        hoverinfo='label+value+percent'
     )])
     ev_segment_fig.update_layout(
         showlegend=True,
-        legend=dict(orientation="h", y=-0.2),
-        height=350,
-        paper_bgcolor='black',
-        plot_bgcolor='black',
-        font_color='white'
+        height=400,
+        legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
     )
-    wrapped_chart(f"🔍 EV Sales by Segment - {selected_month}", ev_segment_fig, height=400)
+    wrapped_chart(f"🔍 EV Sales by Segment - {selected_month}", ev_segment_fig)
 
 # Gauge
 with gauge_col:
@@ -172,12 +168,8 @@ with gauge_col:
             }
         }
     ))
-    gauge_fig.update_layout(
-        height=300,
-        paper_bgcolor='black',
-        font_color='white'
-    )
-    wrapped_chart(f"📊 EV Adoption Rate - {selected_month}", gauge_fig, height=370)
+    gauge_fig.update_layout(height=400)
+    wrapped_chart(f"📊 EV Adoption Rate - {selected_month}", gauge_fig)
 
 # Donut Right
 with donut_right:
@@ -187,18 +179,14 @@ with donut_right:
         hole=0.5,
         marker=dict(colors=["#339933", "#CCCC00", "#a50f15", "#888888"]),
         textinfo='percent',
-        hoverinfo='label+value+percent',
-        textfont=dict(color='white')
+        hoverinfo='label+value+percent'
     )])
     total_sales_fig.update_layout(
         showlegend=True,
-        legend=dict(orientation="h", y=-0.2),
-        height=350,
-        paper_bgcolor='black',
-        plot_bgcolor='black',
-        font_color='white'
+        height=400,
+        legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
     )
-    wrapped_chart(f"🚘 Total Vehicle Sales by Category - {selected_month}", total_sales_fig, height=400)
+    wrapped_chart(f"🚘 Total Vehicle Sales by Category - {selected_month}", total_sales_fig)
 
 # === Line Chart ===
 if display_format == "Percentage":
@@ -223,13 +211,10 @@ line_fig.update_layout(
     xaxis_title="Date",
     yaxis_title=y_title,
     height=400,
-    margin=dict(l=60, r=40, t=40, b=40),
-    paper_bgcolor='black',
-    plot_bgcolor='black',
-    font_color='white'
+    margin=dict(l=50, r=30, t=40, b=30)
 )
-wrapped_chart("📈 EV Adoption Rate Over Time", line_fig, height=450)
+wrapped_chart("📈 EV Adoption Rate Over Time", line_fig)
 
 # === Raw Data Toggle ===
-if st.checkbox("🧾 Show Raw Data"):
+if st.checkbox("\U0001F9FE Show Raw Data"):
     st.dataframe(df[['Date', 'Month', 'EV Total Sales', 'Total Vehicle Sales', 'EV Adoption Rate']].sort_values("Date", ascending=False))
