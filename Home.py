@@ -120,19 +120,27 @@ def render_index_card(name, data, key):
     latest_scaled = max(min(round(latest_real), scale_max), scale_min)
 
     with st.container():
-        st.markdown(f"""
-            <div style="
+        # Card background using columns and markdown
+        st.markdown(
+            """
+            <style>
+            .card {
                 background-color: #1e1e1e;
                 padding: 20px;
                 border-radius: 16px;
                 border: 1px solid #444;
-                box-shadow: 0 0 15px rgba(0,0,0,0.5);
-                margin-bottom: 25px;
-            ">
-        """, unsafe_allow_html=True)
+                box-shadow: 0 0 12px rgba(0,0,0,0.4);
+                margin-bottom: 20px;
+            }
+            </style>
+            """, unsafe_allow_html=True
+        )
+        st.markdown('<div class="card">', unsafe_allow_html=True)
 
+        # Title
         st.markdown(f"### {icon} {name}")
 
+        # Plotly color bar
         fig = go.Figure()
 
         for val in range(scale_min, scale_max + 1):
@@ -143,7 +151,6 @@ def render_index_card(name, data, key):
                                      hovertext=[f"{label} ({val})"], showlegend=False,
                                      textfont=dict(color='white', size=14)))
 
-        # Highlight current score
         fig.add_shape(type="rect", x0=latest_scaled - 0.5, x1=latest_scaled + 0.5,
                       y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
                       fillcolor="rgba(0,0,0,0)", layer="above")
@@ -158,12 +165,14 @@ def render_index_card(name, data, key):
             plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", showlegend=False
         )
 
-        st.plotly_chart(fig, use_container_width=True, key=f"plot-{key}")
-        st.markdown(f"**Overview:** {overview}")
-        if st.button("Open detailed view →", key=f"btn-{key}"):
-            st.switch_page(f"pages/{page}.py")
+        st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown("</div>", unsafe_allow_html=True)
+        # Overview and button
+        st.markdown(f"**Overview:** {overview}")
+        st.button("Open detailed view →", key=f"btn-{key}", use_container_width=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
 # ========== LAYOUT ==========
 left_col, right_col = st.columns(2)
 index_items = list(indices.items())
