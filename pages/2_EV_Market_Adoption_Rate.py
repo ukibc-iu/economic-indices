@@ -31,7 +31,7 @@ df['EV Total Sales'] = df['EV Four-wheeler Sales'] + df['EV Two-wheeler Sales'] 
 df['EV Adoption Rate'] = df['EV Total Sales'] / df['Total Vehicle Sales']
 
 # === Header ===
-st.title("EV Market Adoption Rate Dashboard")
+st.title("EV Market Adoption Rate")
 st.markdown("*The EV Market Adoption Rate represents the share of electric vehicles in total vehicle sales, indicating the extent of EV presence in the automotive market.*")
 
 # === KPI Styles ===
