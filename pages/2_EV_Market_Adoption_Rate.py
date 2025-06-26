@@ -189,26 +189,32 @@ with donut_right:
 
 # === EV Adoption Trend Line Chart ===
 st.markdown("### 📈 EV Adoption Rate Over Time")
-trend_fig = go.Figure()
+if display_format == "Percentage":
+    y_data = df["EV Adoption Rate"] * 100
+    y_title = "EV Adoption Rate (%)"
+    hover_format = "%{y:.2f}%"
+else:
+    y_data = df["EV Adoption Rate"]
+    y_title = "EV Adoption Rate (0–1)"
+    hover_format = "%{y:.3f}"
 
-trend_fig.add_trace(go.Scatter(
-    x=df["Month"],
-    y=df["EV Adoption Rate"] * (100 if display_format == "Percentage" else 1),
+line_fig = go.Figure()
+line_fig.add_trace(go.Scatter(
+    x=df["Date"],
+    y=y_data,
     mode="lines+markers",
-    line=dict(color="#006600", width=3),
-    marker=dict(size=6),
-    name="EV Adoption Rate"
+    line=dict(color="green"),
+    name="EV Adoption Rate",
+    hovertemplate="Date: %{x|%b %Y}<br>Rate: " + hover_format + "<extra></extra>"
 ))
 
-trend_fig.update_layout(
-    xaxis_title="Month",
-    yaxis_title="EV Adoption Rate" + (" (%)" if display_format == "Percentage" else ""),
+line_fig.update_layout(
+    xaxis_title="Date",
+    yaxis_title=y_title,
     height=400,
-    margin=dict(l=20, r=20, t=30, b=30),
-    hovermode="x unified"
+    margin=dict(l=30, r=30, t=40, b=30)
 )
-
-st.plotly_chart(trend_fig, use_container_width=True)
+st.plotly_chart(line_fig, use_container_width=True)
 
 # === Optional Raw Data ===
 if st.checkbox("\U0001F9FE Show Raw Data"):
