@@ -27,7 +27,7 @@ df['EV Adoption Rate'] = df['EV Total Sales'] / df['Total Vehicle Sales']
 
 # === UI Header ===
 st.title("EV Market Adoption Rate Dashboard")
-st.markdown("**Tracking the growth of Electric Vehicle (EV) adoption across India.**")
+st.markdown("*The EV Market Adoption Rate represents the share of electric vehicles in total vehicle sales, indicating the extent of EV penetration in the automotive market.*")
 
 latest_row = df.sort_values("Date").iloc[-1]
 latest_month = latest_row["Month"]
