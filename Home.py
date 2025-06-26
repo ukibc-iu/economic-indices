@@ -63,8 +63,36 @@ def get_latest_imp_values():
         st.error(f"Error loading IMP Index: {e}")
         return 0.0, 0.0
 
+# ========== EV ADOPTION RATE VALUE ==========
+def get_latest_ev_adoption_value():
+    try:
+        df = pd.read_csv("data/EV_Adoption.csv")
+        df.columns = df.columns.str.strip()
+        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+        df = df.dropna(subset=['Date'])
+
+        ev_cols = ['EV Four-wheeler Sales', 'EV Two-wheeler Sales', 'EV Three-wheeler Sales']
+        total_sales_col = 'Total Vehicle Sales'
+
+        for col in ev_cols + [total_sales_col]:
+            df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
+
+        df['EV Total Sales'] = df[ev_cols].sum(axis=1)
+        df['EV Adoption Rate'] = df['EV Total Sales'] / df[total_sales_col]
+
+        latest_row = df.sort_values('Date').iloc[-1]
+        latest_rate = latest_row['EV Adoption Rate'] * 100  # Convert to %
+        latest_scaled = max(min(round(latest_rate / 5), 5), 0)  # Normalize to 0–5 scale
+
+        return latest_rate, latest_scaled
+    except Exception as e:
+        st.error(f"Error loading EV data: {e}")
+        return 0.0, 0
+
+# ========== GET LATEST VALUES ==========
 latest_cdi_real, latest_cdi_scaled = get_latest_cdi_values()
 latest_imp_real, latest_imp_scaled = get_latest_imp_values()
+latest_ev_rate, latest_ev_scaled = get_latest_ev_adoption_value()
 
 # ========== INDEX DATA ==========
 indices = {
@@ -73,7 +101,7 @@ indices = {
         "The Consumer Demand Index captures shifts in real-time consumer activity..."
     ),
     "EV Market Adoption Rate": (
-        "2_EV_Market_Adoption_Rate", "#FF00D4", [1.7], "🚗",
+        "2_EV_Market_Adoption_Rate", "#FF00D4", [latest_ev_rate], "🚗",
         "The EV Market Adoption Rate tracks how quickly India is transitioning..."
     ),
     "Housing Affordability Stress Index": (
@@ -100,6 +128,7 @@ with col_mid:
     st.markdown("""<div style="height: 1000px; width: 1px; background-color: lightgray; margin: auto;"></div>""",
                 unsafe_allow_html=True)
 
+# ========== RENDER INDEX ==========
 def render_index(col, name, data, key):
     page, color, trend, icon, overview = data
     with col:
@@ -109,14 +138,16 @@ def render_index(col, name, data, key):
         # Determine scale range based on index name
         if name == "IMP Index":
             scale_min, scale_max = -3, 3
+        elif name == "EV Market Adoption Rate":
+            scale_min, scale_max = 0, 5
         else:
             scale_min, scale_max = -5, 5
 
-        latest_scaled = max(min(round(latest_real), scale_max), scale_min)
+        latest_scaled = max(min(round(latest_real if name != "EV Market Adoption Rate" else latest_real / 5), scale_max), scale_min)
 
         fig = go.Figure()
         for val in range(scale_min, scale_max + 1):
-            fill_color, label = color_map[val]
+            fill_color, label = color_map.get(val, ("gray", f"Level {val}"))
             fig.add_shape(type="rect", x0=val - 0.5, x1=val + 0.5, y0=-0.3, y1=0.3,
                           line=dict(color="black", width=1), fillcolor=fill_color, layer="below")
             fig.add_trace(go.Scatter(x=[val], y=[0], mode='text', text=[str(val)],
@@ -139,13 +170,12 @@ def render_index(col, name, data, key):
         )
 
         st.plotly_chart(fig, use_container_width=True, key=f"scale-{key}")
-
-        overview_text = f"<p style='color:{color}; margin-bottom: 0.5rem;'><em>{overview}</em></p>"
-        st.markdown(overview_text, unsafe_allow_html=True)
+        st.markdown(f"<p style='color:{color}; margin-bottom: 0.5rem;'><em>{overview}</em></p>", unsafe_allow_html=True)
 
         if st.button("Open detailed view of the index →", key=f"btn-{key}"):
             st.switch_page(f"pages/{page}.py")
-# ========== RENDER ALL INDICES ==========
+
+# ========== DISPLAY ALL INDEX CARDS ==========
 index_items = list(indices.items())
 mid = len(index_items) // 2
 for i, (name, data) in enumerate(index_items[:mid]):
