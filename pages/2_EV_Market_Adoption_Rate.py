@@ -97,10 +97,10 @@ selected_total_sales = selected_row[vehicle_sales_cols]
 # === CHART WRAPPER ===
 def wrapped_chart(title, fig, height=400):
     fig.update_layout(
-        paper_bgcolor='#1e1e1e',
-        plot_bgcolor='#1e1e1e',
-        font=dict(color='white'),
-        margin=dict(t=40, b=30, l=20, r=20)
+        paper_bgcolor="#1e1e1e",
+        plot_bgcolor="#1e1e1e",
+        font_color="white",
+        margin=dict(t=50, b=60, l=40, r=40)  # bottom margin increased slightly to prevent clipping
     )
     chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
     components.html(f"""
@@ -112,10 +112,8 @@ def wrapped_chart(title, fig, height=400):
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         color: white;
     ">
-        <h4 style="margin-top: 0; margin-bottom: 0.5rem;">{title}</h4>
-        <div style="margin-top: -10px; margin-bottom: -25px;">
-            {chart_html}
-        </div>
+        <h4 style="margin-top: 0;">{title}</h4>
+        {chart_html}
     </div>
     """, height=height)
 
@@ -129,9 +127,12 @@ with donut_left:
         values=selected_segment_sales,
         hole=0.5,
         marker=dict(colors=["#339933", "#CCCC00", "#a50f15"]),
-        textinfo='none'
+        textinfo='percent'
     )])
-    ev_segment_fig.update_layout(showlegend=True, legend=dict(orientation="h", y=-0.2))
+    ev_segment_fig.update_layout(
+        showlegend=True,
+        legend=dict(orientation="h", y=-0.15, x=0.5, xanchor="center")
+    )
     wrapped_chart(f"🔍 EV Sales by Segment - {selected_month}", ev_segment_fig, height=400)
 
 # Gauge
@@ -161,7 +162,7 @@ with gauge_col:
         mode="gauge+number",
         value=gauge_value,
         gauge={
-            'axis': {'range': gauge_range, 'tickwidth': 1, 'tickcolor': "white"},
+            'axis': {'range': gauge_range, 'tickwidth': 1, 'tickcolor': "darkblue"},
             'bar': {'color': "green"},
             'steps': steps,
             'threshold': {
@@ -180,9 +181,12 @@ with donut_right:
         values=selected_total_sales,
         hole=0.5,
         marker=dict(colors=["#339933", "#CCCC00", "#a50f15", "#888888"]),
-        textinfo='none'
+        textinfo='percent'
     )])
-    total_sales_fig.update_layout(showlegend=True, legend=dict(orientation="h", y=-0.2))
+    total_sales_fig.update_layout(
+        showlegend=True,
+        legend=dict(orientation="h", y=-0.15, x=0.5, xanchor="center")
+    )
     wrapped_chart(f"🚘 Total Vehicle Sales by Category - {selected_month}", total_sales_fig, height=400)
 
 # === Line Chart ===
@@ -207,7 +211,8 @@ line_fig.add_trace(go.Scatter(
 line_fig.update_layout(
     xaxis_title="Date",
     yaxis_title=y_title,
-    height=400
+    height=400,
+    margin=dict(l=30, r=30, t=40, b=50)
 )
 wrapped_chart("📈 EV Adoption Rate Over Time", line_fig, height=450)
 
