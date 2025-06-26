@@ -80,10 +80,22 @@ with col3:
     </div>
     """, unsafe_allow_html=True)
 
-# === Month Selection ===
-selected_month = st.selectbox("Select Month", df['Month'].unique()[::-1])
-selected_row = df[df['Month'] == selected_month].iloc[0]
-selected_ev_rate = selected_row["EV Adoption Rate"]
+# === Month & Format Selection in One Row ===
+sel_col1, sel_col2 = st.columns([3, 1.5])
+
+with sel_col1:
+    selected_month = st.selectbox("Select Month", df['Month'].unique()[::-1])
+    selected_row = df[df['Month'] == selected_month].iloc[0]
+    selected_ev_rate = selected_row["EV Adoption Rate"]
+
+with sel_col2:
+    display_format = st.radio(
+        "Display Format",
+        options=["Percentage", "Decimal"],
+        horizontal=True,
+        index=0,
+        format_func=lambda x: "Percentage" if x == "Percentage" else "Decimal"
+    )
 
 # === Donut - Gauge - Donut Layout ===
 donut_left, gauge_col, donut_right = st.columns([2, 2.5, 2])
