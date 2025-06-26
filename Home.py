@@ -19,7 +19,7 @@ color_map = {
     5: ("#004529", "Extremely High")
 }
 
-# ========== LOAD CDI ==========
+# ========== CDI VALUE ==========
 def get_latest_cdi_values():
     try:
         df = pd.read_csv("data/Consumer_Demand_Index.csv")
@@ -44,7 +44,7 @@ def get_latest_cdi_values():
         st.error(f"Error loading CDI: {e}")
         return 0.0, 0.0
 
-# ========== LOAD IMP ==========
+# ========== IMP INDEX VALUE ==========
 def get_latest_imp_values():
     try:
         df = pd.read_csv("data/IMP_Index.csv")
@@ -54,6 +54,7 @@ def get_latest_imp_values():
 
         df = df.sort_values('Date')
         latest_row = df.iloc[-1]
+
         latest_real = latest_row['Scale']
         latest_scaled = max(min(round(latest_real), 5), -5)
 
@@ -62,7 +63,6 @@ def get_latest_imp_values():
         st.error(f"Error loading IMP Index: {e}")
         return 0.0, 0.0
 
-# ========== LATEST VALUES ==========
 latest_cdi_real, latest_cdi_scaled = get_latest_cdi_values()
 latest_imp_real, latest_imp_scaled = get_latest_imp_values()
 
@@ -94,24 +94,34 @@ indices = {
     ),
 }
 
-# ========== PLOT MINI GRAPH ==========
-def render_index_box(name, data, key):
+# ========== RENDER BOX ==========
+def render_index_card(name, data, key):
     page, color, trend, icon, overview = data
     latest_real = trend[-1]
-
     scale_min, scale_max = (-3, 3) if name == "IMP Index" else (-5, 5)
     latest_scaled = max(min(round(latest_real), scale_max), scale_min)
 
     with st.container():
+        st.markdown(
+            f"""
+            <div style="
+                background-color: #1e1e1e;
+                padding: 20px;
+                border-radius: 12px;
+                box-shadow: 0 0 10px rgba(255,255,255,0.05);
+                margin-bottom: 20px;
+            ">
+            """,
+            unsafe_allow_html=True,
+        )
+
         st.markdown(f"### {icon} {name}")
         fig = go.Figure()
 
         for val in range(scale_min, scale_max + 1):
             fill_color, label = color_map[val]
-            fig.add_shape(
-                type="rect", x0=val - 0.5, x1=val + 0.5, y0=-0.3, y1=0.3,
-                line=dict(color="black", width=1), fillcolor=fill_color, layer="below"
-            )
+            fig.add_shape(type="rect", x0=val - 0.5, x1=val + 0.5, y0=-0.3, y1=0.3,
+                          line=dict(color="black", width=1), fillcolor=fill_color, layer="below")
             fig.add_trace(go.Scatter(x=[val], y=[0], mode='text', text=[str(val)],
                                      hovertext=[f"{label} ({val})"], showlegend=False,
                                      textfont=dict(color='white', size=14)))
@@ -136,13 +146,13 @@ def render_index_box(name, data, key):
         if st.button("Open detailed view →", key=f"btn-{key}"):
             st.switch_page(f"pages/{page}.py")
 
-# ========== LAYOUT: 2x3 ==========
+        st.markdown("</div>", unsafe_allow_html=True)
+
+# ========== LAYOUT ==========
 left_col, right_col = st.columns(2)
 index_items = list(indices.items())
 
 for i, (name, data) in enumerate(index_items):
     col = left_col if i % 2 == 0 else right_col
     with col:
-        with st.container():
-            st.markdown("---")  # optional separator between cards
-            render_index_box(name, data, key=f"{i}")
+        render_index_card(name, data, key=f"{i}")
