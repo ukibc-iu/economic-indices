@@ -225,7 +225,9 @@ line_fig.update_layout(
     margin=dict(l=50, r=30, t=40, b=30),
     plot_bgcolor='rgba(0,0,0,0)',
     paper_bgcolor='rgba(0,0,0,0)',
-    font_color='white'
+    font_color='white',
+    xaxis=dict(showgrid=False),
+    yaxis=dict(showgrid=False)
 )
 wrapped_chart("📈 EV Adoption Rate Over Time", line_fig)
 
