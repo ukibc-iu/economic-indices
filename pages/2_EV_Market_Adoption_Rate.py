@@ -96,23 +96,17 @@ selected_total_sales = selected_row[vehicle_sales_cols]
 
 # === CHART WRAPPER ===
 def wrapped_chart(title, fig, height=400):
-    fig.update_layout(
-        paper_bgcolor="#1e1e1e",
-        plot_bgcolor="#1e1e1e",
-        font_color="white",
-        margin=dict(t=50, b=60, l=40, r=40)  # bottom margin increased slightly to prevent clipping
-    )
     chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
     components.html(f"""
     <div style="
         background-color: #1e1e1e;
-        padding: 1.25rem;
+        padding: 1rem 1rem 0.25rem 1rem;
         border-radius: 12px;
         margin-bottom: 1.5rem;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         color: white;
     ">
-        <h4 style="margin-top: 0;">{title}</h4>
+        <h4 style="margin-top: 0; margin-bottom: 0.5rem;">{title}</h4>
         {chart_html}
     </div>
     """, height=height)
@@ -127,11 +121,16 @@ with donut_left:
         values=selected_segment_sales,
         hole=0.5,
         marker=dict(colors=["#339933", "#CCCC00", "#a50f15"]),
-        textinfo='percent'
+        textinfo='label+value',
+        textfont=dict(color='white')
     )])
     ev_segment_fig.update_layout(
         showlegend=True,
-        legend=dict(orientation="h", y=-0.15, x=0.5, xanchor="center")
+        height=350,
+        paper_bgcolor='black',
+        plot_bgcolor='black',
+        font_color='white',
+        legend=dict(orientation="h", y=-0.2)
     )
     wrapped_chart(f"🔍 EV Sales by Segment - {selected_month}", ev_segment_fig, height=400)
 
@@ -170,9 +169,16 @@ with gauge_col:
                 'thickness': 0.75,
                 'value': gauge_value
             }
-        }
+        },
+        number={'font': {'color': 'white'}}
     ))
-    wrapped_chart(f"📊 EV Adoption Rate - {selected_month}", gauge_fig, height=370)
+    gauge_fig.update_layout(
+        height=350,
+        margin=dict(t=20, b=0),
+        paper_bgcolor='black',
+        font_color='white'
+    )
+    wrapped_chart(f"📊 EV Adoption Rate - {selected_month}", gauge_fig, height=400)
 
 # Donut Right
 with donut_right:
@@ -181,11 +187,16 @@ with donut_right:
         values=selected_total_sales,
         hole=0.5,
         marker=dict(colors=["#339933", "#CCCC00", "#a50f15", "#888888"]),
-        textinfo='percent'
+        textinfo='label+value',
+        textfont=dict(color='white')
     )])
     total_sales_fig.update_layout(
         showlegend=True,
-        legend=dict(orientation="h", y=-0.15, x=0.5, xanchor="center")
+        height=350,
+        paper_bgcolor='black',
+        plot_bgcolor='black',
+        font_color='white',
+        legend=dict(orientation="h", y=-0.2)
     )
     wrapped_chart(f"🚘 Total Vehicle Sales by Category - {selected_month}", total_sales_fig, height=400)
 
@@ -212,7 +223,10 @@ line_fig.update_layout(
     xaxis_title="Date",
     yaxis_title=y_title,
     height=400,
-    margin=dict(l=30, r=30, t=40, b=50)
+    paper_bgcolor='black',
+    plot_bgcolor='black',
+    font_color='white',
+    margin=dict(l=30, r=30, t=40, b=30)
 )
 wrapped_chart("📈 EV Adoption Rate Over Time", line_fig, height=450)
 
