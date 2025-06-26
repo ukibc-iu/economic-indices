@@ -1,116 +1,101 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import components
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
+import streamlit.components.v1 as components
 
-# ========== PAGE CONFIG ==========
-st.set_page_config(layout="wide", page_title="Economic Indices Overview")
-st.title("\U0001F4CA Economic Indices Dashboard")
-st.markdown("*Select an index below to explore its detailed trends and analysis.*")
+st.set_page_config(layout="wide")
 
-# ========== COLOR MAP ==========
-color_map = {
-    -5: ("#800000", "Extremely Low"), -4: ("#bd0026", "Severely Low"),
-    -3: ("#e31a1c", "Very Low"), -2: ("#fc4e2a", "Low"),
-    -1: ("#fd8d3c", "Slightly Low"), 0: ("#fecc5c", "Neutral"),
-    1: ("#c2e699", "Slightly High"), 2: ("#78c679", "High"),
-    3: ("#31a354", "Very High"), 4: ("#006837", "Severely High"),
-    5: ("#004529", "Extremely High")
+# === Load Data ===
+df = pd.read_csv("data/EV_Adoption.csv")
+df.columns = df.columns.str.strip()
+
+# === Parse Date ===
+df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')
+df = df.dropna(subset=['Date'])
+df['Month'] = df['Date'].dt.strftime('%b-%Y')
+
+# === Clean & Convert Numeric Columns ===
+ev_cols = ['EV Four-wheeler Sales', 'EV Two-wheeler Sales', 'EV Three-wheeler Sales']
+for col in ev_cols:
+    df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
+
+vehicle_sales_cols = ["Passenger Vehicle Sales", "Two-wheeler Sales", "Three-wheeler Sales", "Commercial Vehicle Sales"]
+for col in vehicle_sales_cols:
+    df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
+
+df['Total Vehicle Sales'] = pd.to_numeric(df['Total Vehicle Sales'].astype(str).str.replace(',', ''), errors='coerce')
+df['Auto Loan Rate'] = df['Auto Loan Rate'].astype(str).str.replace('%', '').astype(float)
+
+# === Add Calculated Columns ===
+df['EV Total Sales'] = df['EV Four-wheeler Sales'] + df['EV Two-wheeler Sales'] + df['EV Three-wheeler Sales']
+df['EV Adoption Rate'] = df['EV Total Sales'] / df['Total Vehicle Sales']
+
+# === Header ===
+st.title("EV Market Adoption Rate")
+st.markdown("*The EV Market Adoption Rate represents the share of electric vehicles in total vehicle sales, indicating the extent of EV presence in the automotive market.*")
+
+# === KPI Styles ===
+kpi_style = """
+<style>
+.card {
+    padding: 1rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    color: white;
+    font-weight: bold;
+    text-align: center;
 }
+.green-card { background: linear-gradient(#003300, #006600, #339933); }
+.grey-card { background: linear-gradient(#009900, #669900, #99CC00); }
+.red-card { background: linear-gradient(#CCCC00, #CC9900, #996600); }
+</style>
+"""
+st.markdown(kpi_style, unsafe_allow_html=True)
 
-# ========== FUNCTIONS TO LOAD VALUES ==========
-def get_latest_cdi_values():
-    try:
-        df = pd.read_csv("data/Consumer_Demand_Index.csv")
-        df.columns = df.columns.str.strip()
-        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-        df = df.dropna(subset=['Date'])
+# === KPIs ===
+latest_row = df.sort_values("Date").iloc[-1]
+latest_month = latest_row["Month"]
+latest_ev_rate = latest_row["EV Adoption Rate"]
+latest_total_sales = int(latest_row["Total Vehicle Sales"])
+latest_ev_sales = int(latest_row["EV Total Sales"])
 
-        features = ['UPI Transactions', 'GST Revenue', 'Vehicle Sales', 'Housing Sales', 'Power Consumption']
-        df = df.dropna(subset=features)
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.markdown(f"""
+    <div class="card green-card">
+        <div style="font-size: 16px;">EV Adoption Rate</div>
+        <div style="font-size: 28px;">{latest_ev_rate*100:.2f}%</div>
+    </div>
+    """, unsafe_allow_html=True)
+with col2:
+    st.markdown(f"""
+    <div class="card grey-card">
+        <div style="font-size: 16px;">Latest Month</div>
+        <div style="font-size: 28px;">{latest_month}</div>
+    </div>
+    """, unsafe_allow_html=True)
+with col3:
+    st.markdown(f"""
+    <div class="card red-card">
+        <div style="font-size: 16px;">EV Units Sold</div>
+        <div style="font-size: 24px;">{latest_ev_sales:,}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        scaler = StandardScaler()
-        scaled = scaler.fit_transform(df[features])
-        pca = PCA(n_components=1)
-        components = pca.fit_transform(scaled)
+# === Controls ===
+sel_col1, sel_col2 = st.columns([3, 1.5])
+with sel_col1:
+    selected_month = st.selectbox("Select Month", df['Month'].unique()[::-1])
+    selected_row = df[df['Month'] == selected_month].iloc[0]
+    selected_ev_rate = selected_row["EV Adoption Rate"]
+with sel_col2:
+    display_format = st.selectbox("Display Format", ["Percentage", "Decimal"])
 
-        df['CDI_Real'] = components[:, 0]
-        df['CDI_Scaled'] = df['CDI_Real'].clip(-5, 5)
+selected_segment_sales = selected_row[ev_cols]
+selected_total_sales = selected_row[vehicle_sales_cols]
 
-        latest_row = df.sort_values('Date').iloc[-1]
-        return latest_row['CDI_Real'], latest_row['CDI_Scaled']
-    except Exception as e:
-        st.error(f"Error loading CDI: {e}")
-        return 0.0, 0.0
-
-def get_latest_imp_values():
-    try:
-        df = pd.read_csv("data/IMP_Index.csv")
-        df.columns = df.columns.str.strip()
-        df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
-        df = df.dropna(subset=['Date', 'Scale'])
-
-        df = df.sort_values('Date')
-        latest_row = df.iloc[-1]
-
-        latest_real = latest_row['Scale']
-        latest_scaled = max(min(round(latest_real), 5), -5)
-
-        return latest_real, latest_scaled
-    except Exception as e:
-        st.error(f"Error loading IMP Index: {e}")
-        return 0.0, 0.0
-
-def get_latest_ev_value():
-    try:
-        df = pd.read_csv("data/EV_Market_Adoption.csv")
-        df.columns = df.columns.str.strip()
-        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-        df = df.dropna(subset=['Date', 'Adoption Rate'])
-        df = df.sort_values('Date')
-        latest_value = df.iloc[-1]['Adoption Rate']
-        return latest_value
-    except Exception as e:
-        st.error(f"Error loading EV data: {e}")
-        return 0.0
-
-# ========== GET LATEST VALUES ==========
-latest_cdi_real, latest_cdi_scaled = get_latest_cdi_values()
-latest_imp_real, latest_imp_scaled = get_latest_imp_values()
-latest_ev_real = get_latest_ev_value()
-
-# ========== INDEX METADATA ==========
-indices = {
-    "Consumer Demand Index (CDI)": (
-        "1_CDI_Dashboard", "#00FFF7", [latest_cdi_real], "\U0001F6CD",
-        "Captures shifts in real-time consumer activity based on digital transactions and utilities."
-    ),
-    "EV Market Adoption Rate": (
-        "2_EV_Market_Adoption_Rate", "#FF00D4", [latest_ev_real], "\U0001F697",
-        "Tracks how quickly India is transitioning to EVs based on adoption rates."
-    ),
-    "Housing Affordability Stress Index": (
-        "3_Housing_Affordability_Stress_Index", "#39FF14", [1.5], "\U0001F3E0",
-        "Measures how financially stretched households are in buying homes."
-    ),
-    "Renewable Transition Readiness Score": (
-        "4_Renewable_Transition_Readiness_Score", "#FFD700", [1.2], "\U0001F331",
-        "Evaluates India's preparedness to shift from fossil fuels to clean energy."
-    ),
-    "Infrastructure Activity Index (IAI)": (
-        "5_Infrastructure_Activity_Index_(IAI)", "#FF3131", [1.0], "\U0001F3E2",
-        "Tracks and forecasts the pace of infrastructure development."
-    ),
-    "IMP Index": (
-        "6_IMP_Index", "#8A2BE2", [latest_imp_real], "\U0001F4B0",
-        "Measures India's overall macroeconomic performance."
-    ),
-}
-
-# ========== CHART WRAPPER ==========
-def wrapped_chart(title, fig, overview, color, page_key):
+# === CHART WRAPPER ===
+def wrapped_chart(title, fig, height=420):  # Keep consistent height
     chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
     components.html(f"""
     <div style="
@@ -118,61 +103,135 @@ def wrapped_chart(title, fig, overview, color, page_key):
         padding: 1rem;
         border-radius: 12px;
         margin-bottom: 1.5rem;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        color: white;
     ">
-        <h4 style="color: {color}; margin-bottom: 0.75rem;">{title}</h4>
+        <h4 style="margin-top: 0; margin-bottom: 10px;">{title}</h4>
         {chart_html}
-        <p style='color: {color}; margin-top: 1rem; font-style: italic;'>{overview}</p>
-        <a href="./{page_key}" style="color: #00f0ff; text-decoration: none; font-weight: bold;">Explore full index →</a>
     </div>
-    """, height=400)
+    """, height=height + 60)
 
-# ========== SCALE BAR OR GAUGE ==========
-def render_chart(name, value_list):
-    val = value_list[-1]
-    if name == "EV Market Adoption Rate":
-        return go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=val,
-            gauge={
-                'axis': {'range': [0, 10]},
-                'bar': {'color': "#FF00D4"},
-            },
-            number={'suffix': "%"}
-        ))
+# === Donut - Gauge - Donut Charts ===
+donut_left, gauge_col, donut_right = st.columns([2, 2.5, 2])
+
+with donut_left:
+    ev_segment_fig = go.Figure(data=[go.Pie(
+        labels=["Four-wheeler", "Two-wheeler", "Three-wheeler"],
+        values=selected_segment_sales,
+        hole=0.5,
+        marker=dict(colors=["#CCFF99", "#99FF33", "#66CC00"]),
+        textinfo='percent',
+        hoverinfo='label+value+percent',
+        domain=dict(x=[0, 1], y=[0.2, 1.0])
+    )])
+    ev_segment_fig.update_layout(
+        showlegend=True,
+        height=400,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='white'),
+        margin=dict(t=20, b=20),
+        legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
+    )
+    wrapped_chart(f"EV Sales by Segment - {selected_month}", ev_segment_fig)
+
+with gauge_col:
+    if display_format == "Percentage":
+        gauge_value = selected_ev_rate * 100
+        gauge_range = [0, 100]
+        steps = [
+            {'range': [0, 5], 'color': '#fee5d9'},
+            {'range': [5, 10], 'color': '#fcae91'},
+            {'range': [10, 20], 'color': '#fb6a4a'},
+            {'range': [20, 40], 'color': '#de2d26'},
+            {'range': [40, 100], 'color': '#a50f15'}
+        ]
     else:
-        scaled_val = max(min(round(val), 5), -5)
-        fig = go.Figure()
-        for v in range(-5, 6):
-            fill_color, label = color_map[v]
-            fig.add_shape(type="rect", x0=v - 0.5, x1=v + 0.5, y0=-0.3, y1=0.3,
-                          line=dict(color="black", width=1), fillcolor=fill_color, layer="below")
-            fig.add_trace(go.Scatter(x=[v], y=[0], mode='text', text=[str(v)],
-                                     hovertext=[f"{label} ({v})"], showlegend=False,
-                                     textfont=dict(color='white', size=14)))
+        gauge_value = selected_ev_rate
+        gauge_range = [0, 1]
+        steps = [
+            {'range': [0.00, 0.05], 'color': '#fee5d9'},
+            {'range': [0.05, 0.10], 'color': '#fcae91'},
+            {'range': [0.10, 0.20], 'color': '#fb6a4a'},
+            {'range': [0.20, 0.40], 'color': '#de2d26'},
+            {'range': [0.40, 1.00], 'color': '#a50f15'}
+        ]
 
-        fig.add_shape(type="rect", x0=scaled_val - 0.5, x1=scaled_val + 0.5,
-                      y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
-                      fillcolor="rgba(0,0,0,0)", layer="above")
+    gauge_fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=gauge_value,
+        gauge={
+            'axis': {'range': gauge_range, 'tickwidth': 1, 'tickcolor': "darkblue"},
+            'bar': {'color': "green"},
+            'steps': steps,
+            'threshold': {
+                'line': {'color': "red", 'width': 4},
+                'thickness': 0.75,
+                'value': gauge_value
+            }
+        }
+    ))
+    gauge_fig.update_layout(
+        height=400,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font_color='white'
+    )
+    wrapped_chart(f"EV Adoption Rate - {selected_month}", gauge_fig)
 
-        fig.add_trace(go.Scatter(x=[scaled_val], y=[0.45], mode='text',
-                                 text=[f"{val:.2f}"], showlegend=False,
-                                 textfont=dict(size=14, color='crimson')))
+with donut_right:
+    total_sales_fig = go.Figure(data=[go.Pie(
+        labels=["Passenger", "Two-wheeler", "Three-wheeler", "Commercial"],
+        values=selected_total_sales,
+        hole=0.5,
+        marker=dict(colors=["#8B0000", "#E94E1B", "#FF8C42", "#FFD580"]),
+        textinfo='percent',
+        hoverinfo='label+value+percent',
+        domain=dict(x=[0, 1], y=[0.2, 1.0])
+    )])
+    total_sales_fig.update_layout(
+        showlegend=True,
+        height=400,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='white'),
+        margin=dict(t=20, b=20),
+        legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
+    )
+    wrapped_chart(f"Total Vehicle Sales by Category - {selected_month}", total_sales_fig)
 
-        fig.update_layout(
-            xaxis=dict(range=[-5.5, 5.5], showticklabels=False, showgrid=False),
-            yaxis=dict(visible=False),
-            height=200, margin=dict(l=10, r=10, t=10, b=10),
-            plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", showlegend=False
-        )
-        return fig
+# === Line Chart ===
+if display_format == "Percentage":
+    y_data = df["EV Adoption Rate"] * 100
+    y_title = "EV Adoption Rate (%)"
+    hover_format = "%{y:.2f}%"
+else:
+    y_data = df["EV Adoption Rate"]
+    y_title = "EV Adoption Rate (0–1)"
+    hover_format = "%{y:.3f}"
 
-# ========== DISPLAY ALL WRAPPED INDEX CARDS ==========
-col_left, col_right = st.columns(2)
-index_items = list(indices.items())
+line_fig = go.Figure()
+line_fig.add_trace(go.Scatter(
+    x=df["Date"],
+    y=y_data,
+    mode="lines+markers",
+    line=dict(color="green"),
+    name="EV Adoption Rate",
+    hovertemplate="Date: %{x|%b %Y}<br>Rate: " + hover_format + "<extra></extra>"
+))
+line_fig.update_layout(
+    xaxis_title="Date",
+    yaxis_title=y_title,
+    height=400,
+    margin=dict(l=50, r=30, t=40, b=30),
+    plot_bgcolor='rgba(0,0,0,0)',
+    paper_bgcolor='rgba(0,0,0,0)',
+    font_color='white',
+    xaxis=dict(showgrid=False),
+    yaxis=dict(showgrid=False)
+)
+wrapped_chart("EV Adoption Rate Over Time", line_fig)
 
-for i, (name, (page_key, color, val_list, icon, overview)) in enumerate(index_items):
-    fig = render_chart(name, val_list)
-    col = col_left if i % 2 == 0 else col_right
-    with col:
-        wrapped_chart(f"{icon} {name}", fig, overview, color, f"pages/{page_key}.py")
+# === Raw Data Toggle ===
+if st.checkbox("\U0001F9FE Show Raw Data"):
+    st.dataframe(df[['Date', 'Month', 'EV Total Sales', 'Total Vehicle Sales', 'EV Adoption Rate']].sort_values("Date", ascending=False))
