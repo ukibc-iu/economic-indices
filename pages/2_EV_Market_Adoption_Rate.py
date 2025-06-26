@@ -133,7 +133,7 @@ with donut_left:
         margin=dict(t=20, b=20),
         legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
     )
-    wrapped_chart(f"🔍 EV Sales by Segment - {selected_month}", ev_segment_fig)
+    wrapped_chart(f"EV Sales by Segment - {selected_month}", ev_segment_fig)
 
 with gauge_col:
     if display_format == "Percentage":
@@ -198,7 +198,7 @@ with donut_right:
         margin=dict(t=20, b=20),
         legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
     )
-    wrapped_chart(f"🚘 Total Vehicle Sales by Category - {selected_month}", total_sales_fig)
+    wrapped_chart(f"Total Vehicle Sales by Category - {selected_month}", total_sales_fig)
 
 # === Line Chart ===
 if display_format == "Percentage":
@@ -230,7 +230,7 @@ line_fig.update_layout(
     xaxis=dict(showgrid=False),
     yaxis=dict(showgrid=False)
 )
-wrapped_chart("📈 EV Adoption Rate Over Time", line_fig)
+wrapped_chart("EV Adoption Rate Over Time", line_fig)
 
 # === Raw Data Toggle ===
 if st.checkbox("\U0001F9FE Show Raw Data"):
