@@ -93,114 +93,99 @@ selected_segment_sales = selected_row[ev_cols]
 selected_total_sales = selected_row[vehicle_sales_cols]
 
 # === Donut - Gauge - Donut Layout ===
+# === Donut - Gauge - Donut Layout with Neatly Aligned Boxes ===
 donut_left, gauge_col, donut_right = st.columns([2, 2.5, 2])
 
+# --- Left Donut Chart: EV Sales Breakdown by Segment ---
 with donut_left:
-    ev_segment_fig = go.Figure(data=[go.Pie(
-        labels=["Four-wheeler", "Two-wheeler", "Three-wheeler"],
-        values=selected_segment_sales,
-        hole=0.5,
-        marker=dict(colors=["#339933", "#CCCC00", "#a50f15"]),
-        textinfo='none'
-    )])
+    with st.container():
+        st.markdown("### 🔍 EV Sales by Segment")
+        st.markdown(f"**EV Segment Split - {selected_month}**")
+        selected_segment_sales = selected_row[ev_cols]
 
-    ev_segment_fig.update_layout(
-        title=dict(text=f"<b>\U0001F50D EV Sales by Segment</b><br><sup>EV Segment Split - {selected_month}</sup>", x=0.5),
-        showlegend=True,
-        height=350,
-        legend=dict(orientation="h", y=-0.2)
-    )
-    st.plotly_chart(ev_segment_fig, use_container_width=True)
+        ev_segment_fig = go.Figure(data=[go.Pie(
+            labels=["Four-wheeler", "Two-wheeler", "Three-wheeler"],
+            values=selected_segment_sales,
+            hole=0.5,
+            marker=dict(colors=["#339933", "#CCCC00", "#a50f15"]),
+            textinfo='none'
+        )])
 
+        ev_segment_fig.update_layout(
+            showlegend=True,
+            height=350,
+            legend=dict(orientation="h", y=-0.2)
+        )
+        st.plotly_chart(ev_segment_fig, use_container_width=True)
+
+# --- Center Gauge Chart ---
 with gauge_col:
-    gauge_fig = go.Figure()
-    if display_format == "Percentage":
-        gauge_value = selected_ev_rate * 100
-        gauge_range = [0, 100]
-        steps = [
-            {'range': [0, 5], 'color': '#fee5d9'},
-            {'range': [5, 10], 'color': '#fcae91'},
-            {'range': [10, 20], 'color': '#fb6a4a'},
-            {'range': [20, 40], 'color': '#de2d26'},
-            {'range': [40, 100], 'color': '#a50f15'}
-        ]
-        title = f"<b>EV Adoption Rate - {selected_month} (%)</b>"
-    else:
-        gauge_value = selected_ev_rate
-        gauge_range = [0, 1]
-        steps = [
-            {'range': [0.00, 0.05], 'color': '#fee5d9'},
-            {'range': [0.05, 0.10], 'color': '#fcae91'},
-            {'range': [0.10, 0.20], 'color': '#fb6a4a'},
-            {'range': [0.20, 0.40], 'color': '#de2d26'},
-            {'range': [0.40, 1.00], 'color': '#a50f15'}
-        ]
-        title = f"<b>EV Adoption Rate - {selected_month} (0–1)</b>"
+    with st.container():
+        st.markdown(f"### EV Adoption Rate - {selected_month} {'(%)' if display_format == 'Percentage' else '(0–1)'}")
 
-    gauge_fig.add_trace(go.Indicator(
-        mode="gauge+number",
-        value=gauge_value,
-        title={'text': title, 'font': {'size': 16}},
-        gauge={
-            'axis': {'range': gauge_range, 'tickwidth': 1, 'tickcolor': "darkblue"},
-            'bar': {'color': "green"},
-            'steps': steps,
-            'threshold': {
-                'line': {'color': "red", 'width': 4},
-                'thickness': 0.75,
-                'value': gauge_value
+        gauge_fig = go.Figure()
+
+        if display_format == "Percentage":
+            gauge_value = selected_ev_rate * 100
+            gauge_range = [0, 100]
+            steps = [
+                {'range': [0, 5], 'color': '#fee5d9'},
+                {'range': [5, 10], 'color': '#fcae91'},
+                {'range': [10, 20], 'color': '#fb6a4a'},
+                {'range': [20, 40], 'color': '#de2d26'},
+                {'range': [40, 100], 'color': '#a50f15'}
+            ]
+        else:
+            gauge_value = selected_ev_rate
+            gauge_range = [0, 1]
+            steps = [
+                {'range': [0.00, 0.05], 'color': '#fee5d9'},
+                {'range': [0.05, 0.10], 'color': '#fcae91'},
+                {'range': [0.10, 0.20], 'color': '#fb6a4a'},
+                {'range': [0.20, 0.40], 'color': '#de2d26'},
+                {'range': [0.40, 1.00], 'color': '#a50f15'}
+            ]
+
+        gauge_fig.add_trace(go.Indicator(
+            mode="gauge+number",
+            value=gauge_value,
+            title={'text': ""},
+            gauge={
+                'axis': {'range': gauge_range, 'tickwidth': 1, 'tickcolor': "darkblue"},
+                'bar': {'color': "green"},
+                'steps': steps,
+                'threshold': {
+                    'line': {'color': "red", 'width': 4},
+                    'thickness': 0.75,
+                    'value': gauge_value
+                }
             }
-        }
-    ))
-    gauge_fig.update_layout(height=350, margin=dict(t=60, b=0))
-    st.plotly_chart(gauge_fig, use_container_width=True)
+        ))
+        gauge_fig.update_layout(height=300)
+        st.plotly_chart(gauge_fig, use_container_width=True)
 
+# --- Right Donut Chart: Total Vehicle Category Sales ---
 with donut_right:
-    total_sales_fig = go.Figure(data=[go.Pie(
-        labels=["Passenger", "Two-wheeler", "Three-wheeler", "Commercial"],
-        values=selected_total_sales,
-        hole=0.5,
-        marker=dict(colors=["#339933", "#CCCC00", "#a50f15", "#888888"]),
-        textinfo='none'
-    )])
+    with st.container():
+        st.markdown("### 🚘 Total Vehicle Sales by Category")
+        st.markdown(f"**Vehicle Type Split - {selected_month}**")
 
-    total_sales_fig.update_layout(
-        title=dict(text=f"<b>\U0001F698 Total Vehicle Sales by Category</b><br><sup>Vehicle Type Split - {selected_month}</sup>", x=0.5),
-        showlegend=True,
-        height=350,
-        legend=dict(orientation="h", y=-0.2)
-    )
-    st.plotly_chart(total_sales_fig, use_container_width=True)
+        selected_total_sales = selected_row[vehicle_sales_cols]
 
-# === Line Chart ===
-st.markdown("### \U0001F4C8 EV Adoption Rate Over Time")
-if display_format == "Percentage":
-    y_data = df["EV Adoption Rate"] * 100
-    y_title = "EV Adoption Rate (%)"
-    hover_format = "%{y:.2f}%"
-else:
-    y_data = df["EV Adoption Rate"]
-    y_title = "EV Adoption Rate (0–1)"
-    hover_format = "%{y:.3f}"
+        total_sales_fig = go.Figure(data=[go.Pie(
+            labels=["Passenger", "Two-wheeler", "Three-wheeler", "Commercial"],
+            values=selected_total_sales,
+            hole=0.5,
+            marker=dict(colors=["#339933", "#CCCC00", "#a50f15", "#888888"]),
+            textinfo='none'
+        )])
 
-line_fig = go.Figure()
-line_fig.add_trace(go.Scatter(
-    x=df["Date"],
-    y=y_data,
-    mode="lines+markers",
-    line=dict(color="green"),
-    name="EV Adoption Rate",
-    hovertemplate="Date: %{x|%b %Y}<br>Rate: " + hover_format + "<extra></extra>"
-))
-
-line_fig.update_layout(
-    xaxis_title="Date",
-    yaxis_title=y_title,
-    height=400,
-    margin=dict(l=30, r=30, t=40, b=30)
-)
-st.plotly_chart(line_fig, use_container_width=True)
-
+        total_sales_fig.update_layout(
+            showlegend=True,
+            height=350,
+            legend=dict(orientation="h", y=-0.2)
+        )
+        st.plotly_chart(total_sales_fig, use_container_width=True)
 # === Optional Raw Data ===
 if st.checkbox("\U0001F9FE Show Raw Data"):
     st.dataframe(df[['Date', 'Month', 'EV Total Sales', 'Total Vehicle Sales', 'EV Adoption Rate']].sort_values("Date", ascending=False))
