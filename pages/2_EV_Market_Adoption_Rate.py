@@ -187,19 +187,21 @@ with donut_right:
         labels=["Passenger", "Two-wheeler", "Three-wheeler", "Commercial"],
         values=selected_total_sales,
         hole=0.5,
-        marker=dict(colors=["#8B0000", "#E94E1B", "#FF8C42", "#FFD580"]),
+        marker=dict(colors=["#339933", "#CCCC00", "#a50f15", "#888888"]),
         textinfo='percent',
-        hoverinfo='label+value+percent'
+        hoverinfo='label+value+percent',
+        domain=dict(x=[0, 1], y=[0.2, 1.0])  # Expanded vertically
     )])
     total_sales_fig.update_layout(
         showlegend=True,
         height=400,
-        legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center"),
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font_color='white'
+        paper_bgcolor='black',
+        plot_bgcolor='black',
+        font=dict(color='white'),
+        margin=dict(t=20, b=20),
+        legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
     )
-    wrapped_chart(f"Total Vehicle Sales by Category - {selected_month}", total_sales_fig)
+    wrapped_chart(f"🚘 Total Vehicle Sales by Category - {selected_month}", total_sales_fig)
 
 # === Line Chart ===
 if display_format == "Percentage":
