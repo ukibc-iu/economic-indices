@@ -18,6 +18,10 @@ ev_cols = ['EV Four-wheeler Sales', 'EV Two-wheeler Sales', 'EV Three-wheeler Sa
 for col in ev_cols:
     df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
 
+vehicle_sales_cols = ["Passenger Vehicle Sales", "Two-wheeler Sales", "Three-wheeler Sales", "Commercial Vehicle Sales"]
+for col in vehicle_sales_cols:
+    df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
+
 df['Total Vehicle Sales'] = pd.to_numeric(df['Total Vehicle Sales'].astype(str).str.replace(',', ''), errors='coerce')
 df['Auto Loan Rate'] = df['Auto Loan Rate'].astype(str).str.replace('%', '').astype(float)
 
@@ -81,30 +85,32 @@ selected_month = st.selectbox("Select Month", df['Month'].unique()[::-1])
 selected_row = df[df['Month'] == selected_month].iloc[0]
 selected_ev_rate = selected_row["EV Adoption Rate"]
 
-# === Donut Chart (Left) and Gauge Chart + Format Toggle (Right) ===
-donut_col, gauge_col = st.columns([3, 4])
+# === Donut - Gauge - Donut Layout ===
+donut_left, gauge_col, donut_right = st.columns([2, 2.5, 2])
 
-# Donut Chart
-with donut_col:
-    st.markdown("### 🔍 EV Sales Breakdown by Segment")
+# --- Left Donut Chart: EV Sales Breakdown by Segment ---
+with donut_left:
+    st.markdown("### 🔍 EV Sales by Segment")
     selected_segment_sales = selected_row[ev_cols]
 
-    segment_fig = go.Figure(data=[go.Pie(
-        labels=ev_cols,
+    ev_segment_fig = go.Figure(data=[go.Pie(
+        labels=["Four-wheeler", "Two-wheeler", "Three-wheeler"],
         values=selected_segment_sales,
         hole=0.5,
-        marker=dict(colors=["#339933", "#CCCC00", "#a50f15"])  # themed colors
+        marker=dict(colors=["#339933", "#CCCC00", "#a50f15"]),
+        textinfo='none'
     )])
 
-    segment_fig.update_layout(
-        height=350,
+    ev_segment_fig.update_layout(
+        title_text=f"EV Segment Split - {selected_month}",
         showlegend=True,
-        title_text=f"EV Sales Distribution - {selected_month}"
+        height=350,
+        legend=dict(orientation="h", y=-0.2)
     )
 
-    st.plotly_chart(segment_fig, use_container_width=True)
+    st.plotly_chart(ev_segment_fig, use_container_width=True)
 
-# Gauge Chart and Toggle
+# --- Center Gauge Chart ---
 with gauge_col:
     st.markdown("#### Display Format")
     display_format = st.radio(
@@ -156,6 +162,29 @@ with gauge_col:
     ))
     gauge_fig.update_layout(height=300)
     st.plotly_chart(gauge_fig, use_container_width=True)
+
+# --- Right Donut Chart: Total Vehicle Category Sales ---
+with donut_right:
+    st.markdown("### 🚘 Total Vehicle Sales by Category")
+
+    selected_total_sales = selected_row[vehicle_sales_cols]
+
+    total_sales_fig = go.Figure(data=[go.Pie(
+        labels=["Passenger", "Two-wheeler", "Three-wheeler", "Commercial"],
+        values=selected_total_sales,
+        hole=0.5,
+        marker=dict(colors=["#339933", "#CCCC00", "#a50f15", "#888888"]),
+        textinfo='none'
+    )])
+
+    total_sales_fig.update_layout(
+        title_text=f"Vehicle Type Split - {selected_month}",
+        showlegend=True,
+        height=350,
+        legend=dict(orientation="h", y=-0.2)
+    )
+
+    st.plotly_chart(total_sales_fig, use_container_width=True)
 
 # === Line Chart ===
 st.markdown("### 📈 EV Adoption Rate Over Time")
