@@ -94,8 +94,8 @@ with sel_col2:
 selected_segment_sales = selected_row[ev_cols]
 selected_total_sales = selected_row[vehicle_sales_cols]
 
-# === CHART WRAPPER ===
-def wrapped_chart(title, fig, height=480):
+# === CHART WRAPPER (Modified Height) ===
+def wrapped_chart(title, fig, height=360):  # Reduced height from 480 → 360
     chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
     components.html(f"""
     <div style="
@@ -123,7 +123,7 @@ with donut_left:
         marker=dict(colors=["#CCFF99", "#99FF33", "#66CC00"]),
         textinfo='percent',
         hoverinfo='label+value+percent',
-        domain=dict(x=[0, 1], y=[0.2, 1.0])  # Expanded vertically
+        domain=dict(x=[0, 1], y=[0.2, 1.0])
     )])
     ev_segment_fig.update_layout(
         showlegend=True,
@@ -190,7 +190,7 @@ with donut_right:
         marker=dict(colors=["#8B0000", "#E94E1B", "#FF8C42", "#FFD580"]),
         textinfo='percent',
         hoverinfo='label+value+percent',
-        domain=dict(x=[0, 1], y=[0.2, 1.0])  # Expanded vertically
+        domain=dict(x=[0, 1], y=[0.2, 1.0])
     )])
     total_sales_fig.update_layout(
         showlegend=True,
@@ -203,7 +203,7 @@ with donut_right:
     )
     wrapped_chart(f"🚘 Total Vehicle Sales by Category - {selected_month}", total_sales_fig)
 
-# === Line Chart ===
+# === Line Chart (No Gridlines) ===
 if display_format == "Percentage":
     y_data = df["EV Adoption Rate"] * 100
     y_title = "EV Adoption Rate (%)"
@@ -230,8 +230,8 @@ line_fig.update_layout(
     plot_bgcolor='rgba(0,0,0,0)',
     paper_bgcolor='rgba(0,0,0,0)',
     font_color='white',
-    xaxis=dict(showgrid=False),
-    yaxis=dict(showgrid=False)
+    xaxis=dict(showgrid=False),  # Gridlines removed
+    yaxis=dict(showgrid=False)   # Gridlines removed
 )
 wrapped_chart("📈 EV Adoption Rate Over Time", line_fig)
 
