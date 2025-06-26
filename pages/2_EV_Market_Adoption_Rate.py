@@ -186,6 +186,30 @@ with donut_right:
             legend=dict(orientation="h", y=-0.2)
         )
         st.plotly_chart(total_sales_fig, use_container_width=True)
+
+# === EV Adoption Trend Line Chart ===
+st.markdown("### 📈 EV Adoption Rate Over Time")
+trend_fig = go.Figure()
+
+trend_fig.add_trace(go.Scatter(
+    x=df["Month"],
+    y=df["EV Adoption Rate"] * (100 if display_format == "Percentage" else 1),
+    mode="lines+markers",
+    line=dict(color="#006600", width=3),
+    marker=dict(size=6),
+    name="EV Adoption Rate"
+))
+
+trend_fig.update_layout(
+    xaxis_title="Month",
+    yaxis_title="EV Adoption Rate" + (" (%)" if display_format == "Percentage" else ""),
+    height=400,
+    margin=dict(l=20, r=20, t=30, b=30),
+    hovermode="x unified"
+)
+
+st.plotly_chart(trend_fig, use_container_width=True)
+
 # === Optional Raw Data ===
 if st.checkbox("\U0001F9FE Show Raw Data"):
     st.dataframe(df[['Date', 'Month', 'EV Total Sales', 'Total Vehicle Sales', 'EV Adoption Rate']].sort_values("Date", ascending=False))
