@@ -94,76 +94,61 @@ indices = {
     ),
 }
 
-# ========== RENDER CARD ==========
-def render_index_card(name, data, key):
+# ========== LAYOUT COLUMNS ==========
+col1, col_mid, col2 = st.columns([1, 0.02, 1])
+with col_mid:
+    st.markdown("""<div style="height: 1000px; width: 1px; background-color: lightgray; margin: auto;"></div>""",
+                unsafe_allow_html=True)
+
+def render_index(col, name, data, key):
     page, color, trend, icon, overview = data
-    latest_real = trend[-1]
-    scale_min, scale_max = (-3, 3) if name == "IMP Index" else (-5, 5)
-    latest_scaled = max(min(round(latest_real), scale_max), scale_min)
+    with col:
+        st.subheader(f"{icon} {name}")
+        latest_real = trend[-1]
 
-    with st.container():
-        with st.container():
-            st.markdown(
-                f"""
-                <div style="
-                    background-color: #1e1e1e;
-                    padding: 20px;
-                    border-radius: 16px;
-                    border: 1px solid #444;
-                    box-shadow: 0 0 12px rgba(0,0,0,0.4);
-                    margin-bottom: 20px;
-                ">
-                """,
-                unsafe_allow_html=True,
-            )
+        # Determine scale range based on index name
+        if name == "IMP Index":
+            scale_min, scale_max = -3, 3
+        else:
+            scale_min, scale_max = -5, 5
 
-        st.markdown(f"### {icon} {name}")
+        latest_scaled = max(min(round(latest_real), scale_max), scale_min)
 
         fig = go.Figure()
         for val in range(scale_min, scale_max + 1):
             fill_color, label = color_map[val]
-            fig.add_shape(
-                type="rect", x0=val - 0.5, x1=val + 0.5, y0=-0.3, y1=0.3,
-                line=dict(color="black", width=1), fillcolor=fill_color, layer="below"
-            )
-            fig.add_trace(go.Scatter(
-                x=[val], y=[0], mode='text', text=[str(val)],
-                hovertext=[f"{label} ({val})"], showlegend=False,
-                textfont=dict(color='white', size=14)
-            ))
+            fig.add_shape(type="rect", x0=val - 0.5, x1=val + 0.5, y0=-0.3, y1=0.3,
+                          line=dict(color="black", width=1), fillcolor=fill_color, layer="below")
+            fig.add_trace(go.Scatter(x=[val], y=[0], mode='text', text=[str(val)],
+                                     hovertext=[f"{label} ({val})"], showlegend=False,
+                                     textfont=dict(color='white', size=14)))
 
-        fig.add_shape(
-            type="rect", x0=latest_scaled - 0.5, x1=latest_scaled + 0.5,
-            y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
-            fillcolor="rgba(0,0,0,0)", layer="above"
-        )
-        fig.add_trace(go.Scatter(
-            x=[latest_scaled], y=[0.45], mode='text',
-            text=[f"{latest_real:.2f}"], showlegend=False,
-            textfont=dict(size=14, color='crimson')
-        ))
+        fig.add_shape(type="rect", x0=latest_scaled - 0.5, x1=latest_scaled + 0.5,
+                      y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
+                      fillcolor="rgba(0,0,0,0)", layer="above")
+
+        fig.add_trace(go.Scatter(x=[latest_scaled], y=[0.45], mode='text',
+                                 text=[f"{latest_real:.2f}"], showlegend=False,
+                                 textfont=dict(size=14, color='crimson')))
 
         fig.update_layout(
             xaxis=dict(range=[scale_min - 0.5, scale_max + 0.5], showticklabels=False, showgrid=False),
             yaxis=dict(visible=False),
-            height=180, margin=dict(l=10, r=10, t=10, b=10),
+            height=200, margin=dict(l=10, r=10, t=10, b=10),
             plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", showlegend=False
         )
-        st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown(f"**Overview:** {overview}")
+        st.plotly_chart(fig, use_container_width=True, key=f"scale-{key}")
 
-        # Button that updates session state
-        if st.button("Open detailed view →", key=f"btn-{key}"):
-            st.session_state["page"] = page
+        overview_text = f"<p style='color:{color}; margin-bottom: 0.5rem;'><em>{overview}</em></p>"
+        st.markdown(overview_text, unsafe_allow_html=True)
 
-        st.markdown("</div>", unsafe_allow_html=True)
+        if st.button("Open detailed view of the index →", key=f"btn-{key}"):
+            st.switch_page(f"pages/{page}.py")
 
-# ========== LAYOUT ==========
-left_col, right_col = st.columns(2)
 index_items = list(indices.items())
-
-for i, (name, data) in enumerate(index_items):
-    col = left_col if i % 2 == 0 else right_col
-    with col:
-        render_index_card(name, data, key=f"{i}")
+mid = len(index_items) // 2
+for i, (name, data) in enumerate(index_items[:mid]):
+    render_index(col1, name, data, f"left-{i}")
+for i, (name, data) in enumerate(index_items[mid:]):
+    render_index(col2, name, data, f"right-{i}")
