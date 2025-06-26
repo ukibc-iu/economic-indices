@@ -87,10 +87,10 @@ donut_col, gauge_col = st.columns([3, 4])
 # Donut Chart
 with donut_col:
     st.markdown("### 🔍 EV Sales Breakdown by Segment")
-    latest_segment_sales = latest_row[ev_cols]
+    selected_segment_sales = selected_row[ev_cols]
     segment_fig = go.Figure(data=[go.Pie(
         labels=ev_cols,
-        values=latest_segment_sales,
+        values=selected_segment_sales,
         hole=0.5,
         marker=dict(colors=["#2ca02c", "#1f77b4", "#ff7f0e"])
     )])
