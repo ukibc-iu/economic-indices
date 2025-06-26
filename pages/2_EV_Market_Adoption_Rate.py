@@ -87,7 +87,7 @@ donut_col, gauge_col = st.columns([3, 4])
 # Donut Chart
 with donut_col:
     st.markdown("### 🔍 EV Sales Breakdown by Segment")
-    selected_segment_sales = selected_row[ev_cols]
+    selected_segment_sales = selected_row[ev_cols]  # 🔁 use selected month here
     segment_fig = go.Figure(data=[go.Pie(
         labels=ev_cols,
         values=selected_segment_sales,
@@ -97,7 +97,7 @@ with donut_col:
     segment_fig.update_layout(
         height=350,
         showlegend=True,
-        title_text=f"EV Sales Distribution - {latest_month}"
+        title_text=f"EV Sales Distribution - {selected_month}"
     )
     st.plotly_chart(segment_fig, use_container_width=True)
 
