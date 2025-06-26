@@ -123,7 +123,14 @@ with donut_left:
         marker=dict(colors=["#339933", "#CCCC00", "#a50f15"]),
         textinfo='none'
     )])
-    ev_segment_fig.update_layout(showlegend=True, height=350, legend=dict(orientation="h", y=-0.2))
+    ev_segment_fig.update_layout(
+        showlegend=True,
+        height=350,
+        legend=dict(orientation="h", y=-0.2),
+        plot_bgcolor="#1e1e1e",
+        paper_bgcolor="#1e1e1e",
+        font=dict(color="white")
+    )
     wrapped_chart(f"🔍 EV Sales by Segment - {selected_month}", ev_segment_fig, height=400)
 
 # Gauge
@@ -163,7 +170,12 @@ with gauge_col:
             }
         }
     ))
-    gauge_fig.update_layout(height=300)
+    gauge_fig.update_layout(
+        height=300,
+        plot_bgcolor="#1e1e1e",
+        paper_bgcolor="#1e1e1e",
+        font=dict(color="white")
+    )
     wrapped_chart(f"📊 EV Adoption Rate - {selected_month}", gauge_fig, height=370)
 
 # Donut Right
@@ -175,7 +187,14 @@ with donut_right:
         marker=dict(colors=["#339933", "#CCCC00", "#a50f15", "#888888"]),
         textinfo='none'
     )])
-    total_sales_fig.update_layout(showlegend=True, height=350, legend=dict(orientation="h", y=-0.2))
+    total_sales_fig.update_layout(
+        showlegend=True,
+        height=350,
+        legend=dict(orientation="h", y=-0.2),
+        plot_bgcolor="#1e1e1e",
+        paper_bgcolor="#1e1e1e",
+        font=dict(color="white")
+    )
     wrapped_chart(f"🚘 Total Vehicle Sales by Category - {selected_month}", total_sales_fig, height=400)
 
 # === Line Chart ===
@@ -201,7 +220,10 @@ line_fig.update_layout(
     xaxis_title="Date",
     yaxis_title=y_title,
     height=400,
-    margin=dict(l=30, r=30, t=40, b=30)
+    margin=dict(l=30, r=30, t=40, b=30),
+    plot_bgcolor="#1e1e1e",
+    paper_bgcolor="#1e1e1e",
+    font=dict(color="white")
 )
 wrapped_chart("📈 EV Adoption Rate Over Time", line_fig, height=450)
 
