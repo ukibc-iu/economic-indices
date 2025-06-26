@@ -127,7 +127,10 @@ with donut_left:
     ev_segment_fig.update_layout(
         showlegend=True,
         height=400,
-        legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
+        legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center"),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font_color='white'
     )
     wrapped_chart(f"🔍 EV Sales by Segment - {selected_month}", ev_segment_fig)
 
@@ -168,7 +171,12 @@ with gauge_col:
             }
         }
     ))
-    gauge_fig.update_layout(height=400)
+    gauge_fig.update_layout(
+        height=400,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font_color='white'
+    )
     wrapped_chart(f"📊 EV Adoption Rate - {selected_month}", gauge_fig)
 
 # Donut Right
@@ -184,7 +192,10 @@ with donut_right:
     total_sales_fig.update_layout(
         showlegend=True,
         height=400,
-        legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
+        legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center"),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font_color='white'
     )
     wrapped_chart(f"🚘 Total Vehicle Sales by Category - {selected_month}", total_sales_fig)
 
@@ -211,7 +222,10 @@ line_fig.update_layout(
     xaxis_title="Date",
     yaxis_title=y_title,
     height=400,
-    margin=dict(l=50, r=30, t=40, b=30)
+    margin=dict(l=50, r=30, t=40, b=30),
+    plot_bgcolor='rgba(0,0,0,0)',
+    paper_bgcolor='rgba(0,0,0,0)',
+    font_color='white'
 )
 wrapped_chart("📈 EV Adoption Rate Over Time", line_fig)
 
