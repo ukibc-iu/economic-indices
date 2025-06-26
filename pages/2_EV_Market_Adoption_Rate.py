@@ -80,23 +80,22 @@ with col3:
     </div>
     """, unsafe_allow_html=True)
 
-# === Month & Display Format Selection (Dropdowns) ===
-sel_col1, sel_col2 = st.columns(2)
+# === Month & Format Selection in One Row ===
+sel_col1, sel_col2 = st.columns([3, 1.5])
 with sel_col1:
-    selected_month = st.selectbox("📅 Select Month", df['Month'].unique()[::-1])
+    selected_month = st.selectbox("Select Month", df['Month'].unique()[::-1])
     selected_row = df[df['Month'] == selected_month].iloc[0]
     selected_ev_rate = selected_row["EV Adoption Rate"]
 with sel_col2:
-    display_format = st.selectbox("📊 Display Format", ["Percentage", "Decimal"])
+    display_format = st.selectbox("Display Format", ["Percentage", "Decimal"])
+
+selected_segment_sales = selected_row[ev_cols]
+selected_total_sales = selected_row[vehicle_sales_cols]
 
 # === Donut - Gauge - Donut Layout ===
 donut_left, gauge_col, donut_right = st.columns([2, 2.5, 2])
 
-# --- Left Donut Chart: EV Sales Breakdown by Segment ---
 with donut_left:
-    st.markdown("### 🔍 EV Sales by Segment")
-    selected_segment_sales = selected_row[ev_cols]
-
     ev_segment_fig = go.Figure(data=[go.Pie(
         labels=["Four-wheeler", "Two-wheeler", "Three-wheeler"],
         values=selected_segment_sales,
@@ -106,15 +105,13 @@ with donut_left:
     )])
 
     ev_segment_fig.update_layout(
-        title_text=f"EV Segment Split - {selected_month}",
+        title=dict(text=f"<b>\U0001F50D EV Sales by Segment</b><br><sup>EV Segment Split - {selected_month}</sup>", x=0.5),
         showlegend=True,
         height=350,
         legend=dict(orientation="h", y=-0.2)
     )
-
     st.plotly_chart(ev_segment_fig, use_container_width=True)
 
-# --- Center Gauge Chart ---
 with gauge_col:
     gauge_fig = go.Figure()
     if display_format == "Percentage":
@@ -127,7 +124,7 @@ with gauge_col:
             {'range': [20, 40], 'color': '#de2d26'},
             {'range': [40, 100], 'color': '#a50f15'}
         ]
-        title = f"EV Adoption Rate - {selected_month} (%)"
+        title = f"<b>EV Adoption Rate - {selected_month} (%)</b>"
     else:
         gauge_value = selected_ev_rate
         gauge_range = [0, 1]
@@ -138,12 +135,12 @@ with gauge_col:
             {'range': [0.20, 0.40], 'color': '#de2d26'},
             {'range': [0.40, 1.00], 'color': '#a50f15'}
         ]
-        title = f"EV Adoption Rate - {selected_month} (0–1)"
+        title = f"<b>EV Adoption Rate - {selected_month} (0–1)</b>"
 
     gauge_fig.add_trace(go.Indicator(
         mode="gauge+number",
         value=gauge_value,
-        title={'text': title},
+        title={'text': title, 'font': {'size': 16}},
         gauge={
             'axis': {'range': gauge_range, 'tickwidth': 1, 'tickcolor': "darkblue"},
             'bar': {'color': "green"},
@@ -155,14 +152,10 @@ with gauge_col:
             }
         }
     ))
-    gauge_fig.update_layout(height=300)
+    gauge_fig.update_layout(height=350, margin=dict(t=60, b=0))
     st.plotly_chart(gauge_fig, use_container_width=True)
 
-# --- Right Donut Chart: Total Vehicle Category Sales ---
 with donut_right:
-    st.markdown("### 🚘 Total Vehicle Sales by Category")
-    selected_total_sales = selected_row[vehicle_sales_cols]
-
     total_sales_fig = go.Figure(data=[go.Pie(
         labels=["Passenger", "Two-wheeler", "Three-wheeler", "Commercial"],
         values=selected_total_sales,
@@ -172,16 +165,15 @@ with donut_right:
     )])
 
     total_sales_fig.update_layout(
-        title_text=f"Vehicle Type Split - {selected_month}",
+        title=dict(text=f"<b>\U0001F698 Total Vehicle Sales by Category</b><br><sup>Vehicle Type Split - {selected_month}</sup>", x=0.5),
         showlegend=True,
         height=350,
         legend=dict(orientation="h", y=-0.2)
     )
-
     st.plotly_chart(total_sales_fig, use_container_width=True)
 
 # === Line Chart ===
-st.markdown("### 📈 EV Adoption Rate Over Time")
+st.markdown("### \U0001F4C8 EV Adoption Rate Over Time")
 if display_format == "Percentage":
     y_data = df["EV Adoption Rate"] * 100
     y_title = "EV Adoption Rate (%)"
@@ -210,5 +202,5 @@ line_fig.update_layout(
 st.plotly_chart(line_fig, use_container_width=True)
 
 # === Optional Raw Data ===
-if st.checkbox("🧾 Show Raw Data"):
+if st.checkbox("\U0001F9FE Show Raw Data"):
     st.dataframe(df[['Date', 'Month', 'EV Total Sales', 'Total Vehicle Sales', 'EV Adoption Rate']].sort_values("Date", ascending=False))
