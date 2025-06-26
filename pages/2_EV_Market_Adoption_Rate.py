@@ -132,7 +132,7 @@ with donut_left:
         paper_bgcolor='rgba(0,0,0,0)',
         font_color='white'
     )
-    wrapped_chart(f"🔍 EV Sales by Segment - {selected_month}", ev_segment_fig)
+    wrapped_chart(f"EV Sales by Segment - {selected_month}", ev_segment_fig)
 
 # Gauge
 with gauge_col:
@@ -177,7 +177,7 @@ with gauge_col:
         paper_bgcolor='rgba(0,0,0,0)',
         font_color='white'
     )
-    wrapped_chart(f"📊 EV Adoption Rate - {selected_month}", gauge_fig)
+    wrapped_chart(f"EV Adoption Rate - {selected_month}", gauge_fig)
 
 # Donut Right
 with donut_right:
@@ -197,7 +197,7 @@ with donut_right:
         paper_bgcolor='rgba(0,0,0,0)',
         font_color='white'
     )
-    wrapped_chart(f"🚘 Total Vehicle Sales by Category - {selected_month}", total_sales_fig)
+    wrapped_chart(f"Total Vehicle Sales by Category - {selected_month}", total_sales_fig)
 
 # === Line Chart ===
 if display_format == "Percentage":
