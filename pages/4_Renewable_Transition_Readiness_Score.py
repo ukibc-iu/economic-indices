@@ -15,6 +15,11 @@ df = df.dropna(subset=['Date'])
 df['Month'] = df['Date'].dt.strftime('%b-%Y')
 
 # === Numeric Columns ===
+# Create Installed Renewable Capacity
+df['Installed_RE'] = df['Solar power plants Installed capacity'] + df['Wind power plants Installed capacity'] + df['Hydro power plants Installed capacity']
+
+# Calculate Renewable Share (Readiness Ratio)
+df['Renewable Share'] = df['Installed_RE'] / df['Power Consumption']
 df['Renewable Share'] = pd.to_numeric(df['Renewable Share'].astype(str).str.replace('%', ''), errors='coerce')
 df['Installed RE Capacity'] = pd.to_numeric(df['Installed RE Capacity'].astype(str).str.replace(',', ''), errors='coerce')
 df['Total Installed Capacity'] = pd.to_numeric(df['Total Installed Capacity'].astype(str).str.replace(',', ''), errors='coerce')
