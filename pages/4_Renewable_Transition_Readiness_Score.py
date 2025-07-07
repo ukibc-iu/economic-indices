@@ -1,18 +1,18 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
+import calendar
 
 st.set_page_config(page_title="Renewable Readiness Score", layout="wide")
 st.title("🌿 Renewable Transition Readiness Score Dashboard")
 
-# Load Data
+# --- Load Data ---
 @st.cache_data
 def load_data():
     try:
         df = pd.read_csv("data/Renewable_Energy.csv")
     except FileNotFoundError:
-        st.error("❌ Could not find 'data/Renewable_Energy.csv'.")
+        st.error("❌ Could not find 'data/Renewable_Energy.csv'. Make sure it's in the correct folder.")
         return None
 
     df.columns = df.columns.str.strip()
@@ -30,117 +30,107 @@ def load_data():
             st.error(f"❌ Missing column: `{col}`")
             return None
 
-    df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
+    # Try parsing '17-Apr' style
+    df['Date'] = pd.to_datetime(df['Date'], format='%d-%b', errors='coerce')
     df.dropna(subset=['Date'], inplace=True)
+
+    # Format: Apr-17
     df['Month'] = df['Date'].dt.strftime('%b-%y')
+    df['Quarter'] = df['Date'].dt.to_period("Q").astype(str)
+    df['Year'] = df['Date'].dt.year
 
-    def fiscal_quarter(row):
-        m = row.month
-        y = row.year
-        if m in [4, 5, 6]:
-            return f"Q1 {y}-{str(y+1)[-2:]}"
-        elif m in [7, 8, 9]:
-            return f"Q2 {y}-{str(y+1)[-2:]}"
-        elif m in [10, 11, 12]:
-            return f"Q3 {y}-{str(y+1)[-2:]}"
-        else:
-            return f"Q4 {y-1}-{str(y)[-2:]}"
-    df['Quarter'] = df['Date'].apply(fiscal_quarter)
+    # Format quarters as: Q1 2024-25
+    def format_quarter(row):
+        q = f"Q{((row['Date'].month - 1) // 3 + 1)}"
+        fy = row['Date'].year if row['Date'].month >= 4 else row['Date'].year - 1
+        return f"{q} {fy}-{str(fy + 1)[-2:]}"
+    df['QuarterFormatted'] = df.apply(format_quarter, axis=1)
 
+    # Convert numerics
     for col in expected_cols[1:]:
         df[col] = pd.to_numeric(df[col], errors='coerce')
-
     df.dropna(inplace=True)
 
+    # Calculations
     df['Total Renewable Capacity'] = (
         df['Solar power plants Installed capacity'] +
         df['Wind power plants Installed capacity'] +
         df['Hydro power plants Installed capacity']
     )
     df['Renewable Share (%)'] = (df['Total Renewable Capacity'] / df['Power Consumption']) * 100
-
-    df['Norm_Budget'] = (
-        (df['Budgetary allocation for infrastructure sector'] - df['Budgetary allocation for infrastructure sector'].min()) /
-        (df['Budgetary allocation for infrastructure sector'].max() - df['Budgetary allocation for infrastructure sector'].min())
+    df['Norm_Budget'] = (df['Budgetary allocation for infrastructure sector'] - df['Budgetary allocation for infrastructure sector'].min()) / (
+        df['Budgetary allocation for infrastructure sector'].max() - df['Budgetary allocation for infrastructure sector'].min()
     )
-    df['Norm_Share'] = (
-        (df['Renewable Share (%)'] - df['Renewable Share (%)'].min()) /
-        (df['Renewable Share (%)'].max() - df['Renewable Share (%)'].min())
+    df['Norm_Share'] = (df['Renewable Share (%)'] - df['Renewable Share (%)'].min()) / (
+        df['Renewable Share (%)'].max() - df['Renewable Share (%)'].min()
     )
     df['Readiness Score'] = 0.5 * df['Norm_Budget'] + 0.5 * df['Norm_Share']
+
     df = df.sort_values('Date')
     return df
 
+# --- Load and Validate ---
 df = load_data()
-if df is None:
+if df is None or df.empty:
+    st.warning("⚠️ No valid data available. Please check your CSV.")
     st.stop()
 
-# --- KPIs (Latest Values) ---
+# --- Preview Type & Month/Quarter Selection ---
+preview_type = st.selectbox("📅 Preview Type", ["Monthly", "Quarterly"])
+
+if preview_type == "Monthly":
+    period_list = df['Month'].unique().tolist()
+else:
+    period_list = df['QuarterFormatted'].unique().tolist()
+
+selected_period = st.selectbox("📆 Select Month or Quarter", period_list)
+
+# --- KPI Cards (always latest month) ---
 latest = df.iloc[-1]
 kpi1, kpi2, kpi3 = st.columns(3)
-kpi1.metric("🔆 Latest Solar Capacity", f"{latest['Solar power plants Installed capacity']:.0f} MW")
-kpi2.metric("🌬️ Latest Wind Capacity", f"{latest['Wind power plants Installed capacity']:.0f} MW")
-kpi3.metric("💧 Latest Hydro Capacity", f"{latest['Hydro power plants Installed capacity']:.0f} MW")
+kpi1.metric("🔋 Renewable Share (%)", f"{latest['Renewable Share (%)']:.2f}%")
+kpi2.metric("💰 Infra Budget (₹ Cr)", f"{latest['Budgetary allocation for infrastructure sector']:.0f}")
+kpi3.metric("📊 Readiness Score", f"{latest['Readiness Score']:.2f}")
 
-# --- Selections ---
-preview_type = st.selectbox("Preview Type", ["Monthly", "Quarterly"])
-
+# --- Filter by Selected Period ---
 if preview_type == "Monthly":
-    options = df['Month'].unique().tolist()
+    filtered = df[df['Month'] == selected_period]
 else:
-    options = df['Quarter'].unique().tolist()
+    filtered = df[df['QuarterFormatted'] == selected_period]
 
-selected_time = st.selectbox(f"Select {preview_type}", options[::-1])  # latest on top
+# Fallback in case nothing found
+if filtered.empty:
+    st.warning("⚠️ No data found for selected period.")
+    st.stop()
 
-if preview_type == "Monthly":
-    selected_df = df[df['Month'] == selected_time]
-else:
-    selected_df = df[df['Quarter'] == selected_time]
+# --- Charts ---
+col1, col2 = st.columns([1, 2])
 
-# --- Donut Chart ---
-st.subheader("🔄 Renewable Energy Mix")
+with col1:
+    st.subheader("⚡ Renewable Energy Mix")
+    donut_data = {
+        "Source": ["Solar", "Wind", "Hydro"],
+        "Capacity": [
+            filtered['Solar power plants Installed capacity'].values[0],
+            filtered['Wind power plants Installed capacity'].values[0],
+            filtered['Hydro power plants Installed capacity'].values[0]
+        ]
+    }
+    fig_donut = px.pie(donut_data, values='Capacity', names='Source', hole=0.5,
+                       color_discrete_sequence=px.colors.sequential.Blues)
+    fig_donut.update_traces(textposition='inside', textinfo='percent+label')
+    st.plotly_chart(fig_donut, use_container_width=True)
 
-solar = selected_df['Solar power plants Installed capacity'].sum()
-wind = selected_df['Wind power plants Installed capacity'].sum()
-hydro = selected_df['Hydro power plants Installed capacity'].sum()
+with col2:
+    st.subheader("📈 Readiness Score Over Time")
+    fig_score = px.line(df, x='Month', y='Readiness Score', markers=True)
+    st.plotly_chart(fig_score, use_container_width=True)
 
-fig_donut = go.Figure(
-    data=[
-        go.Pie(
-            labels=['Solar', 'Wind', 'Hydro'],
-            values=[solar, wind, hydro],
-            hole=0.5,
-            marker=dict(colors=["#FDB813", "#5DADE2", "#58D68D"])
-        )
-    ]
-)
-fig_donut.update_layout(
-    showlegend=True,
-    margin=dict(t=30, b=0),
-    height=400
-)
-st.plotly_chart(fig_donut, use_container_width=True)
-
-# --- Readiness Score Over Time ---
-st.subheader("📈 Readiness Score Over Time")
-if preview_type == "Monthly":
-    fig_line = px.line(df, x='Month', y='Readiness Score', markers=True)
-else:
-    grouped = df.groupby('Quarter', as_index=False).mean(numeric_only=True)
-    fig_line = px.line(grouped, x='Quarter', y='Readiness Score', markers=True)
-
-st.plotly_chart(fig_line, use_container_width=True)
-
-# --- Data Table ---
-with st.expander("📊 View Data Table"):
+# --- Optional Table ---
+with st.expander("🔍 View Underlying Data Table"):
     st.dataframe(df[[
-        'Month',
-        'Quarter',
-        'Renewable Share (%)',
-        'Readiness Score',
-        'Solar power plants Installed capacity',
-        'Wind power plants Installed capacity',
-        'Hydro power plants Installed capacity',
-        'Power Consumption',
-        'Budgetary allocation for infrastructure sector'
+        'Month', 'QuarterFormatted', 'Renewable Share (%)',
+        'Readiness Score', 'Solar power plants Installed capacity',
+        'Wind power plants Installed capacity', 'Hydro power plants Installed capacity',
+        'Power Consumption', 'Budgetary allocation for infrastructure sector'
     ]])
