@@ -29,11 +29,10 @@ def load_data():
             st.error(f"❌ Missing column: `{col}`")
             return None
 
-    # ✅ Correct date parsing
+    # ⛔ DO NOT CHANGE DATE FORMAT HANDLING
     df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')
     df.dropna(subset=['Date'], inplace=True)
 
-    # Month & Quarter formatting
     df['Month'] = df['Date'].dt.strftime('%b-%y')
 
     def format_quarter(row):
@@ -42,12 +41,10 @@ def load_data():
         return f"{q} {fy}-{str(fy + 1)[-2:]}"
     df['QuarterFormatted'] = df.apply(format_quarter, axis=1)
 
-    # Convert numeric columns
     for col in expected_cols[1:]:
         df[col] = pd.to_numeric(df[col], errors='coerce')
     df.dropna(inplace=True)
 
-    # Calculations
     df['Total Renewable Capacity'] = (
         df['Solar power plants Installed capacity'] +
         df['Wind power plants Installed capacity'] +
@@ -70,22 +67,27 @@ if df is None or df.empty:
     st.warning("⚠️ No valid data available. Please check your CSV.")
     st.stop()
 
-# --- Preview Selection ---
-preview_type = st.selectbox("📅 Preview Type", ["Monthly", "Quarterly"])
+# --- Get Latest KPI Values BEFORE user selection ---
+latest_row = df.iloc[-1]
+latest_month = latest_row['Month']
+latest_quarter = latest_row['QuarterFormatted']
+latest_score = latest_row['Readiness Score']
+latest_consumption = latest_row['Power Consumption']
 
+# --- KPI Cards ---
+k1, k2, k3 = st.columns(3)
+k1.metric("🗓 Latest Period", f"{latest_month} / {latest_quarter}")
+k2.metric("📊 Readiness Score", f"{latest_score:.2f}")
+k3.metric("⚡ Total Power Consumption", f"{latest_consumption:,.0f}")
+
+# --- Preview Type & Period Selection ---
+preview_type = st.selectbox("📅 Preview Type", ["Monthly", "Quarterly"])
 if preview_type == "Monthly":
     period_list = df['Month'].unique().tolist()
 else:
     period_list = df['QuarterFormatted'].unique().tolist()
 
 selected_period = st.selectbox("📆 Select Month or Quarter", period_list)
-
-# --- KPI Cards for Latest Date ---
-latest = df.iloc[-1]
-k1, k2, k3 = st.columns(3)
-k1.metric("🔋 Renewable Share (%)", f"{latest['Renewable Share (%)']:.2f}%")
-k2.metric("💰 Infra Budget (₹ Cr)", f"{latest['Budgetary allocation for infrastructure sector']:.0f}")
-k3.metric("📊 Readiness Score", f"{latest['Readiness Score']:.2f}")
 
 # --- Filtered Data for Charts ---
 if preview_type == "Monthly":
