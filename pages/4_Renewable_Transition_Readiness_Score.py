@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="Renewable Readiness Score", layout="wide")
 st.title("🌿 Renewable Transition Readiness Score Dashboard")
 
-# --- Load Data ---
+# --- Load and preprocess data ---
 @st.cache_data
 def load_data():
     try:
@@ -31,10 +31,10 @@ def load_data():
             st.error(f"❌ Missing column: `{col}`")
             return None
 
-    # Handle '17-Apr' style dates
-    df['Date'] = pd.to_datetime(df['Date'], format='%d-%b', errors='coerce')
-    df.dropna(subset=['Date'], inplace=True)
-    df['Month'] = df['Date'].dt.strftime('%b-%y')
+    # Add proper datetime index starting from Apr 2017
+    start_month = pd.to_datetime('2017-04-01')
+    df['Parsed Date'] = pd.date_range(start=start_month, periods=len(df), freq='MS')
+    df['Month'] = df['Parsed Date'].dt.strftime('%b-%y')
 
     # Convert numeric columns
     for col in expected_cols[1:]:
@@ -57,7 +57,7 @@ df['Total Renewable Capacity'] = (
 
 df['Renewable Share (%)'] = (df['Total Renewable Capacity'] / df['Power Consumption']) * 100
 
-# Normalize budget and share
+# Normalize values for score
 df['Norm_Budget'] = (
     (df['Budgetary allocation for infrastructure sector'] - df['Budgetary allocation for infrastructure sector'].min()) /
     (df['Budgetary allocation for infrastructure sector'].max() - df['Budgetary allocation for infrastructure sector'].min())
@@ -69,14 +69,14 @@ df['Norm_Share'] = (
 )
 
 df['Readiness Score'] = 0.5 * df['Norm_Budget'] + 0.5 * df['Norm_Share']
-df = df.sort_values('Date')
+df = df.sort_values('Parsed Date')
 
-# --- User Selection ---
+# --- Month Selection ---
 st.markdown("### 📅 Select Month to View Renewable Mix")
 month_selected = st.selectbox("Choose a Month", df['Month'].unique()[::-1])
 selected_row = df[df['Month'] == month_selected].iloc[0]
 
-# --- Doughnut Chart ---
+# --- Donut Chart ---
 st.subheader(f"🔆 Renewable Energy Mix — {month_selected}")
 fig_donut = go.Figure(data=[go.Pie(
     labels=["Solar", "Wind", "Hydro"],
@@ -100,7 +100,7 @@ fig_line.update_traces(line=dict(color="#2E86DE", width=3))
 fig_line.update_layout(height=400)
 st.plotly_chart(fig_line, use_container_width=True)
 
-# --- View Data ---
+# --- Data Table ---
 with st.expander("📊 View Data Table"):
     st.dataframe(df[[
         'Month',
