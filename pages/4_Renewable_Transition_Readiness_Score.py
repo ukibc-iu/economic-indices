@@ -78,7 +78,7 @@ latest_consumption = latest_row['Power Consumption']
 k1, k2, k3 = st.columns(3)
 k1.metric("🗓 Latest Period", f"{latest_month} / {latest_quarter}")
 k2.metric("📊 Readiness Score", f"{latest_score:.2f}")
-k3.metric("⚡ Total Power Consumption", f"{latest_consumption:,.0f}")
+k3.metric("⚡ Total Power Consumption", f"{latest_consumption:,.0f} units")
 
 # --- Preview Type & Period Selection ---
 preview_type = st.selectbox("📅 Preview Type", ["Monthly", "Quarterly"])
@@ -99,28 +99,28 @@ if filtered.empty:
     st.warning("⚠️ No data found for selected period.")
     st.stop()
 
-# --- Charts ---
-col1, col2 = st.columns([1, 2])
+# --- Doughnut Chart ---
+st.subheader("⚡ Renewable Energy Mix")
+donut_data = {
+    "Source": ["Solar", "Wind", "Hydro"],
+    "Capacity": [
+        filtered['Solar power plants Installed capacity'].values[0],
+        filtered['Wind power plants Installed capacity'].values[0],
+        filtered['Hydro power plants Installed capacity'].values[0]
+    ]
+}
+bright_colors = ['#FFD700', '#00BFFF', '#32CD32']  # Gold, DeepSkyBlue, LimeGreen
+fig_donut = px.pie(donut_data, values='Capacity', names='Source', hole=0.5,
+                   color_discrete_sequence=bright_colors)
+fig_donut.update_traces(textposition='inside', textinfo='percent+label')
+st.plotly_chart(fig_donut, use_container_width=True)
 
-with col1:
-    st.subheader("⚡ Renewable Energy Mix")
-    donut_data = {
-        "Source": ["Solar", "Wind", "Hydro"],
-        "Capacity": [
-            filtered['Solar power plants Installed capacity'].values[0],
-            filtered['Wind power plants Installed capacity'].values[0],
-            filtered['Hydro power plants Installed capacity'].values[0]
-        ]
-    }
-    fig_donut = px.pie(donut_data, values='Capacity', names='Source', hole=0.5,
-                       color_discrete_sequence=px.colors.sequential.Blues)
-    fig_donut.update_traces(textposition='inside', textinfo='percent+label')
-    st.plotly_chart(fig_donut, use_container_width=True)
-
-with col2:
-    st.subheader("📈 Readiness Score Over Time")
-    fig_score = px.line(df, x='Month', y='Readiness Score', markers=True)
-    st.plotly_chart(fig_score, use_container_width=True)
+# --- Line Graph Below Doughnut Chart ---
+st.subheader("📈 Readiness Score Over Time")
+fig_score = px.line(df, x='Month', y='Readiness Score', markers=True,
+                    line_shape='linear',
+                    color_discrete_sequence=['#FF5733'])  # Bright orange-red
+st.plotly_chart(fig_score, use_container_width=True)
 
 # --- Data Table ---
 with st.expander("🔍 View Underlying Data Table"):
