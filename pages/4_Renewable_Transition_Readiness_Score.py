@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import calendar
 
 st.set_page_config(page_title="Renewable Readiness Score", layout="wide")
 st.title("🌿 Renewable Transition Readiness Score Dashboard")
@@ -30,23 +29,20 @@ def load_data():
             st.error(f"❌ Missing column: `{col}`")
             return None
 
-    # Try parsing '17-Apr' style
-    df['Date'] = pd.to_datetime(df['Date'], format='%d-%b', errors='coerce')
+    # ✅ Correct date parsing
+    df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')
     df.dropna(subset=['Date'], inplace=True)
 
-    # Format: Apr-17
+    # Month & Quarter formatting
     df['Month'] = df['Date'].dt.strftime('%b-%y')
-    df['Quarter'] = df['Date'].dt.to_period("Q").astype(str)
-    df['Year'] = df['Date'].dt.year
 
-    # Format quarters as: Q1 2024-25
     def format_quarter(row):
         q = f"Q{((row['Date'].month - 1) // 3 + 1)}"
         fy = row['Date'].year if row['Date'].month >= 4 else row['Date'].year - 1
         return f"{q} {fy}-{str(fy + 1)[-2:]}"
     df['QuarterFormatted'] = df.apply(format_quarter, axis=1)
 
-    # Convert numerics
+    # Convert numeric columns
     for col in expected_cols[1:]:
         df[col] = pd.to_numeric(df[col], errors='coerce')
     df.dropna(inplace=True)
@@ -69,13 +65,12 @@ def load_data():
     df = df.sort_values('Date')
     return df
 
-# --- Load and Validate ---
 df = load_data()
 if df is None or df.empty:
     st.warning("⚠️ No valid data available. Please check your CSV.")
     st.stop()
 
-# --- Preview Type & Month/Quarter Selection ---
+# --- Preview Selection ---
 preview_type = st.selectbox("📅 Preview Type", ["Monthly", "Quarterly"])
 
 if preview_type == "Monthly":
@@ -85,20 +80,19 @@ else:
 
 selected_period = st.selectbox("📆 Select Month or Quarter", period_list)
 
-# --- KPI Cards (always latest month) ---
+# --- KPI Cards for Latest Date ---
 latest = df.iloc[-1]
-kpi1, kpi2, kpi3 = st.columns(3)
-kpi1.metric("🔋 Renewable Share (%)", f"{latest['Renewable Share (%)']:.2f}%")
-kpi2.metric("💰 Infra Budget (₹ Cr)", f"{latest['Budgetary allocation for infrastructure sector']:.0f}")
-kpi3.metric("📊 Readiness Score", f"{latest['Readiness Score']:.2f}")
+k1, k2, k3 = st.columns(3)
+k1.metric("🔋 Renewable Share (%)", f"{latest['Renewable Share (%)']:.2f}%")
+k2.metric("💰 Infra Budget (₹ Cr)", f"{latest['Budgetary allocation for infrastructure sector']:.0f}")
+k3.metric("📊 Readiness Score", f"{latest['Readiness Score']:.2f}")
 
-# --- Filter by Selected Period ---
+# --- Filtered Data for Charts ---
 if preview_type == "Monthly":
     filtered = df[df['Month'] == selected_period]
 else:
     filtered = df[df['QuarterFormatted'] == selected_period]
 
-# Fallback in case nothing found
 if filtered.empty:
     st.warning("⚠️ No data found for selected period.")
     st.stop()
@@ -126,7 +120,7 @@ with col2:
     fig_score = px.line(df, x='Month', y='Readiness Score', markers=True)
     st.plotly_chart(fig_score, use_container_width=True)
 
-# --- Optional Table ---
+# --- Data Table ---
 with st.expander("🔍 View Underlying Data Table"):
     st.dataframe(df[[
         'Month', 'QuarterFormatted', 'Renewable Share (%)',
