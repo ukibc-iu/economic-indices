@@ -6,109 +6,125 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="Renewable Readiness Score", layout="wide")
 st.title("🌿 Renewable Transition Readiness Score Dashboard")
 
-# --- Load and preprocess data ---
+# --- Load Data ---
 @st.cache_data
 def load_data():
-    try:
-        df = pd.read_csv("data/Renewable_Energy.csv")
-    except FileNotFoundError:
-        st.error("❌ Could not find 'data/Renewable_Energy.csv'. Make sure it's in the correct folder.")
-        return None
-
+    df = pd.read_csv("data/Renewable_Energy.csv")
     df.columns = df.columns.str.strip()
 
-    # Required columns
-    expected_cols = [
-        'Date',
-        'Solar power plants Installed capacity',
-        'Wind power plants Installed capacity',
-        'Hydro power plants Installed capacity',
-        'Budgetary allocation for infrastructure sector',
-        'Power Consumption'
-    ]
-    for col in expected_cols:
-        if col not in df.columns:
-            st.error(f"❌ Missing column: `{col}`")
-            return None
+    df['Date'] = pd.to_datetime(df['Date'], format='%d-%b', errors='coerce')
+    df.dropna(subset=['Date'], inplace=True)
 
-    # Add proper datetime index starting from Apr 2017
-    start_month = pd.to_datetime('2017-04-01')
-    df['Parsed Date'] = pd.date_range(start=start_month, periods=len(df), freq='MS')
-    df['Month'] = df['Parsed Date'].dt.strftime('%b-%y')
+    df.rename(columns={
+        'Solar power plants Installed capacity': 'Solar',
+        'Wind power plants Installed capacity': 'Wind',
+        'Hydro power plants Installed capacity': 'Hydro',
+        'Budgetary allocation for infrastructure sector': 'Budget',
+        'Power Consumption': 'Consumption'
+    }, inplace=True)
 
-    # Convert numeric columns
-    for col in expected_cols[1:]:
+    df['Month'] = df['Date'].dt.strftime('%b-%y')
+    df['Quarter'] = df['Date'].dt.to_period('Q').astype(str)
+
+    for col in ['Solar', 'Wind', 'Hydro', 'Budget', 'Consumption']:
         df[col] = pd.to_numeric(df[col], errors='coerce')
 
     df.dropna(inplace=True)
 
+    # Derived columns
+    df['Total Renewable'] = df['Solar'] + df['Wind'] + df['Hydro']
+    df['Renewable Share (%)'] = (df['Total Renewable'] / df['Consumption']) * 100
+
+    # Normalize and score
+    df['Norm_Budget'] = (df['Budget'] - df['Budget'].min()) / (df['Budget'].max() - df['Budget'].min())
+    df['Norm_Share'] = (df['Renewable Share (%)'] - df['Renewable Share (%)'].min()) / (df['Renewable Share (%)'].max() - df['Renewable Share (%)'].min())
+    df['Readiness Score'] = 0.5 * df['Norm_Budget'] + 0.5 * df['Norm_Share']
+
+    df = df.sort_values('Date')
+
     return df
 
 df = load_data()
-if df is None:
-    st.stop()
 
-# --- Calculations ---
-df['Total Renewable Capacity'] = (
-    df['Solar power plants Installed capacity'] +
-    df['Wind power plants Installed capacity'] +
-    df['Hydro power plants Installed capacity']
+# --- KPI Cards (Latest) ---
+latest_row = df.iloc[-1]
+latest_period = latest_row['Month']
+latest_score = round(latest_row['Readiness Score'] * 100, 2)
+latest_consumption = f"{int(latest_row['Consumption']):,}"
+
+colA, colB, colC = st.columns(3)
+colA.metric("📅 Latest Period", latest_period)
+colB.metric("⚡ Readiness Score", f"{latest_score}")
+colC.metric("🔌 Power Consumption", f"{latest_consumption} units")
+
+# --- Dropdowns ---
+st.markdown("---")
+col_view, col_select = st.columns([1, 2])
+
+with col_view:
+    view_type = st.selectbox("View Type", ['Monthly', 'Quarterly'])
+
+if view_type == 'Monthly':
+    period_options = df['Month'].unique()
+    period_col = 'Month'
+else:
+    # Group by quarter
+    df = df.groupby('Quarter').agg({
+        'Solar': 'sum',
+        'Wind': 'sum',
+        'Hydro': 'sum',
+        'Budget': 'sum',
+        'Consumption': 'sum'
+    }).reset_index()
+
+    df['Total Renewable'] = df['Solar'] + df['Wind'] + df['Hydro']
+    df['Renewable Share (%)'] = (df['Total Renewable'] / df['Consumption']) * 100
+
+    df['Norm_Budget'] = (df['Budget'] - df['Budget'].min()) / (df['Budget'].max() - df['Budget'].min())
+    df['Norm_Share'] = (df['Renewable Share (%)'] - df['Renewable Share (%)'].min()) / (df['Renewable Share (%)'].max() - df['Renewable Share (%)'].min())
+    df['Readiness Score'] = 0.5 * df['Norm_Budget'] + 0.5 * df['Norm_Share']
+    df.rename(columns={'Quarter': 'Period'}, inplace=True)
+    period_col = 'Period'
+
+    df['Month'] = df['Period']  # for uniformity
+
+with col_select:
+    selected_period = st.selectbox(f"Select {view_type}", df[period_col].unique())
+
+# --- Filtered Row ---
+row = df[df[period_col] == selected_period].iloc[0]
+
+# --- Donut Chart (Renewable Mix) ---
+fig_donut = go.Figure(
+    data=[go.Pie(
+        labels=['Solar', 'Wind', 'Hydro'],
+        values=[row['Solar'], row['Wind'], row['Hydro']],
+        hole=0.5,
+        marker=dict(colors=['#FDB813', '#76B041', '#1E90FF'])
+    )]
 )
+fig_donut.update_layout(title=f"🔆 Renewable Capacity Mix – {selected_period}", showlegend=True)
 
-df['Renewable Share (%)'] = (df['Total Renewable Capacity'] / df['Power Consumption']) * 100
-
-# Normalize values for score
-df['Norm_Budget'] = (
-    (df['Budgetary allocation for infrastructure sector'] - df['Budgetary allocation for infrastructure sector'].min()) /
-    (df['Budgetary allocation for infrastructure sector'].max() - df['Budgetary allocation for infrastructure sector'].min())
+# --- Line Chart for Readiness Score ---
+fig_line = px.line(
+    df,
+    x=period_col,
+    y='Readiness Score',
+    title="📈 Readiness Score Over Time",
+    markers=True
 )
+fig_line.update_traces(line=dict(color="#6A5ACD", width=3))
 
-df['Norm_Share'] = (
-    (df['Renewable Share (%)'] - df['Renewable Share (%)'].min()) /
-    (df['Renewable Share (%)'].max() - df['Renewable Share (%)'].min())
-)
+# --- Layout Display ---
+st.markdown("---")
+col1, col2 = st.columns(2)
 
-df['Readiness Score'] = 0.5 * df['Norm_Budget'] + 0.5 * df['Norm_Share']
-df = df.sort_values('Parsed Date')
+with col1:
+    st.plotly_chart(fig_donut, use_container_width=True)
 
-# --- Month Selection ---
-st.markdown("### 📅 Select Month to View Renewable Mix")
-month_selected = st.selectbox("Choose a Month", df['Month'].unique()[::-1])
-selected_row = df[df['Month'] == month_selected].iloc[0]
-
-# --- Donut Chart ---
-st.subheader(f"🔆 Renewable Energy Mix — {month_selected}")
-fig_donut = go.Figure(data=[go.Pie(
-    labels=["Solar", "Wind", "Hydro"],
-    values=[
-        selected_row['Solar power plants Installed capacity'],
-        selected_row['Wind power plants Installed capacity'],
-        selected_row['Hydro power plants Installed capacity']
-    ],
-    hole=0.5,
-    marker=dict(colors=['#F7DC6F', '#58D68D', '#5DADE2']),
-    hoverinfo='label+percent',
-    textinfo='label+value'
-)])
-fig_donut.update_layout(height=400, margin=dict(t=10, b=10))
-st.plotly_chart(fig_donut, use_container_width=True)
-
-# --- Readiness Score Line Chart ---
-st.subheader("📈 Readiness Score Over Time")
-fig_line = px.line(df, x='Month', y='Readiness Score', markers=True)
-fig_line.update_traces(line=dict(color="#2E86DE", width=3))
-fig_line.update_layout(height=400)
-st.plotly_chart(fig_line, use_container_width=True)
+with col2:
+    st.plotly_chart(fig_line, use_container_width=True)
 
 # --- Data Table ---
-with st.expander("📊 View Data Table"):
-    st.dataframe(df[[
-        'Month',
-        'Renewable Share (%)',
-        'Readiness Score',
-        'Solar power plants Installed capacity',
-        'Wind power plants Installed capacity',
-        'Hydro power plants Installed capacity',
-        'Power Consumption',
-        'Budgetary allocation for infrastructure sector'
-    ]])
+with st.expander("🧾 View Data Table"):
+    st.dataframe(df[[period_col, 'Readiness Score', 'Consumption', 'Solar', 'Wind', 'Hydro']])
