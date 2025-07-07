@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import os
+import plotly.graph_objects as go
 
 st.set_page_config(page_title="Renewable Readiness Score", layout="wide")
 st.title("🌿 Renewable Transition Readiness Score Dashboard")
@@ -17,7 +17,6 @@ def load_data():
 
     df.columns = df.columns.str.strip()
 
-    # Required columns
     expected_cols = [
         'Date',
         'Solar power plants Installed capacity',
@@ -31,17 +30,14 @@ def load_data():
             st.error(f"❌ Missing column: `{col}`")
             return None
 
-    # Fix date format (handles '17-Apr' properly)
     df['Date'] = pd.to_datetime(df['Date'], format='%d-%b', errors='coerce')
     df.dropna(subset=['Date'], inplace=True)
     df['Month'] = df['Date'].dt.strftime('%b-%y')
 
-    # Convert all numeric columns
     for col in expected_cols[1:]:
         df[col] = pd.to_numeric(df[col], errors='coerce')
 
     df.dropna(inplace=True)
-
     return df
 
 df = load_data()
@@ -57,36 +53,53 @@ df['Total Renewable Capacity'] = (
 
 df['Renewable Share (%)'] = (df['Total Renewable Capacity'] / df['Power Consumption']) * 100
 
-# Normalize budget and share
-df['Norm_Budget'] = (df['Budgetary allocation for infrastructure sector'] - df['Budgetary allocation for infrastructure sector'].min()) / (df['Budgetary allocation for infrastructure sector'].max() - df['Budgetary allocation for infrastructure sector'].min())
-df['Norm_Share'] = (df['Renewable Share (%)'] - df['Renewable Share (%)'].min()) / (df['Renewable Share (%)'].max() - df['Renewable Share (%)'].min())
+df['Norm_Budget'] = (
+    (df['Budgetary allocation for infrastructure sector'] - df['Budgetary allocation for infrastructure sector'].min())
+    / (df['Budgetary allocation for infrastructure sector'].max() - df['Budgetary allocation for infrastructure sector'].min())
+)
+df['Norm_Share'] = (
+    (df['Renewable Share (%)'] - df['Renewable Share (%)'].min())
+    / (df['Renewable Share (%)'].max() - df['Renewable Share (%)'].min())
+)
 
-# Compute Readiness Score
 df['Readiness Score'] = 0.5 * df['Norm_Budget'] + 0.5 * df['Norm_Share']
 df = df.sort_values('Date')
 
-# --- Dashboard Display ---
-col1, col2 = st.columns(2)
+# --- UI: Month Selection ---
+st.sidebar.title("📅 Select Month")
+month_selected = st.sidebar.selectbox("Choose a Month", df['Month'].unique()[::-1])  # latest first
+selected_row = df[df['Month'] == month_selected].iloc[0]
 
-with col1:
-    st.subheader("📈 Renewable Share Over Time")
-    fig1 = px.line(df, x='Month', y='Renewable Share (%)', markers=True)
-    st.plotly_chart(fig1, use_container_width=True)
+# --- Doughnut Chart for Renewable Mix ---
+st.subheader(f"🔆 Renewable Energy Mix — {month_selected}")
+fig_donut = go.Figure(data=[go.Pie(
+    labels=["Solar", "Wind", "Hydro"],
+    values=[
+        selected_row['Solar power plants Installed capacity'],
+        selected_row['Wind power plants Installed capacity'],
+        selected_row['Hydro power plants Installed capacity']
+    ],
+    hole=0.5,
+    marker=dict(colors=['#F7DC6F', '#58D68D', '#5DADE2'])
+)])
+fig_donut.update_layout(height=400, margin=dict(t=10, b=10, l=10, r=10))
+st.plotly_chart(fig_donut, use_container_width=True)
 
-with col2:
-    st.subheader("🔋 Readiness Score Over Time")
-    fig2 = px.line(df, x='Month', y='Readiness Score', markers=True)
-    st.plotly_chart(fig2, use_container_width=True)
+# --- Line Chart for Readiness Score ---
+st.subheader("📈 Readiness Score Over Time")
+fig_line = px.line(df, x='Month', y='Readiness Score', markers=True)
+fig_line.update_traces(line=dict(color="#2E86DE", width=3))
+st.plotly_chart(fig_line, use_container_width=True)
 
-# View data
+# --- Optional: View Raw Data ---
 with st.expander("📊 View Data Table"):
     st.dataframe(df[[
         'Month',
-        'Renewable Share (%)',
         'Readiness Score',
         'Solar power plants Installed capacity',
         'Wind power plants Installed capacity',
         'Hydro power plants Installed capacity',
         'Power Consumption',
-        'Budgetary allocation for infrastructure sector'
+        'Budgetary allocation for infrastructure sector',
+        'Renewable Share (%)'
     ]])
