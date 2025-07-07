@@ -30,7 +30,7 @@ def load_data():
             st.error(f"❌ Missing column: `{col}`")
             return None
 
-    df['Date'] = pd.to_datetime(df['Date'], format='%d-%b', errors='coerce')
+    df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
     df.dropna(subset=['Date'], inplace=True)
     df['Month'] = df['Date'].dt.strftime('%b-%y')
 
