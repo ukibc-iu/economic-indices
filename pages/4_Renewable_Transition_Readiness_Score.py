@@ -106,13 +106,13 @@ score_val = filtered['Readiness Score'].values[0]
 fig_gauge = go.Figure(go.Indicator(
     mode="gauge+number",
     value=score_val,
-    number={'font': {'color': 'white', 'size': 36}},  # White font for value
+    number={'font': {'color': 'white', 'size': 36}},  # White value text
     domain={'x': [0, 1], 'y': [0, 1]},
     title={'text': "Readiness Score", 'font': {'color': 'white'}},
     gauge={
         'axis': {'range': [0, 1], 'tickcolor': 'white'},
         'bgcolor': "black",
-        'bar': {'color': "white"},  # Changed from red to white
+        'bar': {'color': "black"},  # ✅ Change this from white to black
         'steps': [
             {'range': [0, 0.2], 'color': "#FF0000"},
             {'range': [0.2, 0.4], 'color': "#FFA500"},
@@ -123,6 +123,7 @@ fig_gauge = go.Figure(go.Indicator(
     }
 ))
 fig_gauge.update_layout(paper_bgcolor="black", font_color="white")
+
 
 st.plotly_chart(fig_gauge, use_container_width=True)
 
