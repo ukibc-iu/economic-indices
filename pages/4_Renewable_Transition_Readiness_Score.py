@@ -7,6 +7,25 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="Renewable Readiness Score", layout="wide")
 st.title("🌿 Renewable Transition Readiness Score")
 
+# --- CSS for KPI Cards ---
+kpi_style = """
+<style>
+.card {
+    padding: 1rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    height: 100%;
+}
+.green-card { background: linear-gradient(145deg, #003300, #339933); }
+.grey-card  { background: linear-gradient(145deg, #009900, #99CC00); }
+.red-card   { background: linear-gradient(145deg, #CCCC00, #996600); }
+</style>
+"""
+st.markdown(kpi_style, unsafe_allow_html=True)
+
 # --- Load Data ---
 @st.cache_data
 def load_data():
@@ -68,7 +87,7 @@ if df is None or df.empty:
     st.warning("⚠️ No valid data available. Please check your CSV.")
     st.stop()
 
-# --- KPI Cards ---
+# --- KPI Cards (Replaces st.metric) ---
 latest_row = df.iloc[-1]
 latest_month = latest_row['Month']
 latest_quarter = latest_row['QuarterFormatted']
@@ -76,9 +95,30 @@ latest_score = latest_row['Readiness Score']
 latest_consumption = latest_row['Power Consumption']
 
 k1, k2, k3 = st.columns(3)
-k1.metric("🗓 Latest Period", f"{latest_month} / {latest_quarter}")
-k2.metric("📊 Readiness Score", f"{latest_score:.2f}")
-k3.metric("⚡ Total Power Consumption", f"{latest_consumption:,.0f} units")
+
+with k1:
+    st.markdown(f"""
+        <div class="card green-card">
+            <div style="font-size: 1.2rem;">🗓 Latest Period</div>
+            <div style="font-size: 2rem;">{latest_month} / {latest_quarter}</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with k2:
+    st.markdown(f"""
+        <div class="card grey-card">
+            <div style="font-size: 1.2rem;">📊 Readiness Score</div>
+            <div style="font-size: 2rem;">{latest_score:.2f}</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with k3:
+    st.markdown(f"""
+        <div class="card red-card">
+            <div style="font-size: 1.2rem;">⚡ Power Consumption</div>
+            <div style="font-size: 2rem;">{latest_consumption:,.0f} units</div>
+        </div>
+    """, unsafe_allow_html=True)
 
 # --- Preview Type ---
 preview_type = st.selectbox("📅 Preview Type", ["Monthly", "Quarterly"])
