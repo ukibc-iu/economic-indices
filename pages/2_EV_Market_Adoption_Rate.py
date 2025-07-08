@@ -1,11 +1,98 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Renewable Readiness Score", layout="wide")
-st.title("🌿 Renewable Transition Readiness Score")
+st.set_page_config(layout="wide")
+
+# === Load Data ===
+df = pd.read_csv("data/EV_Adoption.csv")
+df.columns = df.columns.str.strip()
+
+# === Parse Date ===
+df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')
+df = df.dropna(subset=['Date'])
+df['Month'] = df['Date'].dt.strftime('%b-%Y')
+
+# === Clean & Convert Numeric Columns ===
+ev_cols = ['EV Four-wheeler Sales', 'EV Two-wheeler Sales', 'EV Three-wheeler Sales']
+for col in ev_cols:
+    df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
+
+vehicle_sales_cols = ["Passenger Vehicle Sales", "Two-wheeler Sales", "Three-wheeler Sales", "Commercial Vehicle Sales"]
+for col in vehicle_sales_cols:
+    df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='coerce')
+
+df['Total Vehicle Sales'] = pd.to_numeric(df['Total Vehicle Sales'].astype(str).str.replace(',', ''), errors='coerce')
+df['Auto Loan Rate'] = df['Auto Loan Rate'].astype(str).str.replace('%', '').astype(float)
+
+# === Add Calculated Columns ===
+df['EV Total Sales'] = df['EV Four-wheeler Sales'] + df['EV Two-wheeler Sales'] + df['EV Three-wheeler Sales']
+df['EV Adoption Rate'] = df['EV Total Sales'] / df['Total Vehicle Sales']
+
+# === Header ===
+st.title("EV Market Adoption Rate")
+st.markdown("*The EV Market Adoption Rate represents the share of electric vehicles in total vehicle sales, indicating the extent of EV presence in the automotive market.*")
+
+# === KPI Styles ===
+kpi_style = """
+<style>
+.card {
+    padding: 1rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
+.green-card { background: linear-gradient(#003300, #006600, #339933); }
+.grey-card { background: linear-gradient(#009900, #669900, #99CC00); }
+.red-card { background: linear-gradient(#CCCC00, #CC9900, #996600); }
+</style>
+"""
+st.markdown(kpi_style, unsafe_allow_html=True)
+
+# === KPIs ===
+latest_row = df.sort_values("Date").iloc[-1]
+latest_month = latest_row["Month"]
+latest_ev_rate = latest_row["EV Adoption Rate"]
+latest_total_sales = int(latest_row["Total Vehicle Sales"])
+latest_ev_sales = int(latest_row["EV Total Sales"])
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.markdown(f"""
+    <div class="card green-card">
+        <div style="font-size: 16px;">EV Adoption Rate</div>
+        <div style="font-size: 28px;">{latest_ev_rate*100:.2f}%</div>
+    </div>
+    """, unsafe_allow_html=True)
+with col2:
+    st.markdown(f"""
+    <div class="card grey-card">
+        <div style="font-size: 16px;">Latest Month</div>
+        <div style="font-size: 28px;">{latest_month}</div>
+    </div>
+    """, unsafe_allow_html=True)
+with col3:
+    st.markdown(f"""
+    <div class="card red-card">
+        <div style="font-size: 16px;">EV Units Sold</div>
+        <div style="font-size: 24px;">{latest_ev_sales:,}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# === Controls ===
+sel_col1, sel_col2 = st.columns([3, 1.5])
+with sel_col1:
+    selected_month = st.selectbox("Select Month", df['Month'].unique()[::-1])
+    selected_row = df[df['Month'] == selected_month].iloc[0]
+    selected_ev_rate = selected_row["EV Adoption Rate"]
+with sel_col2:
+    display_format = st.selectbox("Display Format", ["Percentage", "Decimal"])
+
+selected_segment_sales = selected_row[ev_cols]
+selected_total_sales = selected_row[vehicle_sales_cols]
 
 # === CHART WRAPPER ===
 def wrapped_chart(title, fig, height=420):  # Keep consistent height
@@ -24,164 +111,127 @@ def wrapped_chart(title, fig, height=420):  # Keep consistent height
     </div>
     """, height=height + 60)
 
-# --- Load Data ---
-@st.cache_data
-def load_data():
-    try:
-        df = pd.read_csv("data/Renewable_Energy.csv")
-    except FileNotFoundError:
-        st.error("❌ Could not find 'data/Renewable_Energy.csv'. Make sure it's in the correct folder.")
-        return None
+# === Donut - Gauge - Donut Charts ===
+donut_left, gauge_col, donut_right = st.columns([2, 2.5, 2])
 
-    df.columns = df.columns.str.strip()
-
-    expected_cols = [
-        'Date',
-        'Solar power plants Installed capacity',
-        'Wind power plants Installed capacity',
-        'Hydro power plants Installed capacity',
-        'Budgetary allocation for infrastructure sector',
-        'Power Consumption'
-    ]
-    for col in expected_cols:
-        if col not in df.columns:
-            st.error(f"❌ Missing column: `{col}`")
-            return None
-
-    df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')
-    df.dropna(subset=['Date'], inplace=True)
-
-    df['Month'] = df['Date'].dt.strftime('%b-%y')
-
-    def format_quarter(row):
-        q = f"Q{((row['Date'].month - 1) // 3 + 1)}"
-        fy = row['Date'].year if row['Date'].month >= 4 else row['Date'].year - 1
-        return f"{q} {fy}-{str(fy + 1)[-2:]}"
-    df['QuarterFormatted'] = df.apply(format_quarter, axis=1)
-
-    for col in expected_cols[1:]:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
-    df.dropna(inplace=True)
-
-    df['Total Renewable Capacity'] = (
-        df['Solar power plants Installed capacity'] +
-        df['Wind power plants Installed capacity'] +
-        df['Hydro power plants Installed capacity']
-    )
-    df['Renewable Share (%)'] = (df['Total Renewable Capacity'] / df['Power Consumption']) * 100
-    df['Norm_Budget'] = (df['Budgetary allocation for infrastructure sector'] - df['Budgetary allocation for infrastructure sector'].min()) / (
-        df['Budgetary allocation for infrastructure sector'].max() - df['Budgetary allocation for infrastructure sector'].min()
-    )
-    df['Norm_Share'] = (df['Renewable Share (%)'] - df['Renewable Share (%)'].min()) / (
-        df['Renewable Share (%)'].max() - df['Renewable Share (%)'].min()
-    )
-    df['Readiness Score'] = 0.5 * df['Norm_Budget'] + 0.5 * df['Norm_Share']
-
-    df = df.sort_values('Date')
-    return df
-
-df = load_data()
-if df is None or df.empty:
-    st.warning("⚠️ No valid data available. Please check your CSV.")
-    st.stop()
-
-# --- Get Latest KPI Values ---
-latest_row = df.iloc[-1]
-latest_month = latest_row['Month']
-latest_quarter = latest_row['QuarterFormatted']
-latest_score = latest_row['Readiness Score']
-latest_consumption = latest_row['Power Consumption']
-
-# --- KPI Cards ---
-k1, k2, k3 = st.columns(3)
-k1.metric("🗓 Latest Period", f"{latest_month} / {latest_quarter}")
-k2.metric("📊 Readiness Score", f"{latest_score:.2f}")
-k3.metric("⚡ Total Power Consumption", f"{latest_consumption:,.0f} units")
-
-# --- Selection ---
-preview_type = st.selectbox("📅 Preview Type", ["Monthly", "Quarterly"])
-period_list = df['Month'].unique().tolist() if preview_type == "Monthly" else df['QuarterFormatted'].unique().tolist()
-selected_period = st.selectbox("📆 Select Month or Quarter", period_list)
-
-filtered = df[df['Month'] == selected_period] if preview_type == "Monthly" else df[df['QuarterFormatted'] == selected_period]
-if filtered.empty:
-    st.warning("⚠️ No data found for selected period.")
-    st.stop()
-
-score_val = filtered['Readiness Score'].values[0]
-
-# --- Chart Columns ---
-col1, col2 = st.columns([1, 1])
-
-with col1:
-    # --- Doughnut Chart ---
-    donut_data = {
-        "Source": ["Solar", "Wind", "Hydro"],
-        "Capacity": [
-            filtered['Solar power plants Installed capacity'].values[0],
-            filtered['Wind power plants Installed capacity'].values[0],
-            filtered['Hydro power plants Installed capacity'].values[0]
-        ]
-    }
-    bright_colors = ['#FFD700', '#00BFFF', '#32CD32']
-    fig_donut = px.pie(donut_data, values='Capacity', names='Source', hole=0.5,
-                       color_discrete_sequence=bright_colors)
-    fig_donut.update_traces(textposition='inside', textinfo='percent+label')
-    fig_donut.update_layout(
+with donut_left:
+    ev_segment_fig = go.Figure(data=[go.Pie(
+        labels=["Four-wheeler", "Two-wheeler", "Three-wheeler"],
+        values=selected_segment_sales,
+        hole=0.5,
+        marker=dict(colors=["#CCFF99", "#99FF33", "#66CC00"]),
+        textinfo='percent',
+        hoverinfo='label+value+percent',
+        domain=dict(x=[0, 1], y=[0.2, 1.0])
+    )])
+    ev_segment_fig.update_layout(
+        showlegend=True,
         height=400,
-        plot_bgcolor='rgba(0,0,0,0)',
         paper_bgcolor='rgba(0,0,0,0)',
-        font_color='white',
-        margin=dict(t=20, b=20)
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='white'),
+        margin=dict(t=20, b=20),
+        legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
     )
-    wrapped_chart(f"Renewable Energy Mix – {selected_period}", fig_donut)
+    wrapped_chart(f"EV Sales by Segment - {selected_month}", ev_segment_fig)
 
-with col2:
-    # --- Gauge Chart ---
-    fig_gauge = go.Figure(go.Indicator(
+with gauge_col:
+    if display_format == "Percentage":
+        gauge_value = selected_ev_rate * 100
+        gauge_range = [0, 100]
+        steps = [
+            {'range': [0, 5], 'color': '#fee5d9'},
+            {'range': [5, 10], 'color': '#fcae91'},
+            {'range': [10, 20], 'color': '#fb6a4a'},
+            {'range': [20, 40], 'color': '#de2d26'},
+            {'range': [40, 100], 'color': '#a50f15'}
+        ]
+    else:
+        gauge_value = selected_ev_rate
+        gauge_range = [0, 1]
+        steps = [
+            {'range': [0.00, 0.05], 'color': '#fee5d9'},
+            {'range': [0.05, 0.10], 'color': '#fcae91'},
+            {'range': [0.10, 0.20], 'color': '#fb6a4a'},
+            {'range': [0.20, 0.40], 'color': '#de2d26'},
+            {'range': [0.40, 1.00], 'color': '#a50f15'}
+        ]
+
+    gauge_fig = go.Figure(go.Indicator(
         mode="gauge+number",
-        value=score_val,
-        number={'font': {'color': 'white'}},
-        domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': "Readiness Score", 'font': {'color': 'white'}},
+        value=gauge_value,
         gauge={
-            'axis': {'range': [0, 1], 'tickcolor': 'white'},
-            'bar': {'color': "white"},  # White value bar
-            'steps': [
-                {'range': [0, 0.2], 'color': "#ff0000"},
-                {'range': [0.2, 0.4], 'color': "#ffa500"},
-                {'range': [0.4, 0.6], 'color': "#ffff00"},
-                {'range': [0.6, 0.8], 'color': "#90ee90"},
-                {'range': [0.8, 1.0], 'color': "#008000"},
-            ]
+            'axis': {'range': gauge_range, 'tickwidth': 1, 'tickcolor': "darkblue"},
+            'bar': {'color': "green"},
+            'steps': steps,
+            'threshold': {
+                'line': {'color': "red", 'width': 4},
+                'thickness': 0.75,
+                'value': gauge_value
+            }
         }
     ))
-    fig_gauge.update_layout(
+    gauge_fig.update_layout(
+        height=400,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font_color='white'
+    )
+    wrapped_chart(f"EV Adoption Rate - {selected_month}", gauge_fig)
+
+with donut_right:
+    total_sales_fig = go.Figure(data=[go.Pie(
+        labels=["Passenger", "Two-wheeler", "Three-wheeler", "Commercial"],
+        values=selected_total_sales,
+        hole=0.5,
+        marker=dict(colors=["#8B0000", "#E94E1B", "#FF8C42", "#FFD580"]),
+        textinfo='percent',
+        hoverinfo='label+value+percent',
+        domain=dict(x=[0, 1], y=[0.2, 1.0])
+    )])
+    total_sales_fig.update_layout(
+        showlegend=True,
         height=400,
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
-        font_color='white'
+        font=dict(color='white'),
+        margin=dict(t=20, b=20),
+        legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
     )
-    wrapped_chart(f"Readiness Score Gauge – {selected_period}", fig_gauge)
+    wrapped_chart(f"Total Vehicle Sales by Category - {selected_month}", total_sales_fig)
 
-# --- Line Chart ---
-st.subheader("📈 Readiness Score Over Time")
-fig_score = px.line(df, x='Month', y='Readiness Score', markers=True,
-                    line_shape='linear',
-                    color_discrete_sequence=['#FF5733'])
-fig_score.update_layout(
+# === Line Chart ===
+if display_format == "Percentage":
+    y_data = df["EV Adoption Rate"] * 100
+    y_title = "EV Adoption Rate (%)"
+    hover_format = "%{y:.2f}%"
+else:
+    y_data = df["EV Adoption Rate"]
+    y_title = "EV Adoption Rate (0–1)"
+    hover_format = "%{y:.3f}"
+
+line_fig = go.Figure()
+line_fig.add_trace(go.Scatter(
+    x=df["Date"],
+    y=y_data,
+    mode="lines+markers",
+    line=dict(color="green"),
+    name="EV Adoption Rate",
+    hovertemplate="Date: %{x|%b %Y}<br>Rate: " + hover_format + "<extra></extra>"
+))
+line_fig.update_layout(
+    xaxis_title="Date",
+    yaxis_title=y_title,
     height=400,
+    margin=dict(l=50, r=30, t=40, b=30),
     plot_bgcolor='rgba(0,0,0,0)',
     paper_bgcolor='rgba(0,0,0,0)',
-    font_color='white'
+    font_color='white',
+    xaxis=dict(showgrid=False),
+    yaxis=dict(showgrid=False)
 )
-st.plotly_chart(fig_score, use_container_width=True)
+wrapped_chart("EV Adoption Rate Over Time", line_fig)
 
-# --- Data Table ---
-with st.expander("🔍 View Underlying Data Table"):
-    st.dataframe(df[[
-        'Month', 'QuarterFormatted', 'Renewable Share (%)',
-        'Readiness Score', 'Solar power plants Installed capacity',
-        'Wind power plants Installed capacity', 'Hydro power plants Installed capacity',
-        'Power Consumption', 'Budgetary allocation for infrastructure sector'
-    ]])
+# === Raw Data Toggle ===
+if st.checkbox("\U0001F9FE Show Raw Data"):
+    st.dataframe(df[['Date', 'Month', 'EV Total Sales', 'Total Vehicle Sales', 'EV Adoption Rate']].sort_values("Date", ascending=False))
