@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 
 st.set_page_config(page_title="Renewable Readiness Score", layout="wide")
-st.title("🌿 Renewable Transition Readiness Score Dashboard")
+st.title("🌿 Renewable Transition Readiness Score")
 
 # --- Load Data ---
 @st.cache_data
@@ -29,7 +30,6 @@ def load_data():
             st.error(f"❌ Missing column: `{col}`")
             return None
 
-    # ⛔ DO NOT CHANGE DATE FORMAT HANDLING
     df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')
     df.dropna(subset=['Date'], inplace=True)
 
@@ -99,6 +99,27 @@ if filtered.empty:
     st.warning("⚠️ No data found for selected period.")
     st.stop()
 
+# --- Speedometer Gauge ---
+st.subheader("🔢 Readiness Score Gauge")
+score_value = filtered['Readiness Score'].values[0]
+fig_gauge = go.Figure(go.Indicator(
+    mode="gauge+number",
+    value=score_value,
+    domain={'x': [0, 1], 'y': [0, 1]},
+    gauge={
+        'axis': {'range': [0, 1]},
+        'bar': {'color': "#ff6347"},
+        'steps': [
+            {'range': [0, 0.2], 'color': "#ff0000"},
+            {'range': [0.2, 0.4], 'color': "#ff9900"},
+            {'range': [0.4, 0.6], 'color': "#ffcc00"},
+            {'range': [0.6, 0.8], 'color': "#99cc00"},
+            {'range': [0.8, 1.0], 'color': "#00cc44"},
+        ],
+    }
+))
+st.plotly_chart(fig_gauge, use_container_width=True)
+
 # --- Doughnut Chart ---
 st.subheader("⚡ Renewable Energy Mix")
 donut_data = {
@@ -109,7 +130,7 @@ donut_data = {
         filtered['Hydro power plants Installed capacity'].values[0]
     ]
 }
-bright_colors = ['#FFD700', '#00BFFF', '#32CD32']  # Gold, DeepSkyBlue, LimeGreen
+bright_colors = ['#FFD700', '#00BFFF', '#32CD32']
 fig_donut = px.pie(donut_data, values='Capacity', names='Source', hole=0.5,
                    color_discrete_sequence=bright_colors)
 fig_donut.update_traces(textposition='inside', textinfo='percent+label')
@@ -119,7 +140,7 @@ st.plotly_chart(fig_donut, use_container_width=True)
 st.subheader("📈 Readiness Score Over Time")
 fig_score = px.line(df, x='Month', y='Readiness Score', markers=True,
                     line_shape='linear',
-                    color_discrete_sequence=['#FF5733'])  # Bright orange-red
+                    color_discrete_sequence=['#FF5733'])
 st.plotly_chart(fig_score, use_container_width=True)
 
 # --- Data Table ---
