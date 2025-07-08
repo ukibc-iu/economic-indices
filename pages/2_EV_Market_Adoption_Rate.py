@@ -7,6 +7,23 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="Renewable Readiness Score", layout="wide")
 st.title("🌿 Renewable Transition Readiness Score")
 
+# === CHART WRAPPER ===
+def wrapped_chart(title, fig, height=420):  # Keep consistent height
+    chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
+    components.html(f"""
+    <div style="
+        background-color: #1e1e1e;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        color: white;
+    ">
+        <h4 style="margin-top: 0; margin-bottom: 10px;">{title}</h4>
+        {chart_html}
+    </div>
+    """, height=height + 60)
+
 # --- Load Data ---
 @st.cache_data
 def load_data():
@@ -68,58 +85,36 @@ if df is None or df.empty:
     st.warning("⚠️ No valid data available. Please check your CSV.")
     st.stop()
 
-# --- KPI Cards ---
+# --- Get Latest KPI Values ---
 latest_row = df.iloc[-1]
 latest_month = latest_row['Month']
 latest_quarter = latest_row['QuarterFormatted']
 latest_score = latest_row['Readiness Score']
 latest_consumption = latest_row['Power Consumption']
 
+# --- KPI Cards ---
 k1, k2, k3 = st.columns(3)
 k1.metric("🗓 Latest Period", f"{latest_month} / {latest_quarter}")
 k2.metric("📊 Readiness Score", f"{latest_score:.2f}")
 k3.metric("⚡ Total Power Consumption", f"{latest_consumption:,.0f} units")
 
-# --- Preview Type ---
+# --- Selection ---
 preview_type = st.selectbox("📅 Preview Type", ["Monthly", "Quarterly"])
-if preview_type == "Monthly":
-    period_list = df['Month'].unique().tolist()
-else:
-    period_list = df['QuarterFormatted'].unique().tolist()
-
+period_list = df['Month'].unique().tolist() if preview_type == "Monthly" else df['QuarterFormatted'].unique().tolist()
 selected_period = st.selectbox("📆 Select Month or Quarter", period_list)
 
-# --- Filtered Data ---
-if preview_type == "Monthly":
-    filtered = df[df['Month'] == selected_period]
-else:
-    filtered = df[df['QuarterFormatted'] == selected_period]
-
+filtered = df[df['Month'] == selected_period] if preview_type == "Monthly" else df[df['QuarterFormatted'] == selected_period]
 if filtered.empty:
     st.warning("⚠️ No data found for selected period.")
     st.stop()
 
-# === CHART WRAPPER ===
-def wrapped_chart(title, fig, height=420):
-    chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
-    components.html(f"""
-    <div style="
-        background-color: #1e1e1e;
-        padding: 1rem;
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        color: white;
-    ">
-        <h4 style="margin-top: 0; margin-bottom: 10px;">{title}</h4>
-        {chart_html}
-    </div>
-    """, height=height + 60)
+score_val = filtered['Readiness Score'].values[0]
 
-# === Donut - Gauge ===
-left_col, right_col = st.columns(2)
+# --- Chart Columns ---
+col1, col2 = st.columns([1, 1])
 
-with left_col:
+with col1:
+    # --- Doughnut Chart ---
     donut_data = {
         "Source": ["Solar", "Wind", "Hydro"],
         "Capacity": [
@@ -132,14 +127,17 @@ with left_col:
     fig_donut = px.pie(donut_data, values='Capacity', names='Source', hole=0.5,
                        color_discrete_sequence=bright_colors)
     fig_donut.update_traces(textposition='inside', textinfo='percent+label')
-    fig_donut.update_layout(height=400,
-                            paper_bgcolor='rgba(0,0,0,0)',
-                            plot_bgcolor='rgba(0,0,0,0)',
-                            font_color='white')
+    fig_donut.update_layout(
+        height=400,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font_color='white',
+        margin=dict(t=20, b=20)
+    )
     wrapped_chart(f"Renewable Energy Mix – {selected_period}", fig_donut)
 
-with right_col:
-    score_val = filtered['Readiness Score'].values[0]
+with col2:
+    # --- Gauge Chart ---
     fig_gauge = go.Figure(go.Indicator(
         mode="gauge+number",
         value=score_val,
@@ -148,7 +146,7 @@ with right_col:
         title={'text': "Readiness Score", 'font': {'color': 'white'}},
         gauge={
             'axis': {'range': [0, 1], 'tickcolor': 'white'},
-            'bar': {'color': "white"},
+            'bar': {'color': "white"},  # White value bar
             'steps': [
                 {'range': [0, 0.2], 'color': "#ff0000"},
                 {'range': [0.2, 0.4], 'color': "#ffa500"},
@@ -158,26 +156,28 @@ with right_col:
             ]
         }
     ))
-    fig_gauge.update_layout(height=400,
-                            paper_bgcolor='rgba(0,0,0,0)',
-                            plot_bgcolor='rgba(0,0,0,0)',
-                            font_color='white')
-    wrapped_chart(f"Readiness Score – {selected_period}", fig_gauge)
+    fig_gauge.update_layout(
+        height=400,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font_color='white'
+    )
+    wrapped_chart(f"Readiness Score Gauge – {selected_period}", fig_gauge)
 
-# === Line Chart ===
+# --- Line Chart ---
 st.subheader("📈 Readiness Score Over Time")
 fig_score = px.line(df, x='Month', y='Readiness Score', markers=True,
                     line_shape='linear',
                     color_discrete_sequence=['#FF5733'])
 fig_score.update_layout(
-    paper_bgcolor='rgba(0,0,0,0)',
+    height=400,
     plot_bgcolor='rgba(0,0,0,0)',
-    font_color='white',
-    height=450
+    paper_bgcolor='rgba(0,0,0,0)',
+    font_color='white'
 )
 st.plotly_chart(fig_score, use_container_width=True)
 
-# === Data Table ===
+# --- Data Table ---
 with st.expander("🔍 View Underlying Data Table"):
     st.dataframe(df[[
         'Month', 'QuarterFormatted', 'Renewable Share (%)',
