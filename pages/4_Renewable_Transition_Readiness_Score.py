@@ -102,7 +102,6 @@ if filtered.empty:
 
 # --- Gauge Chart for Selected Period's Readiness Score ---
 score_val = filtered['Readiness Score'].values[0]
-
 fig_gauge = go.Figure(go.Indicator(
     mode="gauge+number",
     value=score_val,
@@ -111,8 +110,8 @@ fig_gauge = go.Figure(go.Indicator(
     title={'text': "Readiness Score", 'font': {'color': 'white'}},
     gauge={
         'axis': {'range': [0, 1], 'tickcolor': 'white'},
-        'bgcolor': "black",
-        'bar': {'color': "black"},  # ✅ Change this from white to black
+        'bgcolor': "black",  # Background to prevent overlap
+        'bar': {'color': "black"},  # Invisible needle, so score appears clearly
         'steps': [
             {'range': [0, 0.2], 'color': "#FF0000"},
             {'range': [0.2, 0.4], 'color': "#FFA500"},
@@ -124,11 +123,7 @@ fig_gauge = go.Figure(go.Indicator(
 ))
 fig_gauge.update_layout(paper_bgcolor="black", font_color="white")
 
-
-st.plotly_chart(fig_gauge, use_container_width=True)
-
-# --- Doughnut Chart ---
-st.subheader("⚡ Renewable Energy Mix")
+# --- Doughnut Chart Data ---
 donut_data = {
     "Source": ["Solar", "Wind", "Hydro"],
     "Capacity": [
@@ -141,9 +136,18 @@ bright_colors = ['#FFD700', '#00BFFF', '#32CD32']  # Gold, DeepSkyBlue, LimeGree
 fig_donut = px.pie(donut_data, values='Capacity', names='Source', hole=0.5,
                    color_discrete_sequence=bright_colors)
 fig_donut.update_traces(textposition='inside', textinfo='percent+label')
-st.plotly_chart(fig_donut, use_container_width=True)
 
-# --- Line Graph Below Doughnut Chart ---
+# --- Show Gauge and Doughnut Side-by-Side ---
+col1, col2 = st.columns([2, 1])
+with col1:
+    st.subheader("📊 Readiness Score Gauge")
+    st.plotly_chart(fig_gauge, use_container_width=True)
+
+with col2:
+    st.subheader("⚡ Renewable Energy Mix")
+    st.plotly_chart(fig_donut, use_container_width=True)
+
+# --- Line Graph Below ---
 st.subheader("📈 Readiness Score Over Time")
 fig_score = px.line(df, x='Month', y='Readiness Score', markers=True,
                     line_shape='linear',
