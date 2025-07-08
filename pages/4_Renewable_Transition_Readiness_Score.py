@@ -106,21 +106,24 @@ score_val = filtered['Readiness Score'].values[0]
 fig_gauge = go.Figure(go.Indicator(
     mode="gauge+number",
     value=score_val,
-    number={'font': {'color': 'black', 'size': 36}},  # 👈 Ensures visibility
+    number={'font': {'color': 'white', 'size': 36}},  # White font for value
     domain={'x': [0, 1], 'y': [0, 1]},
-    title={'text': "Readiness Score"},
+    title={'text': "Readiness Score", 'font': {'color': 'white'}},
     gauge={
-        'axis': {'range': [0, 1]},
-        'bar': {'color': "red"},
+        'axis': {'range': [0, 1], 'tickcolor': 'white'},
+        'bgcolor': "black",
+        'bar': {'color': "white"},  # Changed from red to white
         'steps': [
-            {'range': [0, 0.2], 'color': "#ff0000"},
-            {'range': [0.2, 0.4], 'color': "#ffa500"},
-            {'range': [0.4, 0.6], 'color': "#ffff00"},
-            {'range': [0.6, 0.8], 'color': "#90ee90"},
+            {'range': [0, 0.2], 'color': "#FF0000"},
+            {'range': [0.2, 0.4], 'color': "#FFA500"},
+            {'range': [0.4, 0.6], 'color': "#FFFF00"},
+            {'range': [0.6, 0.8], 'color': "#90EE90"},
             {'range': [0.8, 1.0], 'color': "#008000"},
         ]
     }
 ))
+fig_gauge.update_layout(paper_bgcolor="black", font_color="white")
+
 st.plotly_chart(fig_gauge, use_container_width=True)
 
 # --- Doughnut Chart ---
