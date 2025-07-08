@@ -46,12 +46,26 @@ def load_data():
         df[col] = pd.to_numeric(df[col], errors='coerce')
     df.dropna(inplace=True)
 
-    df['Total Renewable Capacity'] = (
-        df['Solar power plants Installed capacity'] +
-        df['Wind power plants Installed capacity'] +
-        df['Hydro power plants Installed capacity']
+    # --- Calculate Actual Renewable Generation using Capacity Factors ---
+    HOURS_PER_MONTH = 720
+    CF_SOLAR = 0.2
+    CF_WIND = 0.3
+    CF_HYDRO = 0.4
+
+    df['Solar Generation (GWh)'] = df['Solar power plants Installed capacity'] * CF_SOLAR * HOURS_PER_MONTH / 1000
+    df['Wind Generation (GWh)'] = df['Wind power plants Installed capacity'] * CF_WIND * HOURS_PER_MONTH / 1000
+    df['Hydro Generation (GWh)'] = df['Hydro power plants Installed capacity'] * CF_HYDRO * HOURS_PER_MONTH / 1000
+
+    df['Total Renewable Generation (GWh)'] = (
+        df['Solar Generation (GWh)'] +
+        df['Wind Generation (GWh)'] +
+        df['Hydro Generation (GWh)']
     )
-    df['Renewable Share (%)'] = (df['Total Renewable Capacity'] / df['Power Consumption']) * 100
+
+    df['Power Consumption (GWh)'] = df['Power Consumption'] * 1000
+
+    df['Renewable Share (%)'] = (df['Total Renewable Generation (GWh)'] / df['Power Consumption (GWh)']) * 100
+
     df['Norm_Budget'] = (df['Budgetary allocation for infrastructure sector'] - df['Budgetary allocation for infrastructure sector'].min()) / (
         df['Budgetary allocation for infrastructure sector'].max() - df['Budgetary allocation for infrastructure sector'].min()
     )
