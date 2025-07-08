@@ -145,10 +145,9 @@ with right_col:
         value=score_val,
         number={'font': {'color': 'white'}},
         domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': "Readiness Score", 'font': {'color': 'white'}},
         gauge={
             'axis': {'range': [0, 1], 'tickcolor': 'white'},
-            'bar': {'color': "white"},
+            'bar': {'color': "black"},
             'steps': [
                 {'range': [0, 0.2], 'color': "#ff0000"},
                 {'range': [0.2, 0.4], 'color': "#ffa500"},
