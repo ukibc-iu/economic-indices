@@ -129,7 +129,7 @@ with col3:
     st.markdown(f"""
         <div class="card red-card">
             <div style="font-size: 1.2rem;">⚡ Total Power Consumption</div>
-            <div style="font-size: 2rem;">{latest_consumption:,.0f} units</div>
+            <div style="font-size: 2rem;">{latest_consumption:,.0f} BU</div>
         </div>
     """, unsafe_allow_html=True)
 
