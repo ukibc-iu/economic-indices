@@ -106,6 +106,7 @@ score_val = filtered['Readiness Score'].values[0]
 fig_gauge = go.Figure(go.Indicator(
     mode="gauge+number",
     value=score_val,
+    number={'font': {'color': 'black', 'size': 36}},  # 👈 Ensures visibility
     domain={'x': [0, 1], 'y': [0, 1]},
     title={'text': "Readiness Score"},
     gauge={
