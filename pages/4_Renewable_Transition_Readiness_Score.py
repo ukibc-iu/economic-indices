@@ -6,7 +6,7 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Renewable Readiness Score", layout="wide")
 st.title("🌿 Renewable Transition Readiness Score")
-st.markdown("*The Renewable Transition Readiness Score is a composite index measuring how prepared India is for clean energy adoption, based on infrastructure investment and the share of renewables in total power consumption.*")
+st.markdown("*The Renewable Transition Readiness Score is a composite index measuring how prepared India is for clean energy adoption, based on MNRE investment and the share of renewables in total power consumption.*")
 
 # --- Load Data ---
 @st.cache_data
@@ -16,7 +16,6 @@ def load_data():
     except FileNotFoundError:
         st.error("❌ Could not find 'data/Renewable_Energy.csv'. Make sure it's in the correct folder.")
         return None
-    st.write("🧾 Columns in your CSV file:", df.columns.tolist())
     df.columns = df.columns.str.strip()
 
     expected_cols = [
