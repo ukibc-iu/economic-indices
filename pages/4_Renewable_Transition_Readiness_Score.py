@@ -24,7 +24,7 @@ def load_data():
         'Solar power plants Installed capacity',
         'Wind power plants Installed capacity',
         'Hydro power plants Installed capacity',
-        'Budgetary allocation for infrastructure sector',
+        'Budgetary allocation for MNRE sector',
         'Power Consumption'
     ]
     for col in expected_cols:
@@ -67,8 +67,8 @@ def load_data():
 
     df['Renewable Share (%)'] = (df['Total Renewable Generation (GWh)'] / df['Power Consumption (GWh)']) * 100
 
-    df['Norm_Budget'] = (df['Budgetary allocation for infrastructure sector'] - df['Budgetary allocation for infrastructure sector'].min()) / (
-        df['Budgetary allocation for infrastructure sector'].max() - df['Budgetary allocation for infrastructure sector'].min()
+    df['Norm_Budget'] = (df['Budgetary allocation for MNRE sector'] - df['Budgetary allocation for MNRE sector'].min()) / (
+        df['Budgetary allocation for MNRE sector'].max() - df['Budgetary allocation for MNRE sector'].min()
     )
     df['Norm_Share'] = (df['Renewable Share (%)'] - df['Renewable Share (%)'].min()) / (
         df['Renewable Share (%)'].max() - df['Renewable Share (%)'].min()
@@ -236,5 +236,5 @@ with st.expander("🔍 View Underlying Data Table"):
         'Month', 'QuarterFormatted', 'Renewable Share (%)',
         'Readiness Score', 'Solar power plants Installed capacity',
         'Wind power plants Installed capacity', 'Hydro power plants Installed capacity',
-        'Power Consumption', 'Budgetary allocation for infrastructure sector'
+        'Power Consumption', 'Budgetary allocation for MNRE sector'
     ]])
