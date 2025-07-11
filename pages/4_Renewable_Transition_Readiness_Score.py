@@ -16,7 +16,7 @@ def load_data():
     except FileNotFoundError:
         st.error("❌ Could not find 'data/Renewable_Energy.csv'. Make sure it's in the correct folder.")
         return None
-
+    st.write("🧾 Columns in your CSV file:", df.columns.tolist())
     df.columns = df.columns.str.strip()
 
     expected_cols = [
