@@ -128,14 +128,14 @@ def load_housing():
     except:
         return None, None, "–"
 
-# Attach values + month to config
+# Attach values and month to config
 INDEX_CONFIG['Consumer Demand Index (CDI)']['prev'], INDEX_CONFIG['Consumer Demand Index (CDI)']['value'], INDEX_CONFIG['Consumer Demand Index (CDI)']['month'] = load_cdi()
 INDEX_CONFIG['IMP Index']['prev'], INDEX_CONFIG['IMP Index']['value'], INDEX_CONFIG['IMP Index']['month'] = load_imp()
 INDEX_CONFIG['Housing Affordability Stress Index']['prev'], INDEX_CONFIG['Housing Affordability Stress Index']['value'], INDEX_CONFIG['Housing Affordability Stress Index']['month'] = load_housing()
 
-# Build Table
+# Build table data
 st.subheader("📈 Index Overview Table")
-data = []
+table_data = []
 for name, cfg in INDEX_CONFIG.items():
     curr, prev = cfg.get('value'), cfg.get('prev')
     min_val, max_val = cfg['scale']
@@ -145,27 +145,34 @@ for name, cfg in INDEX_CONFIG.items():
         pct = percent_change(prev, curr, min_val, max_val)
         pct_display = f"{pct:+.2f}%" if pct is not None else "–"
         color = "green" if pct and pct > 0 else "red"
+        pct_colored = f":{color}[{pct_display}]"
     else:
-        pct_display = "–"
-        color = "gray"
+        pct_colored = "–"
 
-    data.append({
-        "Index": f"{cfg['icon']} {name}",
-        "Latest Month": month,
-        "Current Value": f"{curr:.2f}" if curr is not None else "–",
-        "MoM Change": f":{color}[{pct_display}]",
-        "Action": f"Go →"
+    table_data.append({
+        "📌 Index": f"{cfg['icon']} {name}",
+        "🗓️ Latest Month": month,
+        "📈 Current Value": f"{curr:.2f}" if curr is not None else "–",
+        "🔁 MoM Change (%)": pct_colored,
+        "🔗 Action": "Open"
     })
 
-df_display = pd.DataFrame(data)
+df_display = pd.DataFrame(table_data)
 
-# Show Table
+# Show dataframe (excluding button column)
+st.dataframe(df_display.drop(columns=["🔗 Action"]), use_container_width=True)
+
+# Optional download
+csv = df_display.to_csv(index=False).encode('utf-8')
+st.download_button("⬇️ Download Table as CSV", csv, "index_overview.csv", "text/csv", key="download-csv")
+
+# Optional: Buttons section
+st.markdown("### 🧭 Detailed View With Actions")
 for i in range(len(df_display)):
     cols = st.columns([3, 2, 2, 2, 1])
-    cols[0].markdown(f"**{df_display.iloc[i]['Index']}**")
-    cols[1].markdown(df_display.iloc[i]['Latest Month'])
-    cols[2].markdown(df_display.iloc[i]['Current Value'])
-    cols[3].markdown(df_display.iloc[i]['MoM Change'])
-    if df_display.iloc[i]['Action'] != "–":
-        if cols[4].button("Open", key=f"btn-{i}"):
-            st.switch_page(f"pages/{INDEX_CONFIG[list(INDEX_CONFIG.keys())[i]]['page']}.py")
+    cols[0].markdown(f"**{df_display.iloc[i]['📌 Index']}**")
+    cols[1].markdown(df_display.iloc[i]['🗓️ Latest Month'])
+    cols[2].markdown(df_display.iloc[i]['📈 Current Value'])
+    cols[3].markdown(df_display.iloc[i]['🔁 MoM Change (%)'])
+    if cols[4].button("Open", key=f"btn-{i}"):
+        st.switch_page(f"pages/{INDEX_CONFIG[list(INDEX_CONFIG.keys())[i]]['page']}.py")
