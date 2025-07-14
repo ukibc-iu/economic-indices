@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
+# --- Page Config ---
 st.set_page_config(page_title="Housing Affordability Index", layout="wide")
 st.title("🏡 Housing Affordability Index Dashboard")
 st.markdown("*The Housing Affordability Index reflects how affordable residential property is for an average individual, using per capita income and property prices.*")
@@ -13,39 +14,33 @@ def load_data():
     df = pd.read_csv("data/Housing_Affordability.csv")
     df.columns = df.columns.str.strip()
 
-    # Explicit date parsing fix
-    df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
     df.dropna(subset=['Date'], inplace=True)
 
     df['Month'] = df['Date'].dt.strftime('%b-%y')
-
     def format_quarter(row):
         q = f"Q{((row['Date'].month - 1) // 3 + 1)}"
         fy = row['Date'].year if row['Date'].month >= 4 else row['Date'].year - 1
         return f"{q} {fy}-{str(fy + 1)[-2:]}"
     df['QuarterFormatted'] = df.apply(format_quarter, axis=1)
 
+    # Convert columns to numeric
     df['Property Price Index'] = pd.to_numeric(df['Property Price Index'], errors='coerce')
     df['Per Capita NNI'] = pd.to_numeric(df['Per Capita NNI'], errors='coerce')
+    df['Sales of Houses'] = pd.to_numeric(df['Sales of Houses'], errors='coerce')
 
-    # Affordability Index calculation
+    # Affordability Index Calculation
     LOAN_FACTOR = 0.003
     df['Affordability Index'] = (df['Per Capita NNI'] / df['Property Price Index']) * LOAN_FACTOR
 
     df.dropna(inplace=True)
     df = df.sort_values('Date')
-
     return df
 
 df = load_data()
-
 if df is None or df.empty:
     st.warning("⚠️ No valid data available. Please check your CSV.")
     st.stop()
-
-# Debug: Check date range
-# st.write("Earliest date:", df['Date'].min())
-# st.write("Latest date:", df['Date'].max())
 
 # --- Latest KPIs ---
 latest_row = df.iloc[-1]
@@ -54,6 +49,7 @@ latest_quarter = latest_row['QuarterFormatted']
 latest_index = latest_row['Affordability Index']
 latest_price = latest_row['Property Price Index']
 
+# --- KPI Styles ---
 kpi_style = """
 <style>
 .card {
@@ -97,7 +93,7 @@ with col3:
         </div>
     """, unsafe_allow_html=True)
 
-# --- Preview Type ---
+# --- Preview Controls ---
 preview_type = st.selectbox("🗓 Preview Type", ["Monthly", "Quarterly"])
 period_list = df['Month'].unique().tolist() if preview_type == "Monthly" else df['QuarterFormatted'].unique().tolist()
 selected_period = st.selectbox("📆 Select Month or Quarter", period_list)
@@ -115,21 +111,21 @@ fig_gauge = go.Figure(go.Indicator(
     number={'font': {'color': 'white'}},
     domain={'x': [0, 1], 'y': [0, 1]},
     gauge={
-        'axis': {'range': [0, 1], 'tickcolor': 'white'},
+        'axis': {'range': [0, 100], 'tickcolor': 'white'},
         'bar': {'color': "black"},
         'steps': [
-            {'range': [0, 0.2], 'color': "#ff0000"},
-            {'range': [0.2, 0.3], 'color': "#ffa500"},
-            {'range': [0.3, 0.4], 'color': "#ffff00"},
-            {'range': [0.4, 0.6], 'color': "#90ee90"},
-            {'range': [0.6, 1], 'color': "#008000"},
+            {'range': [0, 20], 'color': "#ff0000"},
+            {'range': [20, 30], 'color': "#ffa500"},
+            {'range': [30, 40], 'color': "#ffff00"},
+            {'range': [40, 60], 'color': "#90ee90"},
+            {'range': [60, 100], 'color': "#008000"},
         ]
     }
 ))
 fig_gauge.update_layout(height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
 st.plotly_chart(fig_gauge, use_container_width=True)
 
-# --- Line Chart ---
+# --- Affordability Index Over Time ---
 st.subheader("📈 Affordability Index Over Time")
 fig_line = px.line(df, x='Date', y='Affordability Index', markers=True,
                    line_shape='linear', color_discrete_sequence=['#FF5733'])
@@ -137,6 +133,34 @@ fig_line.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0
                        font_color='white', height=450)
 st.plotly_chart(fig_line, use_container_width=True)
 
+# --- Affordability vs Sales ---
+st.subheader("📊 Affordability Index vs. Sales of Houses")
+fig_combo = go.Figure()
+
+fig_combo.add_trace(go.Scatter(
+    x=df['Date'], y=df['Affordability Index'],
+    mode='lines+markers', name='Affordability Index',
+    line=dict(color='#FF5733', width=2)
+))
+
+fig_combo.add_trace(go.Bar(
+    x=df['Date'], y=df['Sales of Houses'],
+    name='Sales of Houses', marker_color='rgba(0, 123, 255, 0.6)', yaxis='y2'
+))
+
+fig_combo.update_layout(
+    yaxis=dict(title='Affordability Index'),
+    yaxis2=dict(title='Sales of Houses', overlaying='y', side='right', showgrid=False),
+    xaxis=dict(title='Date'),
+    legend=dict(orientation="h"),
+    height=500,
+    paper_bgcolor='rgba(0,0,0,0)',
+    plot_bgcolor='rgba(0,0,0,0)',
+    font_color='white'
+)
+st.plotly_chart(fig_combo, use_container_width=True)
+
 # --- Data Table ---
 with st.expander("🔍 View Underlying Data Table"):
-    st.dataframe(df[['Date', 'Month', 'QuarterFormatted', 'Affordability Index', 'Property Price Index', 'Per Capita NNI']])
+    st.dataframe(df[['Date', 'Month', 'QuarterFormatted', 'Affordability Index',
+                     'Property Price Index', 'Per Capita NNI', 'Sales of Houses']])
