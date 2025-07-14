@@ -101,48 +101,31 @@ if filtered.empty:
     st.warning("⚠️ No data found for selected period.")
     st.stop()
 
-# --- Custom Gauge with Needle ---
-score_val = filtered['Affordability Index'].values[0]
+# --- Speedometer Gauge Chart ---
+score_val = filtered['Affordability Index'].values[0] * 100  # Scale 0–1 to 0–100
 
-def create_gauge_with_needle(value):
-    scaled_val = value * 100  # Convert from 0–1 to percentage
-    degrees = 180 - (scaled_val * 1.8)  # Map 0–100% to 180° arc
-    radians = np.deg2rad(degrees)
-    radius = 0.4
-    x = 0.5 + radius * np.cos(radians)
-    y = 0.5 + radius * np.sin(radians)
-
-    needle = {
-        'type': 'line',
-        'x0': 0.5, 'y0': 0.5,
-        'x1': x,   'y1': y,
-        'line': {'color': 'black', 'width': 4}
-    }
-
-    fig = go.Figure()
-
-    fig.add_trace(go.Pie(
-        values=[20, 10, 10, 20, 40, 100],
-        labels=["Very Low", "Low", "Moderate", "Good", "Excellent", ""],
-        marker_colors=["#ff0000", "#ffa500", "#ffff00", "#90ee90", "#008000", "white"],
-        hole=0.5,
-        direction='clockwise',
-        rotation=180,
-        textinfo='label',
-        showlegend=False
+def create_speedometer_gauge(value):
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=value,
+        number={'suffix': "%", 'font': {'size': 36}},
+        gauge={
+            'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "gray"},
+            'bar': {'color': "#004466"},
+            'bgcolor': "white",
+            'borderwidth': 1,
+            'bordercolor': "gray",
+            'steps': [
+                {'range': [0, 20], 'color': '#ff4d4d'},
+                {'range': [20, 40], 'color': '#ffa64d'},
+                {'range': [40, 60], 'color': '#ffff66'},
+                {'range': [60, 80], 'color': '#90ee90'},
+                {'range': [80, 100], 'color': '#228B22'},
+            ],
+        }
     ))
 
     fig.update_layout(
-        shapes=[needle],
-        annotations=[
-            dict(
-                x=0.5, y=0.5,
-                text=f"<b>{value:.2%}</b>",  # Percent format
-                showarrow=False,
-                font=dict(size=22, color="white")
-            )
-        ],
-        margin=dict(l=0, r=0, t=0, b=0),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
         height=400
@@ -150,15 +133,19 @@ def create_gauge_with_needle(value):
     return fig
 
 st.subheader("🧭 Affordability Gauge")
-gauge_fig = create_gauge_with_needle(score_val)
+gauge_fig = create_speedometer_gauge(score_val)
 st.plotly_chart(gauge_fig, use_container_width=True)
 
 # --- Line Chart ---
 st.subheader("📈 Affordability Index Over Time")
 fig_line = px.line(df, x='Month', y='Affordability Index', markers=True,
                    line_shape='linear', color_discrete_sequence=['#FF5733'])
-fig_line.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-                       font_color='white', height=450)
+fig_line.update_layout(
+    paper_bgcolor='rgba(0,0,0,0)',
+    plot_bgcolor='rgba(0,0,0,0)',
+    font_color='white',
+    height=450
+)
 st.plotly_chart(fig_line, use_container_width=True)
 
 # --- Data Table ---
