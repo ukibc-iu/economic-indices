@@ -94,37 +94,19 @@ def load_cdi():
 # Load IMP
 def load_imp():
     try:
-        cfg = INDEX_CONFIG['IMP Index']
-        file_path = cfg['file']
-        
-        # Debugging
-        if not os.path.exists(file_path):
-            st.error(f"❌ File not found: {file_path}")
-            return None, None
-
-        df = pd.read_csv(file_path)
-
-        # Show structure to debug
-        st.write("📄 IMP Data Preview", df.head())
-        st.write("📊 Columns:", df.columns.tolist())
-
-        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-        df['Scale'] = pd.to_numeric(df['Scale'], errors='coerce')
-
+        df = pd.read_csv(INDEX_CONFIG['IMP Index']['file'])
+        # Parse as Month-Year format like 'Apr-17'
+        df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
         df.dropna(subset=['Date', 'Scale'], inplace=True)
         df = df.sort_values('Date')
-
         if len(df) < 2:
             st.warning("⚠️ Not enough data to calculate change for IMP Index")
             return None, None
-
         curr, prev = df['Scale'].iloc[-1], df['Scale'].iloc[-2]
         return prev, curr
-
     except Exception as e:
         st.error(f"❌ Error loading IMP Index: {e}")
         return None, None
-
 # Load Housing Affordability
 def load_housing():
     try:
