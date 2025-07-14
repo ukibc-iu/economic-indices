@@ -9,7 +9,7 @@ st.set_page_config(layout="wide", page_title="Economic Indices Overview")
 st.title("📊 Economic Indices Dashboard")
 st.markdown("*Track key economic indicators and analyze their month-over-month changes.*")
 
-# Index Configuration: paths, ranges, icons, and overviews
+# Index Configuration
 INDEX_CONFIG = {
     "Consumer Demand Index (CDI)": {
         "file": "data/Consumer_Demand_Index.csv",
@@ -29,7 +29,7 @@ INDEX_CONFIG = {
     },
     "Housing Affordability Stress Index": {
         "file": "data/Housing_Affordability.csv",
-        "scale": (0, 2.5),  # Assumed
+        "scale": (0, 2.5),
         "icon": "🏠",
         "page": "3_Housing_Affordability_Stress_Index",
         "description": "Measures how financially stretched households are in buying homes."
@@ -102,7 +102,7 @@ def load_imp():
     except:
         return None, None
 
-# Load Housing Affordability Index
+# Load Housing Affordability
 def load_housing():
     try:
         df = pd.read_csv(INDEX_CONFIG['Housing Affordability Stress Index']['file'])
