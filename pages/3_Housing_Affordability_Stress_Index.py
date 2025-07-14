@@ -1,77 +1,89 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
+import numpy as np
+import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Housing Affordability Stress Index", layout="wide")
-st.title("🏠 Housing Affordability Stress Index (HASI)")
+# Page title
+st.title("🏘️ Housing Affordability Stress Index")
 
-# --- Load Data ---
+# Load local data
 @st.cache_data
 def load_data():
-    df = pd.read_csv("data/Housing_Affordability.csv")
+    df = pd.read_csv("data/Housing_Affordability.csv")  # local CSV path
+
+    # Clean column names
     df.columns = df.columns.str.strip()
 
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-    df.dropna(subset=['Date'], inplace=True)
+    # Parse dates
+    df['Date'] = pd.to_datetime(df['Date'])
 
-    df['Month'] = df['Date'].dt.strftime('%b-%Y')
-    df['Quarter'] = df['Date'].dt.to_period('Q').astype(str)
-
-    # Convert % and clean numeric values
-    df['Housing Loan Interest Rate'] = df['Housing Loan Interest Rate'].str.replace('%', '').astype(float) / 100
-    df['Urbanization Rate'] = df['Urbanization Rate'].str.replace('%', '').astype(float) / 100
-    df['Per Capita NNI'] = df['Per Capita NNI'].astype(float)
-
-    # Calculate Affordability Ratio using only index
-    loan_eligibility_factor = 5
-    df['Affordability Ratio'] = df['Property Price Index'] / (df['Per Capita NNI'] * loan_eligibility_factor)
-
-    # Normalize Affordability Stress Score
-    df['Stress Score'] = (df['Affordability Ratio'] - df['Affordability Ratio'].min()) / (
-        df['Affordability Ratio'].max() - df['Affordability Ratio'].min()
+    # Clean Per Capita NNI
+    df['Per Capita NNI'] = (
+        df['Per Capita NNI']
+        .astype(str)
+        .str.replace(',', '', regex=False)
+        .str.replace('₹', '', regex=False)
+        .str.strip()
     )
+    df['Per Capita NNI'] = pd.to_numeric(df['Per Capita NNI'], errors='coerce')
 
-    return df
+    # Clean Housing Loan Interest Rate
+    df['Housing Loan Interest Rate'] = (
+        df['Housing Loan Interest Rate']
+        .astype(str)
+        .str.replace('%', '', regex=False)
+        .str.strip()
+    )
+    df['Housing Loan Interest Rate'] = pd.to_numeric(df['Housing Loan Interest Rate'], errors='coerce')
 
+    # Clean Urbanization Rate
+    df['Urbanization Rate'] = (
+        df['Urbanization Rate']
+        .astype(str)
+        .str.replace('%', '', regex=False)
+        .str.strip()
+    )
+    df['Urbanization Rate'] = pd.to_numeric(df['Urbanization Rate'], errors='coerce')
+
+    return df.dropna()
+
+# Load the dataset
 df = load_data()
 
-# --- Latest Snapshot ---
+# Loan eligibility assumption
+LOAN_ELIGIBILITY_FACTOR = 5  # i.e., you can get loan up to 5× your annual income
+
+# Calculate Affordability Ratio using Property Price Index
+df['Affordability Ratio'] = df['Property Price Index'] / (df['Per Capita NNI'] * LOAN_ELIGIBILITY_FACTOR)
+
+# Normalize Affordability Score (0 to 1)
+df['Affordability Score'] = (
+    df['Affordability Ratio'] - df['Affordability Ratio'].min()
+) / (df['Affordability Ratio'].max() - df['Affordability Ratio'].min())
+
+# Show latest data point
+st.subheader("📊 Latest Housing Affordability Snapshot")
 latest = df.iloc[-1]
-st.subheader(f"📅 Latest: {latest['Month']}")
-col1, col2, col3 = st.columns(3)
+st.metric("Affordability Ratio", f"{latest['Affordability Ratio']:.2f}×")
+st.metric("Affordability Score (normalized)", f"{latest['Affordability Score']:.2f}")
+st.metric("PPI", f"{latest['Property Price Index']:.2f}")
+st.metric("Per Capita NNI", f"₹{latest['Per Capita NNI']:.0f}")
+st.metric("Loan Rate", f"{latest['Housing Loan Interest Rate']:.2f}%")
 
-col1.metric("🏠 Property Price Index", f"{latest['Property Price Index']:.2f}")
-col2.metric("🧮 Affordability Ratio", f"{latest['Affordability Ratio']:.2f}")
-col3.metric("🔥 Stress Score", f"{latest['Stress Score']:.2f}")
-
-# --- Line Chart ---
-st.plotly_chart(
-    px.line(df, x="Month", y="Stress Score", markers=True,
-            title="Housing Affordability Stress Score Over Time",
-            color_discrete_sequence=["red"])
-    .update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white'),
-    use_container_width=True
+# Plot trends
+st.subheader("📈 Affordability Trend Over Time")
+selected_metric = st.selectbox(
+    "Choose metric to plot:",
+    ['Affordability Ratio', 'Affordability Score', 'Property Price Index', 'Per Capita NNI']
 )
 
-# --- Gauge Chart ---
-fig_gauge = go.Figure(go.Indicator(
-    mode="gauge+number",
-    value=latest['Stress Score'],
-    gauge={
-        'axis': {'range': [0, 1]},
-        'bar': {'color': "darkred"},
-        'steps': [
-            {'range': [0, 0.3], 'color': "lightgreen"},
-            {'range': [0.3, 0.6], 'color': "yellow"},
-            {'range': [0.6, 1], 'color': "red"},
-        ],
-    },
-    number={'suffix': "", 'font': {'color': "white"}}
-))
-fig_gauge.update_layout(height=350, title="Current Housing Stress Score", font_color="white")
-st.plotly_chart(fig_gauge, use_container_width=True)
+fig, ax = plt.subplots()
+ax.plot(df['Date'], df[selected_metric], marker='o', linewidth=2)
+ax.set_xlabel("Date")
+ax.set_ylabel(selected_metric)
+ax.grid(True)
+st.pyplot(fig)
 
-# --- Data Table ---
-with st.expander("🔍 View Full Data Table"):
-    st.dataframe(df[['Month', 'Property Price Index', 'Per Capita NNI', 'Affordability Ratio', 'Stress Score']])
+# Raw data expander
+with st.expander("🗂️ Show raw data"):
+    st.dataframe(df)
