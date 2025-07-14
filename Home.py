@@ -94,12 +94,19 @@ def load_cdi():
 def load_imp():
     try:
         df = pd.read_csv(INDEX_CONFIG['IMP Index']['file'])
+        df.columns = df.columns.str.strip()  # Clean column names
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+        df['Scale'] = pd.to_numeric(df['Scale'], errors='coerce')
         df.dropna(subset=['Date', 'Scale'], inplace=True)
         df = df.sort_values('Date')
+
+        if len(df) < 2:
+            return None, None
+
         curr, prev = df['Scale'].iloc[-1], df['Scale'].iloc[-2]
         return prev, curr
-    except:
+    except Exception as e:
+        print("IMP Load Error:", e)
         return None, None
 
 # Load Housing Affordability
