@@ -36,7 +36,6 @@ def load_data():
     return df
 
 df = load_data()
-st.write("✅ Available columns in DataFrame:", df.columns.tolist())
 
 if df is None or df.empty:
     st.warning("⚠️ No valid data available. Please check your CSV.")
