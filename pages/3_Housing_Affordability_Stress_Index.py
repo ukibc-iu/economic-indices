@@ -9,7 +9,7 @@ st.title("🏠 Housing Affordability Stress Index (HASI)")
 # --- Load Data ---
 @st.cache_data
 def load_data():
-    df = pd.read_excel("data/Housing_Affordability.xlsx")
+    df = pd.read_csv("data/Housing_Affordability.csv")
     df.columns = df.columns.str.strip()
 
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
