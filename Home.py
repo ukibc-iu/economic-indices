@@ -26,7 +26,8 @@ INDEX_CONFIG = {
         "scale": (0, 10),
         "icon": "🚗",
         "page": "2_EV_Market_Adoption_Rate",
-        "description": "Tracks how quickly India is transitioning to electric mobility."
+        "description": "Tracks how quickly India is transitioning to electric mobility.",
+        "month": "Jul-25"
     },
     "Housing Affordability Stress Index": {
         "file": "data/Housing_Affordability.csv",
@@ -41,7 +42,8 @@ INDEX_CONFIG = {
         "scale": (0, 5),
         "icon": "🌱",
         "page": "4_Renewable_Transition_Readiness_Score",
-        "description": "Measures how prepared India is to shift from fossil fuels to clean energy."
+        "description": "Measures how prepared India is to shift from fossil fuels to clean energy.",
+        "month": "Jul-25"
     },
     "Infrastructure Activity Index (IAI)": {
         "value": None,
@@ -49,7 +51,8 @@ INDEX_CONFIG = {
         "scale": (0, 5),
         "icon": "🏢",
         "page": "5_Infrastructure_Activity_Index_(IAI)",
-        "description": "Tracks and forecasts the pace of infrastructure development."
+        "description": "Tracks and forecasts the pace of infrastructure development.",
+        "month": "–"
     },
     "IMP Index": {
         "file": "data/IMP_Index.csv",
@@ -87,26 +90,28 @@ def load_cdi():
         df = df.sort_values('Date')
 
         curr, prev = df['CDI_Real'].iloc[-1], df['CDI_Real'].iloc[-2]
-        return prev, curr
+        latest_month = df['Date'].iloc[-1].strftime('%b-%y')
+        return prev, curr, latest_month
     except:
-        return None, None
+        return None, None, "–"
 
 # Load IMP
 def load_imp():
     try:
         df = pd.read_csv(INDEX_CONFIG['IMP Index']['file'])
-        # Parse as Month-Year format like 'Apr-17'
         df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
         df.dropna(subset=['Date', 'Scale'], inplace=True)
         df = df.sort_values('Date')
         if len(df) < 2:
             st.warning("⚠️ Not enough data to calculate change for IMP Index")
-            return None, None
+            return None, None, "–"
         curr, prev = df['Scale'].iloc[-1], df['Scale'].iloc[-2]
-        return prev, curr
+        latest_month = df['Date'].iloc[-1].strftime('%b-%y')
+        return prev, curr, latest_month
     except Exception as e:
         st.error(f"❌ Error loading IMP Index: {e}")
-        return None, None
+        return None, None, "–"
+
 # Load Housing Affordability
 def load_housing():
     try:
@@ -118,14 +123,15 @@ def load_housing():
         df['Affordability Index'] = (df['Per Capita NNI'] / df['Property Price Index']) * 0.003
         df = df.sort_values('Date')
         curr, prev = df['Affordability Index'].iloc[-1], df['Affordability Index'].iloc[-2]
-        return prev, curr
+        latest_month = df['Date'].iloc[-1].strftime('%b-%y')
+        return prev, curr, latest_month
     except:
-        return None, None
+        return None, None, "–"
 
-# Attach values to config
-INDEX_CONFIG['Consumer Demand Index (CDI)']['prev'], INDEX_CONFIG['Consumer Demand Index (CDI)']['value'] = load_cdi()
-INDEX_CONFIG['IMP Index']['prev'], INDEX_CONFIG['IMP Index']['value'] = load_imp()
-INDEX_CONFIG['Housing Affordability Stress Index']['prev'], INDEX_CONFIG['Housing Affordability Stress Index']['value'] = load_housing()
+# Attach values + month to config
+INDEX_CONFIG['Consumer Demand Index (CDI)']['prev'], INDEX_CONFIG['Consumer Demand Index (CDI)']['value'], INDEX_CONFIG['Consumer Demand Index (CDI)']['month'] = load_cdi()
+INDEX_CONFIG['IMP Index']['prev'], INDEX_CONFIG['IMP Index']['value'], INDEX_CONFIG['IMP Index']['month'] = load_imp()
+INDEX_CONFIG['Housing Affordability Stress Index']['prev'], INDEX_CONFIG['Housing Affordability Stress Index']['value'], INDEX_CONFIG['Housing Affordability Stress Index']['month'] = load_housing()
 
 # Build Table
 st.subheader("📈 Index Overview Table")
@@ -133,6 +139,7 @@ data = []
 for name, cfg in INDEX_CONFIG.items():
     curr, prev = cfg.get('value'), cfg.get('prev')
     min_val, max_val = cfg['scale']
+    month = cfg.get("month", "–")
 
     if curr is not None and prev is not None:
         pct = percent_change(prev, curr, min_val, max_val)
@@ -144,6 +151,7 @@ for name, cfg in INDEX_CONFIG.items():
 
     data.append({
         "Index": f"{cfg['icon']} {name}",
+        "Latest Month": month,
         "Current Value": f"{curr:.2f}" if curr is not None else "–",
         "MoM Change": f":{color}[{pct_display}]",
         "Action": f"Go →"
@@ -153,10 +161,11 @@ df_display = pd.DataFrame(data)
 
 # Show Table
 for i in range(len(df_display)):
-    cols = st.columns([3, 2, 2, 1])
+    cols = st.columns([3, 2, 2, 2, 1])
     cols[0].markdown(f"**{df_display.iloc[i]['Index']}**")
-    cols[1].markdown(df_display.iloc[i]['Current Value'])
-    cols[2].markdown(df_display.iloc[i]['MoM Change'])
+    cols[1].markdown(df_display.iloc[i]['Latest Month'])
+    cols[2].markdown(df_display.iloc[i]['Current Value'])
+    cols[3].markdown(df_display.iloc[i]['MoM Change'])
     if df_display.iloc[i]['Action'] != "–":
-        if cols[3].button("Open", key=f"btn-{i}"):
+        if cols[4].button("Open", key=f"btn-{i}"):
             st.switch_page(f"pages/{INDEX_CONFIG[list(INDEX_CONFIG.keys())[i]]['page']}.py")
