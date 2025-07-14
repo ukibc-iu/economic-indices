@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import streamlit.components.v1 as components
-import numpy as np
 
 st.set_page_config(page_title="Housing Affordability Index", layout="wide")
 st.title("🏡 Housing Affordability Index Dashboard")
@@ -106,13 +105,14 @@ if filtered.empty:
 score_val = filtered['Affordability Index'].values[0]
 
 def create_gauge_with_needle(value):
-    degrees = 180 - (value / 100) * 180
+    scaled_val = value * 100  # Convert from 0–1 to percentage
+    degrees = 180 - (scaled_val * 1.8)  # Map 0–100% to 180° arc
     radians = np.deg2rad(degrees)
     radius = 0.4
     x = 0.5 + radius * np.cos(radians)
     y = 0.5 + radius * np.sin(radians)
 
-    needle_shape = {
+    needle = {
         'type': 'line',
         'x0': 0.5, 'y0': 0.5,
         'x1': x,   'y1': y,
@@ -128,17 +128,21 @@ def create_gauge_with_needle(value):
         hole=0.5,
         direction='clockwise',
         rotation=180,
-        textinfo='none',
+        textinfo='label',
         showlegend=False
     ))
 
     fig.update_layout(
-        shapes=[needle_shape],
+        shapes=[needle],
         annotations=[
-            dict(x=0.5, y=0.5, text=f"<b>{value:.2f}</b>", font_size=22, showarrow=False, font_color='white')
+            dict(
+                x=0.5, y=0.5,
+                text=f"<b>{value:.2%}</b>",  # Percent format
+                showarrow=False,
+                font=dict(size=22, color="white")
+            )
         ],
         margin=dict(l=0, r=0, t=0, b=0),
-        showlegend=False,
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
         height=400
