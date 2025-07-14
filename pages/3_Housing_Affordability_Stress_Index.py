@@ -5,7 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 st.set_page_config(page_title="Housing Affordability Index", layout="wide")
-st.title("🏡 Housing Affordability Index Dashboard")
+st.title("Housing Affordability Index Dashboard")
 st.markdown("*The Housing Affordability Index reflects how affordable residential property is for an average individual, using per capita income and property prices.*")
 
 # --- Load Data ---
@@ -78,7 +78,7 @@ with col1:
 with col2:
     st.markdown(f"""
         <div class="card grey-card">
-            <div style="font-size: 1.2rem;">📊 Affordability Index</div>
+            <div style="font-size: 1.2rem;">Affordability Index</div>
             <div style="font-size: 2rem;">{latest_index:.2f}</div>
         </div>
     """, unsafe_allow_html=True)
@@ -86,13 +86,13 @@ with col2:
 with col3:
     st.markdown(f"""
         <div class="card red-card">
-            <div style="font-size: 1.2rem;">📈 Property Price Index</div>
+            <div style="font-size: 1.2rem;">Property Price Index</div>
             <div style="font-size: 2rem;">{latest_price:.2f}</div>
         </div>
     """, unsafe_allow_html=True)
 
 # --- Preview Type ---
-preview_type = st.selectbox("🗓 Preview Type", ["Monthly", "Quarterly"])
+preview_type = st.selectbox("Preview Type", ["Monthly", "Quarterly"])
 period_list = df['Month'].unique().tolist() if preview_type == "Monthly" else df['QuarterFormatted'].unique().tolist()
 selected_period = st.selectbox("📆 Select Month or Quarter", period_list)
 
@@ -132,12 +132,12 @@ def create_speedometer_gauge(value):
     )
     return fig
 
-st.subheader("🧭 Affordability Gauge")
+st.subheader("Housing Affordability Index")
 gauge_fig = create_speedometer_gauge(score_val)
 st.plotly_chart(gauge_fig, use_container_width=True)
 
 # --- Line Chart ---
-st.subheader("📈 Affordability Index Over Time")
+st.subheader("Affordability Index Over Time")
 fig_line = px.line(df, x='Month', y='Affordability Index', markers=True,
                    line_shape='linear', color_discrete_sequence=['#FF5733'])
 fig_line.update_layout(
