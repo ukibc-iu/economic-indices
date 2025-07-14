@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit.components.v1 as components
+import numpy as np
 
 st.set_page_config(page_title="Housing Affordability Index", layout="wide")
 st.title("🏡 Housing Affordability Index Dashboard")
@@ -18,6 +19,7 @@ def load_data():
     df.dropna(subset=['Date'], inplace=True)
 
     df['Month'] = df['Date'].dt.strftime('%b-%y')
+
     def format_quarter(row):
         q = f"Q{((row['Date'].month - 1) // 3 + 1)}"
         fy = row['Date'].year if row['Date'].month >= 4 else row['Date'].year - 1
@@ -27,7 +29,6 @@ def load_data():
     df['Property Price Index'] = pd.to_numeric(df['Property Price Index'], errors='coerce')
     df['Per Capita NNI'] = pd.to_numeric(df['Per Capita NNI'], errors='coerce')
 
-    # Simplified Loan Factor (scaled for dashboard)
     LOAN_FACTOR = 0.003
     df['Affordability Index'] = (df['Per Capita NNI'] / df['Property Price Index']) * LOAN_FACTOR
 
@@ -101,27 +102,52 @@ if filtered.empty:
     st.warning("⚠️ No data found for selected period.")
     st.stop()
 
-# --- Gauge Chart ---
+# --- Custom Gauge with Needle ---
 score_val = filtered['Affordability Index'].values[0]
-fig_gauge = go.Figure(go.Indicator(
-    mode="gauge+number",
-    value=score_val,
-    number={'font': {'color': 'white'}},
-    domain={'x': [0, 1], 'y': [0, 1]},
-    gauge={
-        'axis': {'range': [0, 100], 'tickcolor': 'white'},
-        'bar': {'color': "black"},
-        'steps': [
-            {'range': [0, 20], 'color': "#ff0000"},
-            {'range': [20, 30], 'color': "#ffa500"},
-            {'range': [30, 40], 'color': "#ffff00"},
-            {'range': [40, 60], 'color': "#90ee90"},
-            {'range': [60, 100], 'color': "#008000"},
-        ]
+
+def create_gauge_with_needle(value):
+    degrees = 180 - (value / 100) * 180
+    radians = np.deg2rad(degrees)
+    radius = 0.4
+    x = 0.5 + radius * np.cos(radians)
+    y = 0.5 + radius * np.sin(radians)
+
+    needle_shape = {
+        'type': 'line',
+        'x0': 0.5, 'y0': 0.5,
+        'x1': x,   'y1': y,
+        'line': {'color': 'black', 'width': 4}
     }
-))
-fig_gauge.update_layout(height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
-st.plotly_chart(fig_gauge, use_container_width=True)
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Pie(
+        values=[20, 10, 10, 20, 40, 100],
+        labels=["Very Low", "Low", "Moderate", "Good", "Excellent", ""],
+        marker_colors=["#ff0000", "#ffa500", "#ffff00", "#90ee90", "#008000", "white"],
+        hole=0.5,
+        direction='clockwise',
+        rotation=180,
+        textinfo='none',
+        showlegend=False
+    ))
+
+    fig.update_layout(
+        shapes=[needle_shape],
+        annotations=[
+            dict(x=0.5, y=0.5, text=f"<b>{value:.2f}</b>", font_size=22, showarrow=False, font_color='white')
+        ],
+        margin=dict(l=0, r=0, t=0, b=0),
+        showlegend=False,
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        height=400
+    )
+    return fig
+
+st.subheader("🧭 Affordability Gauge")
+gauge_fig = create_gauge_with_needle(score_val)
+st.plotly_chart(gauge_fig, use_container_width=True)
 
 # --- Line Chart ---
 st.subheader("📈 Affordability Index Over Time")
