@@ -27,6 +27,8 @@ def load_data():
     # Convert columns to numeric
     df['Property Price Index'] = pd.to_numeric(df['Property Price Index'], errors='coerce')
     df['Per Capita NNI'] = pd.to_numeric(df['Per Capita NNI'], errors='coerce')
+    # Clean commas and convert to numeric
+    df['Sales of Houses'] = df['Sales of Houses'].astype(str).str.replace(',', '', regex=False)
     df['Sales of Houses'] = pd.to_numeric(df['Sales of Houses'], errors='coerce')
 
     # Affordability Index Calculation
