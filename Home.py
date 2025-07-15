@@ -181,14 +181,14 @@ def load_renewable():
         st.error(f"❌ Error loading Renewable Score: {e}")
         return None, None, "–"
 
-# Attach values
+# Load values
 INDEX_CONFIG['Consumer Demand Index (CDI)']['prev'], INDEX_CONFIG['Consumer Demand Index (CDI)']['value'], INDEX_CONFIG['Consumer Demand Index (CDI)']['month'] = load_cdi()
 INDEX_CONFIG['IMP Index']['prev'], INDEX_CONFIG['IMP Index']['value'], INDEX_CONFIG['IMP Index']['month'] = load_imp()
 INDEX_CONFIG['Housing Affordability Stress Index']['prev'], INDEX_CONFIG['Housing Affordability Stress Index']['value'], INDEX_CONFIG['Housing Affordability Stress Index']['month'] = load_housing()
 INDEX_CONFIG['EV Market Adoption Rate']['prev'], INDEX_CONFIG['EV Market Adoption Rate']['value'], INDEX_CONFIG['EV Market Adoption Rate']['month'] = load_ev_adoption()
 INDEX_CONFIG['Renewable Transition Readiness Score']['prev'], INDEX_CONFIG['Renewable Transition Readiness Score']['value'], INDEX_CONFIG['Renewable Transition Readiness Score']['month'] = load_renewable()
 
-# Table Display
+# Display Table
 st.subheader("📈 Index Overview Table")
 data = []
 for name, cfg in INDEX_CONFIG.items():
@@ -200,9 +200,11 @@ for name, cfg in INDEX_CONFIG.items():
         pct = percent_change(prev, curr, min_val, max_val)
         if pct is not None:
             if pct > 0:
-                pct_display = f'<span style="color:green;">🔺 {pct:.2f}%</span>'
+                pct_display = f'<span style="color:green;">▲ {pct:.2f}%</span>'
+            elif pct < 0:
+                pct_display = f'<span style="color:red;">▼ {abs(pct):.2f}%</span>'
             else:
-                pct_display = f'<span style="color:red;">🔻 {pct:.2f}%</span>'
+                pct_display = "0.00%"
         else:
             pct_display = "–"
     else:
@@ -218,7 +220,7 @@ for name, cfg in INDEX_CONFIG.items():
 
 df_display = pd.DataFrame(data)
 
-# Show Table
+# Render Table in Streamlit
 for i in range(len(df_display)):
     cols = st.columns([3, 2, 2, 2, 1])
     cols[0].markdown(f"**{df_display.iloc[i]['Index']}**")
