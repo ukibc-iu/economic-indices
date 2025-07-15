@@ -129,7 +129,7 @@ def load_housing():
     except:
         return None, None, "–"
 
-# Load EV Adoption Index (Real Logic)
+# Load EV Adoption Index
 def load_ev_adoption():
     try:
         ev_data = get_latest_ev_adoption()
@@ -207,19 +207,17 @@ for name, cfg in INDEX_CONFIG.items():
         if pct is not None:
             arrow = "🔺" if pct > 0 else "🔻"
             color = "green" if pct > 0 else "red"
-            pct_display = f"{arrow} {pct:+.2f}%"
+            pct_display = f"{arrow} :{color}[{pct:+.2f}%]"
         else:
             pct_display = "–"
-            color = "gray"
     else:
         pct_display = "–"
-        color = "gray"
 
     data.append({
         "Index": f"{cfg['icon']} {name}",
         "Latest Month": month,
         "Current Value": f"{curr:.2f}" if curr is not None else "–",
-        "MoM Change": f":{color}[{pct_display}]",
+        "MoM Change": pct_display,
         "Action": f"Go →"
     })
 
