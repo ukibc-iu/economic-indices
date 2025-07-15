@@ -6,7 +6,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from shared.ev_index import get_latest_ev_adoption
 
-# Debug working directory (Streamlit Cloud vs local)
+# Debug working directory
 cwd = os.getcwd()
 st.write(f"📁 Current working directory: `{cwd}`")
 
@@ -14,7 +14,7 @@ data_dir = os.path.join(cwd, "data")
 if not os.path.exists(data_dir):
     st.error("❌ 'data' folder not found in working directory.")
 else:
-    st.success(f"✅ 'data' folder found.")
+    st.success("✅ 'data' folder found.")
     st.write("📄 Files in 'data':", os.listdir(data_dir))
 
 # Page Config
@@ -75,27 +75,23 @@ INDEX_CONFIG = {
     }
 }
 
+# Percent change function with safety
 def percent_change(prev, curr, min_val, max_val):
-    # Safely handle None or invalid values
     if None in (prev, curr, min_val, max_val):
         return None
-
     denominator = max_val - min_val
     if denominator == 0:
         return None
-
     try:
         norm_prev = (prev - min_val) / denominator
         norm_curr = (curr - min_val) / denominator
-    except Exception:
+        if norm_prev == 0:
+            return None
+        return ((norm_curr - norm_prev) / norm_prev) * 100
+    except:
         return None
 
-    if norm_prev == 0:
-        return None
-
-    return ((norm_curr - norm_prev) / norm_prev) * 100
-
-
+# Load CDI
 def load_cdi():
     try:
         cfg = INDEX_CONFIG["Consumer Demand Index (CDI)"]
@@ -134,24 +130,25 @@ def load_cdi():
         st.error(f"❌ Error loading CDI: {e}")
         return None, None, "–"
 
-# TODO: Add other loaders as you already had them in the original file (load_imp, load_housing, etc.)
-
-# Load all index values
+# Load index values
 INDEX_CONFIG['Consumer Demand Index (CDI)']['prev'], INDEX_CONFIG['Consumer Demand Index (CDI)']['value'], INDEX_CONFIG['Consumer Demand Index (CDI)']['month'] = load_cdi()
-# Repeat above for IMP Index, Housing, EV, Renewable...
 
 # Build Table
 st.subheader("📈 Index Overview Table")
 data = []
 for name, cfg in INDEX_CONFIG.items():
     curr, prev = cfg.get('value'), cfg.get('prev')
-    min_val, max_val = cfg['scale']
+    scale = cfg.get('scale')
+    if scale and isinstance(scale, tuple) and len(scale) == 2:
+        min_val, max_val = scale
+    else:
+        min_val, max_val = None, None
     month = cfg.get("month", "–")
 
-    if curr is not None and prev is not None:
+    if curr is not None and prev is not None and min_val is not None and max_val is not None:
         pct = percent_change(prev, curr, min_val, max_val)
         pct_display = f"{pct:+.2f}%" if pct is not None else "–"
-        color = "green" if pct and pct > 0 else "red"
+        color = "green" if pct is not None and pct > 0 else "red"
     else:
         pct_display = "–"
         color = "gray"
