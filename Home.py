@@ -77,23 +77,24 @@ def percent_change(prev, curr, min_val, max_val):
 
 def load_cdi():
     try:
-        cfg = INDEX_CONFIG["Consumer Demand Index (CDI)"]
-        filepath = cfg['file']
+        filepath = INDEX_CONFIG["Consumer Demand Index (CDI)"]['file']
+        print(f"🔍 Loading CDI from: {filepath}")
         if not os.path.exists(filepath):
-            st.error(f"❌ File not found: {filepath}")
+            print(f"❌ File not found: {filepath}")
             return None, None, "–"
-
+        
         df = pd.read_csv(filepath)
+        print("✅ File loaded. Preview:")
+        print(df.head())
+
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
         df.dropna(subset=['Date'], inplace=True)
-        df.dropna(subset=cfg['features'], inplace=True)
 
-        if df.shape[0] < 2:
-            st.error("❌ Not enough rows in CDI data after cleaning.")
-            return None, None, "–"
+        features = INDEX_CONFIG["Consumer Demand Index (CDI)"]['features']
+        df.dropna(subset=features, inplace=True)
 
         scaler = StandardScaler()
-        scaled = scaler.fit_transform(df[cfg['features']])
+        scaled = scaler.fit_transform(df[features])
         pca = PCA(n_components=1)
         df['CDI_Real'] = pca.fit_transform(scaled)[:, 0]
         df = df.sort_values('Date')
@@ -102,7 +103,7 @@ def load_cdi():
         latest_month = df['Date'].iloc[-1].strftime('%b-%y')
         return prev, curr, latest_month
     except Exception as e:
-        st.error(f"❌ Error in load_cdi(): {e}")
+        print(f"❌ Error in load_cdi: {e}")
         return None, None, "–"
 
 # Load IMP
