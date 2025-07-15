@@ -75,11 +75,119 @@ def percent_change(prev, curr, min_val, max_val):
     except:
         return None
 
-# Loaders (same as before)
-# -- [load_cdi, load_imp, load_housing, load_ev_adoption, load_renewable functions] --
-# For brevity, keeping original logic for loading unchanged.
+# Load CDI
+def load_cdi():
+    try:
+        cfg = INDEX_CONFIG["Consumer Demand Index (CDI)"]
+        df = pd.read_csv(cfg['file'])
+        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+        df.dropna(subset=['Date'], inplace=True)
+        df.dropna(subset=cfg['features'], inplace=True)
 
-# Load all index values
+        scaler = StandardScaler()
+        scaled = scaler.fit_transform(df[cfg['features']])
+        pca = PCA(n_components=1)
+        df['CDI_Real'] = pca.fit_transform(scaled)[:, 0]
+        df = df.sort_values('Date')
+
+        curr, prev = df['CDI_Real'].iloc[-1], df['CDI_Real'].iloc[-2]
+        latest_month = df['Date'].iloc[-1].strftime('%b-%y')
+        return prev, curr, latest_month
+    except:
+        return None, None, "–"
+
+# Load IMP
+def load_imp():
+    try:
+        df = pd.read_csv(INDEX_CONFIG['IMP Index']['file'])
+        df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
+        df.dropna(subset=['Date', 'Scale'], inplace=True)
+        df = df.sort_values('Date')
+        if len(df) < 2:
+            st.warning("⚠️ Not enough data to calculate change for IMP Index")
+            return None, None, "–"
+        curr, prev = df['Scale'].iloc[-1], df['Scale'].iloc[-2]
+        latest_month = df['Date'].iloc[-1].strftime('%b-%y')
+        return prev, curr, latest_month
+    except Exception as e:
+        st.error(f"❌ Error loading IMP Index: {e}")
+        return None, None, "–"
+
+# Load Housing Affordability
+def load_housing():
+    try:
+        df = pd.read_csv(INDEX_CONFIG['Housing Affordability Stress Index']['file'])
+        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+        df['Property Price Index'] = pd.to_numeric(df['Property Price Index'], errors='coerce')
+        df['Per Capita NNI'] = pd.to_numeric(df['Per Capita NNI'], errors='coerce')
+        df.dropna(inplace=True)
+        df['Affordability Index'] = (df['Per Capita NNI'] / df['Property Price Index']) * 0.003
+        df = df.sort_values('Date')
+        curr, prev = df['Affordability Index'].iloc[-1], df['Affordability Index'].iloc[-2]
+        latest_month = df['Date'].iloc[-1].strftime('%b-%y')
+        return prev, curr, latest_month
+    except:
+        return None, None, "–"
+
+# Load EV Adoption Index (Real Logic)
+def load_ev_adoption():
+    try:
+        ev_data = get_latest_ev_adoption()
+        curr = ev_data["rate"]
+        latest_month = ev_data["month"]
+
+        df_ev = pd.read_csv("data/EV_Adoption.csv")
+        df_ev.columns = df_ev.columns.str.strip()
+        df_ev['Date'] = pd.to_datetime(df_ev['Date'], format='%m/%d/%Y', errors='coerce')
+        df_ev = df_ev.dropna(subset=['Date'])
+
+        ev_cols = ['EV Four-wheeler Sales', 'EV Two-wheeler Sales', 'EV Three-wheeler Sales']
+        for col in ev_cols:
+            df_ev[col] = pd.to_numeric(df_ev[col].astype(str).str.replace(',', ''), errors='coerce')
+
+        df_ev['Total Vehicle Sales'] = pd.to_numeric(df_ev['Total Vehicle Sales'].astype(str).str.replace(',', ''), errors='coerce')
+        df_ev['EV Total Sales'] = df_ev[ev_cols].sum(axis=1)
+        df_ev['EV Adoption Rate'] = df_ev['EV Total Sales'] / df_ev['Total Vehicle Sales']
+        df_ev = df_ev.sort_values("Date")
+
+        prev = df_ev['EV Adoption Rate'].iloc[-2] if len(df_ev) >= 2 else None
+        return prev, curr, latest_month
+    except:
+        return None, None, "–"
+
+# Load Renewable Transition Readiness Score
+def load_renewable():
+    try:
+        df = pd.read_csv("data/Renewable_Energy.csv")
+        df.columns = df.columns.str.strip()
+        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+        df.dropna(subset=['Date'], inplace=True)
+
+        HOURS = 720
+        df['Solar Gen (GWh)'] = df['Solar power plants Installed capacity'] * 0.2 * HOURS / 1000
+        df['Wind Gen (GWh)'] = df['Wind power plants Installed capacity'] * 0.3 * HOURS / 1000
+        df['Hydro Gen (GWh)'] = df['Hydro power plants Installed capacity'] * 0.4 * HOURS / 1000
+        df['Total Gen (GWh)'] = df[['Solar Gen (GWh)', 'Wind Gen (GWh)', 'Hydro Gen (GWh)']].sum(axis=1)
+        df['Power Consumption (GWh)'] = df['Power Consumption'] * 1000
+        df['Renewable Share (%)'] = df['Total Gen (GWh)'] / df['Power Consumption (GWh)'] * 100
+
+        df['Norm_Budget'] = (df['Budgetary allocation for MNRE sector'] - df['Budgetary allocation for MNRE sector'].min()) / \
+                            (df['Budgetary allocation for MNRE sector'].max() - df['Budgetary allocation for MNRE sector'].min())
+        df['Norm_Share'] = (df['Renewable Share (%)'] - df['Renewable Share (%)'].min()) / \
+                           (df['Renewable Share (%)'].max() - df['Renewable Share (%)'].min())
+
+        df['Readiness Score'] = 0.5 * df['Norm_Budget'] + 0.5 * df['Norm_Share']
+        df = df.sort_values('Date')
+
+        curr = df['Readiness Score'].iloc[-1]
+        prev = df['Readiness Score'].iloc[-2] if len(df) > 1 else None
+        latest_month = df['Date'].iloc[-1].strftime('%b-%y')
+        return prev, curr, latest_month
+    except Exception as e:
+        st.error(f"❌ Error loading Renewable Score: {e}")
+        return None, None, "–"
+
+# Attach values to config
 INDEX_CONFIG['Consumer Demand Index (CDI)']['prev'], INDEX_CONFIG['Consumer Demand Index (CDI)']['value'], INDEX_CONFIG['Consumer Demand Index (CDI)']['month'] = load_cdi()
 INDEX_CONFIG['IMP Index']['prev'], INDEX_CONFIG['IMP Index']['value'], INDEX_CONFIG['IMP Index']['month'] = load_imp()
 INDEX_CONFIG['Housing Affordability Stress Index']['prev'], INDEX_CONFIG['Housing Affordability Stress Index']['value'], INDEX_CONFIG['Housing Affordability Stress Index']['month'] = load_housing()
@@ -110,15 +218,12 @@ for name, cfg in INDEX_CONFIG.items():
         else:
             pct_display = "–"
             color = "gray"
-    else:
-        pct_display = "–"
-        color = "gray"
 
     data.append({
         "Index": f"{cfg['icon']} {name}",
         "Latest Month": month,
         "Current Value": f"{curr:.2f}" if curr is not None else "–",
-        "MoM Change": pct_display,
+        "MoM Change": f":{color}[{pct_display}]",
         "Action": f"Go →"
     })
 
