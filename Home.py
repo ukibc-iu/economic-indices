@@ -4,6 +4,7 @@ import numpy as np
 import os
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from shared.ev_index import get_latest_ev_adoption
 
 # Page Config
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
@@ -21,13 +22,13 @@ INDEX_CONFIG = {
         "description": "The Consumer Demand Index captures shifts in real-time consumer activity."
     },
     "EV Market Adoption Rate": {
-        "value": 1.7,
-        "prev": 1.6,
+        "value": None,  # Placeholder, will be filled below
+        "prev": None,
         "scale": (0, 10),
         "icon": "🚗",
         "page": "2_EV_Market_Adoption_Rate",
         "description": "Tracks how quickly India is transitioning to electric mobility.",
-        "month": "Jul-25"
+        "month": "–"
     },
     "Housing Affordability Stress Index": {
         "file": "data/Housing_Affordability.csv",
@@ -128,10 +129,37 @@ def load_housing():
     except:
         return None, None, "–"
 
-# Attach values + month to config
+# Load EV Adoption Index (Real Logic)
+def load_ev_adoption():
+    try:
+        ev_data = get_latest_ev_adoption()
+        curr = ev_data["rate"]
+        latest_month = ev_data["month"]
+
+        df_ev = pd.read_csv("data/EV_Adoption.csv")
+        df_ev.columns = df_ev.columns.str.strip()
+        df_ev['Date'] = pd.to_datetime(df_ev['Date'], format='%m/%d/%Y', errors='coerce')
+        df_ev = df_ev.dropna(subset=['Date'])
+
+        ev_cols = ['EV Four-wheeler Sales', 'EV Two-wheeler Sales', 'EV Three-wheeler Sales']
+        for col in ev_cols:
+            df_ev[col] = pd.to_numeric(df_ev[col].astype(str).str.replace(',', ''), errors='coerce')
+
+        df_ev['Total Vehicle Sales'] = pd.to_numeric(df_ev['Total Vehicle Sales'].astype(str).str.replace(',', ''), errors='coerce')
+        df_ev['EV Total Sales'] = df_ev[ev_cols].sum(axis=1)
+        df_ev['EV Adoption Rate'] = df_ev['EV Total Sales'] / df_ev['Total Vehicle Sales']
+        df_ev = df_ev.sort_values("Date")
+
+        prev = df_ev['EV Adoption Rate'].iloc[-2] if len(df_ev) >= 2 else None
+        return prev, curr, latest_month
+    except:
+        return None, None, "–"
+
+# Attach values to config
 INDEX_CONFIG['Consumer Demand Index (CDI)']['prev'], INDEX_CONFIG['Consumer Demand Index (CDI)']['value'], INDEX_CONFIG['Consumer Demand Index (CDI)']['month'] = load_cdi()
 INDEX_CONFIG['IMP Index']['prev'], INDEX_CONFIG['IMP Index']['value'], INDEX_CONFIG['IMP Index']['month'] = load_imp()
 INDEX_CONFIG['Housing Affordability Stress Index']['prev'], INDEX_CONFIG['Housing Affordability Stress Index']['value'], INDEX_CONFIG['Housing Affordability Stress Index']['month'] = load_housing()
+INDEX_CONFIG['EV Market Adoption Rate']['prev'], INDEX_CONFIG['EV Market Adoption Rate']['value'], INDEX_CONFIG['EV Market Adoption Rate']['month'] = load_ev_adoption()
 
 # Build Table
 st.subheader("📈 Index Overview Table")
