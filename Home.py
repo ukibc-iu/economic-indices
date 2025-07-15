@@ -8,7 +8,7 @@ from shared.ev_index import get_latest_ev_adoption
 
 # Page Config
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
-st.title("📊 Economic Indices Dashboard")
+st.title("Economic Indices Dashboard")
 st.markdown("*Track key economic indicators and analyze their month-over-month changes.*")
 
 # Index Configuration (with images)
