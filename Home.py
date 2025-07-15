@@ -75,12 +75,12 @@ INDEX_CONFIG = {
     }
 }
 
-# ✅ FIXED FUNCTION
+# ✅ SAFE percent_change FUNCTION
 def percent_change(prev, curr, min_val, max_val):
-    if any(v is None for v in [prev, curr, min_val, max_val]):
-        return None
-
     try:
+        if any(v is None for v in [prev, curr, min_val, max_val]):
+            return None
+
         denominator = max_val - min_val
         if denominator == 0:
             return None
@@ -91,8 +91,12 @@ def percent_change(prev, curr, min_val, max_val):
         if norm_prev == 0:
             return None
 
-        return ((norm_curr - norm_prev) / norm_prev) * 100
+        pct = ((norm_curr - norm_prev) / norm_prev) * 100
 
+        if not np.isfinite(pct):
+            return None
+
+        return pct
     except Exception:
         return None
 
@@ -106,6 +110,7 @@ def load_cdi():
             return None, None, "–"
 
         df = pd.read_csv(filepath)
+
         if 'Date' not in df.columns:
             st.error("❌ 'Date' column not found in CDI CSV.")
             return None, None, "–"
@@ -118,7 +123,9 @@ def load_cdi():
             st.error(f"❌ Missing required columns in CDI CSV: {missing}")
             return None, None, "–"
 
+        df[cfg['features']] = df[cfg['features']].apply(pd.to_numeric, errors='coerce')
         df.dropna(subset=cfg['features'], inplace=True)
+
         scaler = StandardScaler()
         scaled = scaler.fit_transform(df[cfg['features']])
         pca = PCA(n_components=1)
@@ -137,7 +144,7 @@ def load_cdi():
 # Load CDI
 INDEX_CONFIG['Consumer Demand Index (CDI)']['prev'], INDEX_CONFIG['Consumer Demand Index (CDI)']['value'], INDEX_CONFIG['Consumer Demand Index (CDI)']['month'] = load_cdi()
 
-# Table View
+# Build Table
 st.subheader("📈 Index Overview Table")
 data = []
 for name, cfg in INDEX_CONFIG.items():
@@ -148,7 +155,7 @@ for name, cfg in INDEX_CONFIG.items():
     if curr is not None and prev is not None:
         pct = percent_change(prev, curr, min_val, max_val)
         pct_display = f"{pct:+.2f}%" if pct is not None else "–"
-        color = "green" if pct and pct > 0 else "red"
+        color = "green" if isinstance(pct, (int, float)) and pct > 0 else "red"
     else:
         pct_display = "–"
         color = "gray"
