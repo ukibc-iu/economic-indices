@@ -6,7 +6,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from shared.ev_index import get_latest_ev_adoption
 
-# Set up page
+# Set page config
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
 st.title("📊 Economic Indices Dashboard")
 st.markdown("*Track key economic indicators with latest available values.*")
@@ -18,7 +18,9 @@ INDEX_CONFIG = {
         "features": ['UPI Transactions', 'GST Revenue', 'Vehicle Sales', 'Housing Sales', 'Power Consumption'],
         "icon": "🏍️",
         "page": "1_CDI_Dashboard",
-        "description": "Captures real-time consumer activity trends."
+        "description": "Captures real-time consumer activity trends.",
+        "value": None,
+        "month": "–"
     },
     "EV Market Adoption Rate": {
         "value": None,
@@ -31,27 +33,31 @@ INDEX_CONFIG = {
         "file": os.path.join("data", "Housing_Affordability.csv"),
         "icon": "🏠",
         "page": "3_Housing_Affordability_Stress_Index",
-        "description": "Measures how financially stretched households are in buying homes."
+        "description": "Measures housing affordability stress.",
+        "value": None,
+        "month": "–"
     },
     "Renewable Transition Readiness Score": {
         "value": None,
         "icon": "🌱",
         "page": "4_Renewable_Transition_Readiness_Score",
-        "description": "Measures India's preparedness for clean energy.",
+        "description": "Readiness to switch to renewable energy.",
         "month": "–"
     },
     "Infrastructure Activity Index (IAI)": {
         "value": None,
         "icon": "🏢",
         "page": "5_Infrastructure_Activity_Index_(IAI)",
-        "description": "Forecasts the pace of infrastructure development.",
+        "description": "Pace of infrastructure development.",
         "month": "–"
     },
     "IMP Index": {
         "file": os.path.join("data", "IMP_Index.csv"),
         "icon": "💰",
         "page": "6_IMP_Index",
-        "description": "Measures India's overall macroeconomic performance."
+        "description": "India's macroeconomic performance.",
+        "value": None,
+        "month": "–"
     }
 }
 
@@ -77,28 +83,32 @@ def load_cdi():
 
         return latest_value, latest_month
     except Exception as e:
-        st.error(f"Failed to load CDI: {e}")
+        st.error(f"❌ Error loading CDI: {e}")
         return None, "–"
 
 
-# Load CDI
+# Load CDI Index
 INDEX_CONFIG['Consumer Demand Index (CDI)']['value'], INDEX_CONFIG['Consumer Demand Index (CDI)']['month'] = load_cdi()
 
-# TODO: Add loaders for other indices similarly if needed
 
 # Build display table
 st.subheader("📈 Latest Index Values")
 data = []
+
 for name, cfg in INDEX_CONFIG.items():
+    index_label = f"{cfg.get('icon', '')} {name}"
     value = cfg.get('value')
     month = cfg.get('month', '–')
-    icon = cfg.get('icon', '')
+    try:
+        value_str = f"{value:.2f}" if isinstance(value, (int, float)) else "–"
+    except:
+        value_str = "–"
 
     data.append({
-        "Index": f"{icon} {name}",
+        "Index": index_label,
         "Latest Month": month,
-        "Latest Value": f"{value:.2f}" if value is not None else "–",
-        "Action": f"Go →"
+        "Latest Value": value_str,
+        "Action": "Go →"
     })
 
 df_display = pd.DataFrame(data)
