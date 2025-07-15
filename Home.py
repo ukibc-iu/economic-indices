@@ -78,7 +78,12 @@ def percent_change(prev, curr, min_val, max_val):
 def load_cdi():
     try:
         cfg = INDEX_CONFIG["Consumer Demand Index (CDI)"]
-        df = pd.read_csv(cfg['file'])
+        filepath = cfg['file']
+        if not os.path.exists(filepath):
+            st.error(f"❌ File not found: {filepath}")
+            return None, None, "–"
+
+        df = pd.read_csv(filepath)
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
         df.dropna(subset=['Date'], inplace=True)
         df.dropna(subset=cfg['features'], inplace=True)
@@ -99,7 +104,6 @@ def load_cdi():
     except Exception as e:
         st.error(f"❌ Error in load_cdi(): {e}")
         return None, None, "–"
-
 
 # Load IMP
 def load_imp():
