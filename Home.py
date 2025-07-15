@@ -80,7 +80,7 @@ def load_cdi():
     try:
         cfg = INDEX_CONFIG["Consumer Demand Index (CDI)"]
         df = pd.read_csv(cfg['file'])
-        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+        df['Date'] = pd.to_datetime(df['Date'], format="%m/%d/%Y", errors='coerce')
         df.dropna(subset=['Date'], inplace=True)
         df.dropna(subset=cfg['features'], inplace=True)
 
