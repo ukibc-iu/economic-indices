@@ -77,13 +77,23 @@ INDEX_CONFIG = {
 
 # Helper: Normalize and % Change
 def percent_change(prev, curr, min_val, max_val):
+    # Early return if any value is missing or invalid
+    if None in (prev, curr, min_val, max_val):
+        return None
+
+    denominator = max_val - min_val
+    if denominator == 0:
+        return None
+
     try:
-        norm_prev = (prev - min_val) / (max_val - min_val)
-        norm_curr = (curr - min_val) / (max_val - min_val)
+        norm_prev = (prev - min_val) / denominator
+        norm_curr = (curr - min_val) / denominator
+
         if norm_prev == 0:
             return None
+
         return ((norm_curr - norm_prev) / norm_prev) * 100
-    except:
+    except Exception:
         return None
 
 def load_cdi():
