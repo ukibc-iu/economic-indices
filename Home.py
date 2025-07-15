@@ -6,13 +6,13 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from shared.ev_index import get_latest_ev_adoption
 
-# Ensure correct base directory (e.g., for Streamlit Cloud or local)
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 # Page Config
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
 st.title("📊 Economic Indices Dashboard")
 st.markdown("*Track key economic indicators and analyze their month-over-month changes.*")
+
+# Base directory for file paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Index Configuration
 INDEX_CONFIG = {
@@ -67,7 +67,7 @@ INDEX_CONFIG = {
     }
 }
 
-# Helper: Normalize and % Change
+# Helper functions
 def percent_change(prev, curr, min_val, max_val):
     try:
         norm_prev = (prev - min_val) / (max_val - min_val)
@@ -82,7 +82,6 @@ def load_cdi():
     try:
         filepath = INDEX_CONFIG["Consumer Demand Index (CDI)"]['file']
         if not os.path.exists(filepath):
-            st.error(f"❌ File not found: {filepath}")
             return None, None, "–"
         df = pd.read_csv(filepath)
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
@@ -97,8 +96,7 @@ def load_cdi():
         curr, prev = df['CDI_Real'].iloc[-1], df['CDI_Real'].iloc[-2]
         latest_month = df['Date'].iloc[-1].strftime('%b-%y')
         return prev, curr, latest_month
-    except Exception as e:
-        st.error(f"❌ Error loading CDI: {e}")
+    except:
         return None, None, "–"
 
 def load_imp():
@@ -107,13 +105,10 @@ def load_imp():
         df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
         df.dropna(subset=['Date', 'Scale'], inplace=True)
         df = df.sort_values('Date')
-        if len(df) < 2:
-            return None, None, "–"
         curr, prev = df['Scale'].iloc[-1], df['Scale'].iloc[-2]
         latest_month = df['Date'].iloc[-1].strftime('%b-%y')
         return prev, curr, latest_month
-    except Exception as e:
-        st.error(f"❌ Error loading IMP Index: {e}")
+    except:
         return None, None, "–"
 
 def load_housing():
@@ -128,8 +123,7 @@ def load_housing():
         curr, prev = df['Affordability Index'].iloc[-1], df['Affordability Index'].iloc[-2]
         latest_month = df['Date'].iloc[-1].strftime('%b-%y')
         return prev, curr, latest_month
-    except Exception as e:
-        st.error(f"❌ Error loading Housing data: {e}")
+    except:
         return None, None, "–"
 
 def load_ev_adoption():
@@ -139,7 +133,8 @@ def load_ev_adoption():
         latest_month = ev_data["month"]
         df_ev = pd.read_csv(os.path.join(BASE_DIR, "data", "EV_Adoption.csv"))
         df_ev.columns = df_ev.columns.str.strip()
-        df_ev['Date'] = pd.to_datetime(df_ev['Date'], errors='coerce')
+        df_ev['Date'] = pd.to_datetime(df_ev['Date'], format='%m/%d/%Y', errors='coerce')
+        df_ev = df_ev.dropna(subset=['Date'])
         ev_cols = ['EV Four-wheeler Sales', 'EV Two-wheeler Sales', 'EV Three-wheeler Sales']
         for col in ev_cols:
             df_ev[col] = pd.to_numeric(df_ev[col].astype(str).str.replace(',', ''), errors='coerce')
@@ -149,8 +144,7 @@ def load_ev_adoption():
         df_ev = df_ev.sort_values("Date")
         prev = df_ev['EV Adoption Rate'].iloc[-2] if len(df_ev) >= 2 else None
         return prev, curr, latest_month
-    except Exception as e:
-        st.error(f"❌ Error loading EV adoption data: {e}")
+    except:
         return None, None, "–"
 
 def load_renewable():
@@ -166,18 +160,15 @@ def load_renewable():
         df['Total Gen (GWh)'] = df[['Solar Gen (GWh)', 'Wind Gen (GWh)', 'Hydro Gen (GWh)']].sum(axis=1)
         df['Power Consumption (GWh)'] = df['Power Consumption'] * 1000
         df['Renewable Share (%)'] = df['Total Gen (GWh)'] / df['Power Consumption (GWh)'] * 100
-        df['Norm_Budget'] = (df['Budgetary allocation for MNRE sector'] - df['Budgetary allocation for MNRE sector'].min()) / \
-                            (df['Budgetary allocation for MNRE sector'].max() - df['Budgetary allocation for MNRE sector'].min())
-        df['Norm_Share'] = (df['Renewable Share (%)'] - df['Renewable Share (%)'].min()) / \
-                           (df['Renewable Share (%)'].max() - df['Renewable Share (%)'].min())
+        df['Norm_Budget'] = (df['Budgetary allocation for MNRE sector'] - df['Budgetary allocation for MNRE sector'].min()) / (df['Budgetary allocation for MNRE sector'].max() - df['Budgetary allocation for MNRE sector'].min())
+        df['Norm_Share'] = (df['Renewable Share (%)'] - df['Renewable Share (%)'].min()) / (df['Renewable Share (%)'].max() - df['Renewable Share (%)'].min())
         df['Readiness Score'] = 0.5 * df['Norm_Budget'] + 0.5 * df['Norm_Share']
         df = df.sort_values('Date')
         curr = df['Readiness Score'].iloc[-1]
         prev = df['Readiness Score'].iloc[-2] if len(df) > 1 else None
         latest_month = df['Date'].iloc[-1].strftime('%b-%y')
         return prev, curr, latest_month
-    except Exception as e:
-        st.error(f"❌ Error loading Renewable Score: {e}")
+    except:
         return None, None, "–"
 
 # Load values
@@ -187,7 +178,7 @@ INDEX_CONFIG['Housing Affordability Stress Index']['prev'], INDEX_CONFIG['Housin
 INDEX_CONFIG['EV Market Adoption Rate']['prev'], INDEX_CONFIG['EV Market Adoption Rate']['value'], INDEX_CONFIG['EV Market Adoption Rate']['month'] = load_ev_adoption()
 INDEX_CONFIG['Renewable Transition Readiness Score']['prev'], INDEX_CONFIG['Renewable Transition Readiness Score']['value'], INDEX_CONFIG['Renewable Transition Readiness Score']['month'] = load_renewable()
 
-# Render Table
+# Build table
 st.subheader("📈 Index Overview Table")
 data = []
 for name, cfg in INDEX_CONFIG.items():
@@ -211,7 +202,7 @@ for name, cfg in INDEX_CONFIG.items():
 
 df_display = pd.DataFrame(data)
 
-# Display Table
+# Show table
 for i in range(len(df_display)):
     cols = st.columns([3, 2, 2, 2, 1])
     cols[0].markdown(f"**{df_display.iloc[i]['Index']}**")
