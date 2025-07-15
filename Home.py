@@ -75,9 +75,8 @@ INDEX_CONFIG = {
     }
 }
 
-# Helper: Normalize and % Change
 def percent_change(prev, curr, min_val, max_val):
-    # Early return if any value is missing or invalid
+    # Safely handle None or invalid values
     if None in (prev, curr, min_val, max_val):
         return None
 
@@ -88,13 +87,14 @@ def percent_change(prev, curr, min_val, max_val):
     try:
         norm_prev = (prev - min_val) / denominator
         norm_curr = (curr - min_val) / denominator
-
-        if norm_prev == 0:
-            return None
-
-        return ((norm_curr - norm_prev) / norm_prev) * 100
     except Exception:
         return None
+
+    if norm_prev == 0:
+        return None
+
+    return ((norm_curr - norm_prev) / norm_prev) * 100
+
 
 def load_cdi():
     try:
