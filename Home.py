@@ -180,7 +180,6 @@ INDEX_CONFIG['EV Market Adoption Rate']['prev'], INDEX_CONFIG['EV Market Adoptio
 INDEX_CONFIG['Renewable Transition Readiness Score']['prev'], INDEX_CONFIG['Renewable Transition Readiness Score']['value'], INDEX_CONFIG['Renewable Transition Readiness Score']['month'] = load_renewable()
 
 # Display Table
-st.subheader("📈 Index Overview Table")
 data = []
 
 for name, cfg in INDEX_CONFIG.items():
