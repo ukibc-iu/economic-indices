@@ -204,20 +204,11 @@ for name, cfg in INDEX_CONFIG.items():
 
     if curr is not None and prev is not None:
         pct = percent_change(prev, curr, min_val, max_val)
-        if pct is not None:
-            if pct > 0:
-                arrow = "▲"
-                color = "green"
-            elif pct < 0:
-                arrow = "▼"
-                color = "red"
-            else:
-                arrow = "–"
-                color = "gray"
-            pct_display = f":{color}[{arrow} {abs(pct):.2f}%]"
-        else:
-            pct_display = "–"
-            color = "gray"
+        pct_display = f"{pct:+.2f}%" if pct is not None else "–"
+        color = "green" if pct and pct > 0 else "red"
+    else:
+        pct_display = "–"
+        color = "gray"
 
     data.append({
         "Index": f"{cfg['icon']} {name}",
