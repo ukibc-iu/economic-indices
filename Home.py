@@ -74,26 +74,49 @@ def percent_change(prev, curr, min_val, max_val):
         return ((norm_curr - norm_prev) / norm_prev) * 100
     except:
         return None
-
-# Load CDI
 def load_cdi():
     try:
         cfg = INDEX_CONFIG["Consumer Demand Index (CDI)"]
-        df = pd.read_csv(cfg['file'])
+        filepath = cfg['file']
+
+        if not os.path.exists(filepath):
+            st.error(f"❌ File not found: {filepath}")
+            return None, None, "–"
+
+        # Load CSV
+        df = pd.read_csv(filepath)
+
+        # Ensure the 'Date' column is there
+        if 'Date' not in df.columns:
+            st.error("❌ 'Date' column not found in CDI CSV.")
+            return None, None, "–"
+
+        # Convert date format from "4/1/2017" to datetime
         df['Date'] = pd.to_datetime(df['Date'], format="%m/%d/%Y", errors='coerce')
         df.dropna(subset=['Date'], inplace=True)
+
+        # Ensure all required features are present
+        missing = [f for f in cfg['features'] if f not in df.columns]
+        if missing:
+            st.error(f"❌ Missing required columns in CDI CSV: {missing}")
+            return None, None, "–"
+
         df.dropna(subset=cfg['features'], inplace=True)
 
+        # PCA
         scaler = StandardScaler()
         scaled = scaler.fit_transform(df[cfg['features']])
         pca = PCA(n_components=1)
         df['CDI_Real'] = pca.fit_transform(scaled)[:, 0]
-        df = df.sort_values('Date')
 
+        df = df.sort_values('Date')
         curr, prev = df['CDI_Real'].iloc[-1], df['CDI_Real'].iloc[-2]
         latest_month = df['Date'].iloc[-1].strftime('%b-%y')
+
         return prev, curr, latest_month
-    except:
+
+    except Exception as e:
+        st.error(f"❌ Error loading CDI: {e}")
         return None, None, "–"
 
 # Load IMP
