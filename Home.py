@@ -191,6 +191,8 @@ INDEX_CONFIG['Renewable Transition Readiness Score']['prev'], INDEX_CONFIG['Rene
 # Display Table
 st.subheader("📈 Index Overview Table")
 data = []
+
+# Build the data list with color-coded percent change
 for name, cfg in INDEX_CONFIG.items():
     curr, prev = cfg.get('value'), cfg.get('prev')
     min_val, max_val = cfg['scale']
@@ -198,13 +200,17 @@ for name, cfg in INDEX_CONFIG.items():
 
     if curr is not None and prev is not None:
         pct = percent_change(prev, curr, min_val, max_val)
-        if pct is not None:
-            if pct > 0:
-                pct_display = f'<span style="color:green;">▲ {pct:.2f}%</span>'
-            elif pct < 0:
-                pct_display = f'<span style="color:red;">▼ {abs(pct):.2f}%</span>'
-            else:
-                pct_display = "0.00%"
+
+        # Debugging (optional): See raw % change
+        print(f"{name} — Prev: {prev:.4f}, Curr: {curr:.4f}, % Change: {pct}")
+
+        # Small change threshold to avoid false signals
+        if pct is not None and abs(pct) < 0.01:
+            pct_display = "–"
+        elif pct is not None:
+            arrow = "▲" if pct > 0 else "▼"
+            color = "green" if pct > 0 else "red"
+            pct_display = f'<span style="color:{color};">{arrow} {abs(pct):.2f}%</span>'
         else:
             pct_display = "–"
     else:
@@ -215,12 +221,12 @@ for name, cfg in INDEX_CONFIG.items():
         "Latest Month": month,
         "Current Value": f"{curr:.2f}" if curr is not None else "–",
         "MoM Change": pct_display,
-        "Action": f"Go →"
+        "Action": "Go →" if cfg.get("page") else "–"
     })
 
 df_display = pd.DataFrame(data)
 
-# Render Table in Streamlit
+# Render Table in Streamlit with columns
 for i in range(len(df_display)):
     cols = st.columns([3, 2, 2, 2, 1])
     cols[0].markdown(f"**{df_display.iloc[i]['Index']}**")
