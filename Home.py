@@ -5,6 +5,11 @@ import os
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from shared.ev_index import get_latest_ev_adoption
+st.write("Checking CSV existence...")
+for fname in ["Consumer_Demand_Index.csv", "EV_Adoption.csv"]:
+    full = os.path.join(BASE_DIR, "data", fname)
+    st.write(fname, "exists?", os.path.exists(full))
+
 
 # Base Directory
 BASE_DIR = os.path.dirname(__file__)
