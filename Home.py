@@ -75,7 +75,6 @@ def percent_change(prev, curr, min_val, max_val):
     except:
         return None
 
-# Load CDI
 def load_cdi():
     try:
         cfg = INDEX_CONFIG["Consumer Demand Index (CDI)"]
@@ -83,6 +82,10 @@ def load_cdi():
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
         df.dropna(subset=['Date'], inplace=True)
         df.dropna(subset=cfg['features'], inplace=True)
+
+        if df.shape[0] < 2:
+            st.error("❌ Not enough rows in CDI data after cleaning.")
+            return None, None, "–"
 
         scaler = StandardScaler()
         scaled = scaler.fit_transform(df[cfg['features']])
@@ -93,8 +96,10 @@ def load_cdi():
         curr, prev = df['CDI_Real'].iloc[-1], df['CDI_Real'].iloc[-2]
         latest_month = df['Date'].iloc[-1].strftime('%b-%y')
         return prev, curr, latest_month
-    except:
+    except Exception as e:
+        st.error(f"❌ Error in load_cdi(): {e}")
         return None, None, "–"
+
 
 # Load IMP
 def load_imp():
