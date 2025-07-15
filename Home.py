@@ -204,8 +204,13 @@ for name, cfg in INDEX_CONFIG.items():
 
     if curr is not None and prev is not None:
         pct = percent_change(prev, curr, min_val, max_val)
-        pct_display = f"{pct:+.2f}%" if pct is not None else "–"
-        color = "green" if pct and pct > 0 else "red"
+        if pct is not None:
+            arrow = "🔺" if pct > 0 else "🔻"
+            color = "green" if pct > 0 else "red"
+            pct_display = f"{arrow} {pct:+.2f}%"
+        else:
+            pct_display = "–"
+            color = "gray"
     else:
         pct_display = "–"
         color = "gray"
