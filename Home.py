@@ -128,7 +128,14 @@ def load_ev_adoption():
     try:
         ev_data = get_latest_ev_adoption()
         curr = ev_data["rate"]
-        latest_month = ev_data["month"]
+
+        # Fix the date format here
+        try:
+            dt = datetime.strptime(ev_data["month"], "%b-%Y")
+            latest_month = dt.strftime("%b-%y")
+        except:
+            latest_month = "–"
+
         df_ev = pd.read_csv("data/EV_Adoption.csv")
         df_ev.columns = df_ev.columns.str.strip()
         df_ev['Date'] = pd.to_datetime(df_ev['Date'], format='%m/%d/%Y', errors='coerce')
