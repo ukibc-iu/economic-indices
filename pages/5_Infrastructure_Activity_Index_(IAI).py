@@ -131,14 +131,14 @@ with col1:
 with col2:
     st.markdown(f"""
         <div class="card grey-card">
-            <div style="font-size: 1.2rem;">📊 IAI Score</div>
+            <div style="font-size: 1.2rem;">IAI Score</div>
             <div style="font-size: 2rem;">{latest_score:.2f}</div>
         </div>
     """, unsafe_allow_html=True)
 with col3:
     st.markdown(f"""
         <div class="card red-card">
-            <div style="font-size: 1.2rem;">🏗️ GVA Construction</div>
+            <div style="font-size: 1.2rem;">GVA Construction</div>
             <div style="font-size: 2rem;">₹{latest_gva:,.0f} Cr</div>
         </div>
     """, unsafe_allow_html=True)

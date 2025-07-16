@@ -120,7 +120,7 @@ with col1:
 with col2:
     st.markdown(f"""
         <div class="card grey-card">
-            <div style="font-size: 1.2rem;">📊 Readiness Score</div>
+            <div style="font-size: 1.2rem;">Readiness Score</div>
             <div style="font-size: 2rem;">{latest_score:.2f}</div>
         </div>
     """, unsafe_allow_html=True)
@@ -128,7 +128,7 @@ with col2:
 with col3:
     st.markdown(f"""
         <div class="card red-card">
-            <div style="font-size: 1.2rem;">⚡ Total Power Consumption</div>
+            <div style="font-size: 1.2rem;">Total Power Consumption</div>
             <div style="font-size: 2rem;">{latest_consumption:,.0f} BU</div>
         </div>
     """, unsafe_allow_html=True)
