@@ -140,7 +140,7 @@ st.plotly_chart(gauge_fig, use_container_width=True)
 
 # --- Line Chart ---
 st.subheader("Affordability Index Over Time")
-fig_line = px.line(df, x='Month', y='Affordability Index', markers=True,
+fig_line = px.line(df, x='Month', y='Affordability Index', markers=False,
                    line_shape='linear', color_discrete_sequence=['#FF5733'])
 fig_line.update_layout(
     paper_bgcolor='rgba(0,0,0,0)',
