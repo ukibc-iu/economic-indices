@@ -201,7 +201,7 @@ gauge_fig = go.Figure(go.Indicator(
             {'range': [4, 5], 'color': "#006837"}
         ],
         'threshold': {
-            'line': {'color': "black", 'width': 4},
+            'line': {'color': "white", 'width': 4},
             'thickness': 0.75,
             'value': selected_real
         }
