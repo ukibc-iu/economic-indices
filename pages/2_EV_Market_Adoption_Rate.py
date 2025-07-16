@@ -140,11 +140,11 @@ with gauge_col:
         gauge_value = selected_ev_rate * 100
         gauge_range = [0, 100]
         steps = [
-            {'range': [0, 5], 'color': '#fee5d9'},
-            {'range': [5, 10], 'color': '#fcae91'},
-            {'range': [10, 20], 'color': '#fb6a4a'},
-            {'range': [20, 40], 'color': '#de2d26'},
-            {'range': [40, 100], 'color': '#a50f15'}
+            {'range': [0, 5], 'color': '#CCFF66'},
+            {'range': [5, 10], 'color': '#99CC00'},
+            {'range': [10, 20], 'color': '#669900'},
+            {'range': [20, 40], 'color': '#336600'},
+            {'range': [40, 100], 'color': '#003300'}
         ]
     else:
         gauge_value = selected_ev_rate
