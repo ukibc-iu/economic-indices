@@ -113,15 +113,19 @@ def chart_wrapper(fig, title=None):
     if title:
         st.markdown(f"#### {title}")
     st.plotly_chart(fig, use_container_width=True)
+# Detect Streamlit theme (light or dark)
+theme_base = st.get_option("theme.base")
+is_dark = theme_base == "dark"
+font_color = "white" if is_dark else "black"
 
-# === Gauge Chart (Smaller Size) ===
+# === Gauge Chart (Responsive Font Color) ===
 gauge_fig = go.Figure(go.Indicator(
     mode="gauge+number",
     value=selected_value,
-    title={'text': f"IMP Index for {label_period}", 'font': {'size': 16}},
+    title={'text': f"IMP Index for {label_period}", 'font': {'size': 16, 'color': font_color}},
     gauge={
-        'axis': {'range': [-3, 3], 'tickwidth': 1, 'tickcolor': "white"},
-        'bar': {'color': "white"},
+        'axis': {'range': [-3, 3], 'tickwidth': 1, 'tickcolor': font_color},
+        'bar': {'color': font_color},
         'steps': [
             {'range': [-3, -2], 'color': '#0B1D51'},
             {'range': [-2, -1], 'color': '#2C3E70'},
@@ -138,10 +142,10 @@ gauge_fig = go.Figure(go.Indicator(
     }
 ))
 gauge_fig.update_layout(
-    height=300,  # Smaller height
+    height=300,
     margin=dict(l=10, r=10, t=20, b=10),
     paper_bgcolor="rgba(0,0,0,0)",
-    font=dict(color="white", family="Arial")
+    font=dict(color=font_color, family="Arial")
 )
 
 chart_wrapper(gauge_fig, title="IMP Index Gauge")
