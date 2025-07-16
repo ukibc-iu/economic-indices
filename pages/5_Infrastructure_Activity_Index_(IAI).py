@@ -8,14 +8,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
 
 st.set_page_config(page_title="Infrastructure Activity Index (IAI)", layout="wide")
-st.title("🏗️ Infrastructure Activity Index (IAI)")
-st.markdown("""
-The Infrastructure Activity Index is a composite score based on various indicators:
-- Highway, railway, and power line construction
-- Cement prices
-- GVA from construction
-- Budgetary infrastructure allocations
-""")
+st.title("Infrastructure Activity Index (IAI)")
 
 # --- Load Data ---
 @st.cache_data
