@@ -113,7 +113,7 @@ def create_speedometer_gauge(value):
         number={'suffix': "%", 'font': {'size': 36}},
         gauge={
             'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "gray"},
-            'bar': {'color': "#004466"},
+            'bar': {'color': "#00B35A"},
             'bgcolor': "white",
             'borderwidth': 1,
             'bordercolor': "gray",
