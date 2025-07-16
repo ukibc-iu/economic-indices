@@ -15,7 +15,7 @@ def get_latest_ev_adoption():
 
     df['EV Total Sales'] = df[ev_cols].sum(axis=1)
     df['EV Adoption Rate'] = df['EV Total Sales'] / df['Total Vehicle Sales']
-    df['Month'] = df['Date'].dt.strftime('%b-%Y')
+    df['Month'] = df['Date'].dt.strftime('%b-%y')
 
     latest = df.sort_values("Date").iloc[-1]
     return {
