@@ -108,23 +108,24 @@ else:
     selected_value = df[df['Fiscal_Quarter'] == selected_label]['Scale'].mean()
     label_period = selected_label
 
-# === Gauge Chart ===
+# === Gauge Chart with Asymmetric Blue Gradient ===
 gauge_fig = go.Figure(go.Indicator(
     mode="gauge+number+delta",
     value=selected_value,
     title={'text': f"IMP Index for {label_period}", 'font': {'size': 20}},
-    delta={'reference': 0, 'increasing': {'color': 'blue'}, 'decreasing': {'color': 'lightblue'}},
+    delta={'reference': 0, 'increasing': {'color': 'blue'}, 'decreasing': {'color': 'blue'}},
     gauge={
-        'axis': {'range': [-3, 3], 'tickwidth': 1, 'tickcolor': "darkblue"},
+        'axis': {'range': [-3, 3], 'tickwidth': 1, 'tickcolor': "white"},
         'bar': {'color': "#1f77b4"},
         'bgcolor': "white",
         'steps': [
-            {'range': [-3, -2], 'color': '#b3cde0'},
-            {'range': [-2, -1], 'color': '#6497b1'},
-            {'range': [-1, 0], 'color': '#005b96'},
-            {'range': [0, 1], 'color': '#03396c'},
-            {'range': [1, 2], 'color': '#011f4b'},
-            {'range': [2, 3], 'color': '#001f3f'}
+            {'range': [-3, -2], 'color': '#0B1D51'},   # very dark steel blue
+            {'range': [-2, -1], 'color': '#2C3E70'},   # medium dark steel blue
+            {'range': [-1,  0], 'color': '#6C8EBF'},   # light steel blue
+
+            {'range': [ 0,  1], 'color': '#AED9E0'},   # light ocean blue
+            {'range': [ 1,  2], 'color': '#3095B1'},   # medium ocean blue
+            {'range': [ 2,  3], 'color': '#005377'},   # deep ocean blue
         ],
         'threshold': {
             'line': {'color': "crimson", 'width': 4},
