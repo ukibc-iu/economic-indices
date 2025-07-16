@@ -9,7 +9,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 st.set_page_config(page_title="Infrastructure Activity Index (IAI)", layout="wide")
 st.title("Infrastructure Activity Index (IAI)")
-st.markdown("*The Infrastructure Activity Index (IAI) tracks and the pace of India’s infrastructure development by synthesizing key construction and investment trends.*")
+st.markdown("*The Infrastructure Activity Index (IAI) tracks the pace of India’s infrastructure development by synthesizing key construction and investment trends.*")
 # --- Load Data ---
 @st.cache_data
 def load_data():
