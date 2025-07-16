@@ -241,7 +241,7 @@ st.markdown(f"""
 st.subheader("📈 Readiness Score Over Time")
 fig_score = px.line(df, x='Month', y='Readiness Score', markers=False,
                     line_shape='linear',
-                    color_discrete_sequence=['#FF5733'])
+                    color_discrete_sequence=['#035955'])
 fig_score.update_layout(
     paper_bgcolor='rgba(0,0,0,0)',
     plot_bgcolor='rgba(0,0,0,0)',
