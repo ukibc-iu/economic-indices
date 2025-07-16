@@ -140,7 +140,9 @@ if preview_type == "Monthly":
 else:
     period_list = df['QuarterFormatted'].unique().tolist()
 
-selected_period = st.selectbox("📆 Select Month or Quarter", period_list)
+# Set default to latest available period
+default_period = latest_month if preview_type == "Monthly" else latest_quarter
+selected_period = st.selectbox("📆 Select Month or Quarter", period_list, index=period_list.index(default_period))
 
 # --- Filtered Data ---
 if preview_type == "Monthly":
