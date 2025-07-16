@@ -142,7 +142,7 @@ gauge_fig.update_layout(
     paper_bgcolor="rgba(0,0,0,0)",
     font=dict(color="white", family="Arial")
 )
-chart_wrapper(gauge_fig)
+chart_wrapper(gauge_fig, title="IMP Index Gauge")
 
 # === Expert Opinion ===
 st.markdown("### 💡 Expert Opinion")
@@ -189,7 +189,10 @@ bar_fig.update_layout(
     height=400,
     xaxis_title="Weight (%)",
     yaxis=dict(categoryorder="total ascending"),
-    margin=dict(l=30, r=30, t=40, b=30)
+    margin=dict(l=30, r=30, t=40, b=30),
+    plot_bgcolor='rgba(0,0,0,0)',
+    paper_bgcolor='rgba(0,0,0,0)',
+    font=dict(color="white")
 )
 chart_wrapper(bar_fig, title="Factor Contributions to IMP Index")
 
@@ -232,6 +235,7 @@ line_fig.update_layout(
     plot_bgcolor='rgba(0,0,0,0)',
     paper_bgcolor='rgba(0,0,0,0)',
     hoverlabel=dict(bgcolor="white", font_size=12, font_color="black"),
+    font=dict(color="white")
 )
 chart_wrapper(line_fig, title=f"IMP Index Trend ({mode})")
 
