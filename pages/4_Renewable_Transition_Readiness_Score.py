@@ -220,7 +220,7 @@ with right_col:
 st.markdown("### 💡 Expert Opinion")
 
 # Expert opinion (static for now)
-expert_opinion = "Renewable Transition Readiness Score is currently neutral."
+expert_opinion = "Renewable Transition Readiness Score is currently..."
 
 # Styled display box
 st.markdown(f"""
