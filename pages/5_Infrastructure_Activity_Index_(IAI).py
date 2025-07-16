@@ -215,7 +215,7 @@ with col2:
         x="IAI",
         y="GVA: construction (Basic Price)",
         trendline="ols",
-        color_discrete_sequence=["#624E20],
+        color_discrete_sequence=["#33ccff"],
         labels={
             "IAI": "Infrastructure Activity Index",
             "GVA: construction (Basic Price)": "GVA: Construction (₹ Cr)"
