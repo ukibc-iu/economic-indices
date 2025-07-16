@@ -113,9 +113,9 @@ kpi_style = """
     font-weight: bold;
     text-align: center;
 }
-.green-card { background: linear-gradient(#003366, #006699, #3399cc); }
-.grey-card { background: linear-gradient(#666666, #999999, #cccccc); }
-.red-card { background: linear-gradient(#990000, #cc0000, #ff3300); }
+.green-card { background: linear-gradient(#453717, #624E20, #82672A); }
+.grey-card { background: linear-gradient(#A78437, #C49E4D, #D4AF37); }
+.red-card { background: linear-gradient(#DD9E4B, #D9B84F, #E0C56E); }
 </style>
 """
 st.markdown(kpi_style, unsafe_allow_html=True)
