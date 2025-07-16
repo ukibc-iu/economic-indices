@@ -190,18 +190,19 @@ gauge_fig = go.Figure(go.Indicator(
         'borderwidth': 1,
         'bordercolor': "gray",
         'steps': [
-            {'range': [-5, -3], 'color': "#800000"},
-            {'range': [-3, -2], 'color': "#bd0026"},
-            {'range': [-2, -1], 'color': "#fc4e2a"},
-            {'range': [-1, 0], 'color': "#fd8d3c"},
-            {'range': [0, 1], 'color': "#fecc5c"},
-            {'range': [1, 2], 'color': "#c2e699"},
-            {'range': [2, 3], 'color': "#78c679"},
-            {'range': [3, 4], 'color': "#31a354"},
-            {'range': [4, 5], 'color': "#006837"}
+            {'range': [-5, -4], 'color': "#3B0A45"},
+            {'range': [-4, -3], 'color': "#5D1782"},
+            {'range': [-3, -2], 'color': "#8439B9"},
+            {'range': [-2, -1], 'color': "#A15ACB"},
+            {'range': [-1, 0], 'color': "#C589D9"},
+            {'range': [0, 1], 'color': "#F4B3E7"},
+            {'range': [1, 2], 'color': "#F795D1"},
+            {'range': [2, 3], 'color': "#F062B8"},
+            {'range': [3, 4], 'color': "#E0369F"}
+            {"range": [ 4,  5], "color": "#C3006A"}
         ],
         'threshold': {
-            'line': {'color': "white", 'width': 4},
+            'line': {'color': "black", 'width': 4},
             'thickness': 0.75,
             'value': selected_real
         }
