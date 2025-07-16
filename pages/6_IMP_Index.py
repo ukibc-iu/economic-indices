@@ -114,11 +114,11 @@ def chart_wrapper(fig, title=None):
         st.markdown(f"#### {title}")
     st.plotly_chart(fig, use_container_width=True)
 
-# === Gauge Chart ===
+# === Gauge Chart (Smaller Size) ===
 gauge_fig = go.Figure(go.Indicator(
     mode="gauge+number",
     value=selected_value,
-    title={'text': f"IMP Index for {label_period}", 'font': {'size': 20}},
+    title={'text': f"IMP Index for {label_period}", 'font': {'size': 18}},
     gauge={
         'axis': {'range': [-3, 3], 'tickwidth': 1, 'tickcolor': "white"},
         'bar': {'color': "white"},
@@ -138,10 +138,12 @@ gauge_fig = go.Figure(go.Indicator(
     }
 ))
 gauge_fig.update_layout(
-    margin=dict(l=40, r=40, t=40, b=40),
+    height=350,  # Smaller height
+    margin=dict(l=20, r=20, t=40, b=20),
     paper_bgcolor="rgba(0,0,0,0)",
     font=dict(color="white", family="Arial")
 )
+
 chart_wrapper(gauge_fig, title="IMP Index Gauge")
 
 # === Expert Opinion ===
