@@ -236,7 +236,7 @@ if view_type == "Monthly":
     fig_line = px.line(df, x='Month', y='IAI', markers=True, line_shape='linear', color_discrete_sequence=['#FF5733'])
 else:
     df_q = df.groupby('Fiscal Quarter').mean(numeric_only=True).reset_index()
-    fig_line = px.line(df_q, x='Fiscal Quarter', y='IAI', markers=True, line_shape='linear', color_discrete_sequence=['#FF5733'])
+    fig_line = px.line(df_q, x='Fiscal Quarter', y='IAI', markers=True, line_shape='linear', color_discrete_sequence=['#624E20'])
 
 fig_line.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white', height=450)
 st.plotly_chart(fig_line, use_container_width=True)
