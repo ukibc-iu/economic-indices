@@ -94,7 +94,9 @@ with col3:
 # --- Preview Type ---
 preview_type = st.selectbox("Preview Type", ["Monthly", "Quarterly"])
 period_list = df['Month'].unique().tolist() if preview_type == "Monthly" else df['QuarterFormatted'].unique().tolist()
-selected_period = st.selectbox("📆 Select Month or Quarter", period_list)
+# Set default to latest available period
+default_period = latest_month if preview_type == "Monthly" else latest_quarter
+selected_period = st.selectbox("📆 Select Month or Quarter", period_list, index=period_list.index(default_period))
 
 filtered = df[df['Month'] == selected_period] if preview_type == "Monthly" else df[df['QuarterFormatted'] == selected_period]
 if filtered.empty:
