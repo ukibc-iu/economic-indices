@@ -4,6 +4,8 @@ import numpy as np
 import os
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import MinMaxScaler
 from shared.ev_index import get_latest_ev_adoption
 
 # Page Config
@@ -172,12 +174,48 @@ def load_renewable():
         st.error(f"❌ Error loading Renewable Score: {e}")
         return None, None, "–"
 
+def load_iai():
+    try:
+        df = pd.read_csv("data/Infrastructure_Activity.csv")
+        df.columns = df.columns.str.strip()
+        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+        df.dropna(subset=['Date'], inplace=True)
+
+        idv_cols = [
+            "Highway construction actual",
+            "Railway line construction actual",
+            "Power T&D line constr (220KV plus)",
+            "Cement price",
+            "Budgetary allocation for infrastructure sector"
+        ]
+        target_col = "GVA: construction (Basic Price)"
+
+        for col in idv_cols + [target_col]:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+
+        df.dropna(inplace=True)
+        scaler = MinMaxScaler()
+        X_scaled = scaler.fit_transform(df[idv_cols])
+        model = LinearRegression()
+        model.fit(X_scaled, df[target_col])
+        weights = model.coef_ / model.coef_.sum()
+        df['IAI'] = pd.DataFrame(X_scaled, columns=idv_cols).dot(weights)
+        df = df.sort_values('Date')
+        curr = df['IAI'].iloc[-1]
+        prev = df['IAI'].iloc[-2] if len(df) > 1 else None
+        latest_month = df['Date'].iloc[-1].strftime('%b-%y')
+        return prev, curr, latest_month
+    except Exception as e:
+        st.error(f"❌ Error loading IAI: {e}")
+        return None, None, "–"
+
 # Load values
 INDEX_CONFIG['Consumer Demand Index (CDI)']['prev'], INDEX_CONFIG['Consumer Demand Index (CDI)']['value'], INDEX_CONFIG['Consumer Demand Index (CDI)']['month'] = load_cdi()
 INDEX_CONFIG['IMP Index']['prev'], INDEX_CONFIG['IMP Index']['value'], INDEX_CONFIG['IMP Index']['month'] = load_imp()
 INDEX_CONFIG['Housing Affordability Stress Index']['prev'], INDEX_CONFIG['Housing Affordability Stress Index']['value'], INDEX_CONFIG['Housing Affordability Stress Index']['month'] = load_housing()
 INDEX_CONFIG['EV Market Adoption Rate']['prev'], INDEX_CONFIG['EV Market Adoption Rate']['value'], INDEX_CONFIG['EV Market Adoption Rate']['month'] = load_ev_adoption()
 INDEX_CONFIG['Renewable Transition Readiness Score']['prev'], INDEX_CONFIG['Renewable Transition Readiness Score']['value'], INDEX_CONFIG['Renewable Transition Readiness Score']['month'] = load_renewable()
+INDEX_CONFIG['Infrastructure Activity Index (IAI)']['prev'], INDEX_CONFIG['Infrastructure Activity Index (IAI)']['value'], INDEX_CONFIG['Infrastructure Activity Index (IAI)']['month'] = load_iai()
 
 # Display Table
 data = []
@@ -215,14 +253,12 @@ df_display = pd.DataFrame(data)
 for i in range(len(df_display)):
     cols = st.columns([1, 3, 2, 2, 2, 1])
 
-    # Image column
     img_path = df_display.iloc[i]['Image']
     if img_path and os.path.exists(img_path):
         cols[0].image(img_path, width=50)
     else:
         cols[0].markdown("📄")
 
-    # Data columns
     cols[1].markdown(f"**{df_display.iloc[i]['Index']}**")
     cols[2].markdown(df_display.iloc[i]['Latest Month'])
     cols[3].markdown(df_display.iloc[i]['Current Value'])
