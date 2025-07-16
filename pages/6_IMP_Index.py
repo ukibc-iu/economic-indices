@@ -110,7 +110,7 @@ else:
 
 # === Gauge Chart with Asymmetric Blue Gradient ===
 gauge_fig = go.Figure(go.Indicator(
-    mode="gauge+number+delta",
+    mode="gauge+number",
     value=selected_value,
     title={'text': f"IMP Index for {label_period}", 'font': {'size': 20}},
     delta={'reference': 0, 'increasing': {'color': 'blue'}, 'decreasing': {'color': 'blue'}},
