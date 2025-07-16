@@ -146,7 +146,7 @@ with col3:
 # --- View Selector ---
 st.markdown("---")
 st.subheader("📅 View Mode")
-view_type = st.radio("Select data granularity:", ["Monthly", "Quarterly"], horizontal=True)
+view_type = st.radio("Select data preview:", ["Monthly", "Quarterly"], horizontal=True)
 
 # --- Period Selection ---
 if view_type == "Monthly":
