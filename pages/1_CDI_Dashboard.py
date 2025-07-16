@@ -243,10 +243,9 @@ with col1:
     line_fig.add_trace(go.Scatter(
         x=line_x,
         y=line_y,
-        mode='lines+markers',
+        mode='lines',
         name='CDI',
         line=dict(color=kpi_theme_colors[0], width=3),
-        marker=dict(size=6, color=kpi_theme_colors[1])
     ))
     line_fig.update_layout(
         title=line_title,
