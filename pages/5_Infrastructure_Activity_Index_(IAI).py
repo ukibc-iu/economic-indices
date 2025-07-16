@@ -12,7 +12,6 @@ st.title("Infrastructure Activity Index (IAI)")
 
 # --- Load Data ---
 @st.cache_data
-
 def load_data():
     file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'Infrastructure_Activity.csv')
 
@@ -48,7 +47,7 @@ def load_data():
 
     df.dropna(inplace=True)
 
-    # --- Regression-Based Weights ---
+    # Regression-Based Weights
     idv_cols = [
         "Highway construction actual",
         "Railway line construction actual",
@@ -69,16 +68,37 @@ def load_data():
 
     df['IAI'] = X.dot(weights)
 
+    # Add fiscal quarter
+    def get_fiscal_quarter_label(date):
+        month = date.month
+        year = date.year
+        if month >= 4:
+            fy_start = year
+            fy_end = year + 1
+        else:
+            fy_start = year - 1
+            fy_end = year
+        if month in [4, 5, 6]:
+            q = "Q1"
+        elif month in [7, 8, 9]:
+            q = "Q2"
+        elif month in [10, 11, 12]:
+            q = "Q3"
+        else:
+            q = "Q4"
+        return f"{q} {fy_start}-{str(fy_end)[-2:]}"
+    
+    df['Fiscal Quarter'] = df['Date'].apply(get_fiscal_quarter_label)
     df = df.sort_values('Date')
     return df
 
-# Load and validate data
+# --- Load Data ---
 df = load_data()
 if df is None or df.empty:
     st.warning("⚠️ No valid data available. Please check your CSV file.")
     st.stop()
 
-# --- KPI Display ---
+# --- KPI Display (Latest Month Always) ---
 latest_row = df.iloc[-1]
 latest_month = latest_row['Month']
 latest_score = latest_row['IAI']
@@ -102,7 +122,6 @@ kpi_style = """
 st.markdown(kpi_style, unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
-
 with col1:
     st.markdown(f"""
         <div class="card green-card">
@@ -110,7 +129,6 @@ with col1:
             <div style="font-size: 2rem;">{latest_month}</div>
         </div>
     """, unsafe_allow_html=True)
-
 with col2:
     st.markdown(f"""
         <div class="card grey-card">
@@ -118,7 +136,6 @@ with col2:
             <div style="font-size: 2rem;">{latest_score:.2f}</div>
         </div>
     """, unsafe_allow_html=True)
-
 with col3:
     st.markdown(f"""
         <div class="card red-card">
@@ -127,17 +144,31 @@ with col3:
         </div>
     """, unsafe_allow_html=True)
 
-# --- Select Month ---
-month_options = df['Month'].unique().tolist()
-default_month = df['Month'].iloc[-1]  # Latest month
-selected_month = st.selectbox("📅 Select Month", month_options, index=month_options.index(default_month))
-filtered = df[df['Month'] == selected_month]
+# --- View Selector ---
+st.markdown("---")
+st.subheader("📅 View Mode")
+view_type = st.radio("Select data granularity:", ["Monthly", "Quarterly"], horizontal=True)
+
+# --- Period Selection ---
+if view_type == "Monthly":
+    month_options = df['Month'].unique().tolist()
+    default_month = df['Month'].iloc[-1]
+    selected_month = st.selectbox("🗓 Select Month", month_options, index=month_options.index(default_month))
+    filtered = df[df['Month'] == selected_month]
+    display_label = selected_month
+else:
+    quarter_options = df['Fiscal Quarter'].unique().tolist()
+    default_quarter = df['Fiscal Quarter'].iloc[-1]
+    selected_quarter = st.selectbox("📆 Select Quarter", quarter_options, index=quarter_options.index(default_quarter))
+    filtered = df[df['Fiscal Quarter'] == selected_quarter]
+    filtered = filtered.mean(numeric_only=True).to_frame().T
+    display_label = selected_quarter
 
 if filtered.empty:
-    st.warning("⚠️ No data found for selected month.")
+    st.warning("⚠️ No data found for selected time period.")
     st.stop()
 
-# === CHART WRAPPER ===
+# --- CHART WRAPPER ---
 def wrapped_chart(title, fig, height=420):
     chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
     components.html(f"""
@@ -154,7 +185,7 @@ def wrapped_chart(title, fig, height=420):
     </div>
     """, height=height + 60)
 
-# === Gauge ===
+# --- Gauge Chart ---
 fig_gauge = go.Figure(go.Indicator(
     mode="gauge+number",
     value=filtered['IAI'].values[0],
@@ -172,15 +203,20 @@ fig_gauge = go.Figure(go.Indicator(
     }
 ))
 fig_gauge.update_layout(height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
-wrapped_chart(f"IAI Gauge – {selected_month}", fig_gauge)
+wrapped_chart(f"IAI Gauge – {display_label}", fig_gauge)
 
-# === Line Chart ===
+# --- Line Chart ---
 st.subheader("📈 IAI Over Time")
-fig_line = px.line(df, x='Month', y='IAI', markers=True, line_shape='linear', color_discrete_sequence=['#FF5733'])
+if view_type == "Monthly":
+    fig_line = px.line(df, x='Month', y='IAI', markers=True, line_shape='linear', color_discrete_sequence=['#FF5733'])
+else:
+    df_q = df.groupby('Fiscal Quarter').mean(numeric_only=True).reset_index()
+    fig_line = px.line(df_q, x='Fiscal Quarter', y='IAI', markers=True, line_shape='linear', color_discrete_sequence=['#FF5733'])
+
 fig_line.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white', height=450)
 st.plotly_chart(fig_line, use_container_width=True)
 
-# === Data Table ===
+# --- Data Table ---
 with st.expander("🔍 View Underlying Data Table"):
     st.dataframe(df[[
         'Month', 'Highway construction actual', 'Railway line construction actual',
