@@ -128,7 +128,9 @@ with col3:
     """, unsafe_allow_html=True)
 
 # --- Select Month ---
-selected_month = st.selectbox("📅 Select Month", df['Month'].unique().tolist())
+month_options = df['Month'].unique().tolist()
+default_month = df['Month'].iloc[-1]  # Latest month
+selected_month = st.selectbox("📅 Select Month", month_options, index=month_options.index(default_month))
 filtered = df[df['Month'] == selected_month]
 
 if filtered.empty:
