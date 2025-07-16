@@ -12,7 +12,7 @@ df.columns = df.columns.str.strip()
 # === Parse Date ===
 df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')
 df = df.dropna(subset=['Date'])
-df['Month'] = df['Date'].dt.strftime('%b-%Y')
+df['Month'] = df['Date'].dt.strftime('%b-%y')
 
 # === Clean & Convert Numeric Columns ===
 ev_cols = ['EV Four-wheeler Sales', 'EV Two-wheeler Sales', 'EV Three-wheeler Sales']
