@@ -116,7 +116,7 @@ gauge_fig = go.Figure(go.Indicator(
     delta={'reference': 0, 'increasing': {'color': 'blue'}, 'decreasing': {'color': 'blue'}},
     gauge={
         'axis': {'range': [-3, 3], 'tickwidth': 1, 'tickcolor': "white"},
-        'bar': {'color': "#1f77b4"},
+        'bar': {'color': "white"},
         'bgcolor': "white",
         'steps': [
             {'range': [-3, -2], 'color': '#0B1D51'},   # very dark steel blue
