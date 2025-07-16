@@ -68,7 +68,6 @@ def load_data():
 
     df['IAI'] = X.dot(weights)
 
-    # Add fiscal quarter
     def get_fiscal_quarter_label(date):
         month = date.month
         year = date.year
@@ -98,7 +97,7 @@ if df is None or df.empty:
     st.warning("⚠️ No valid data available. Please check your CSV file.")
     st.stop()
 
-# --- KPI Display (Latest Month Always) ---
+# --- KPI Display ---
 latest_row = df.iloc[-1]
 latest_month = latest_row['Month']
 latest_score = latest_row['IAI']
@@ -168,7 +167,7 @@ if filtered.empty:
     st.warning("⚠️ No data found for selected time period.")
     st.stop()
 
-# --- CHART WRAPPER ---
+# === CHART WRAPPER ===
 def wrapped_chart(title, fig, height=420):
     chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
     components.html(f"""
@@ -185,25 +184,51 @@ def wrapped_chart(title, fig, height=420):
     </div>
     """, height=height + 60)
 
-# --- Gauge Chart ---
-fig_gauge = go.Figure(go.Indicator(
-    mode="gauge+number",
-    value=filtered['IAI'].values[0],
-    number={'font': {'color': 'white'}},
-    gauge={
-        'axis': {'range': [0, 1], 'tickcolor': 'white'},
-        'bar': {'color': "black"},
-        'steps': [
-            {'range': [0, 0.2], 'color': "#ff0000"},
-            {'range': [0.2, 0.4], 'color': "#ffa500"},
-            {'range': [0.4, 0.6], 'color': "#ffff00"},
-            {'range': [0.6, 0.8], 'color': "#90ee90"},
-            {'range': [0.8, 1.0], 'color': "#008000"},
-        ]
-    }
-))
-fig_gauge.update_layout(height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
-wrapped_chart(f"IAI Gauge – {display_label}", fig_gauge)
+# === SIDE-BY-SIDE GAUGE AND SCATTER ===
+col1, col2 = st.columns(2)
+
+# Gauge Chart
+with col1:
+    fig_gauge = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=filtered['IAI'].values[0],
+        number={'font': {'color': 'white'}},
+        gauge={
+            'axis': {'range': [0, 1], 'tickcolor': 'white'},
+            'bar': {'color': "black"},
+            'steps': [
+                {'range': [0, 0.2], 'color': "#ff0000"},
+                {'range': [0.2, 0.4], 'color': "#ffa500"},
+                {'range': [0.4, 0.6], 'color': "#ffff00"},
+                {'range': [0.6, 0.8], 'color': "#90ee90"},
+                {'range': [0.8, 1.0], 'color': "#008000"},
+            ]
+        }
+    ))
+    fig_gauge.update_layout(height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
+    wrapped_chart(f"IAI Gauge – {display_label}", fig_gauge)
+
+# Chart #3 – Scatter: IAI vs GVA
+with col2:
+    fig_scatter = px.scatter(
+        df,
+        x="IAI",
+        y="GVA: construction (Basic Price)",
+        trendline="ols",
+        color_discrete_sequence=["#33ccff"],
+        labels={
+            "IAI": "Infrastructure Activity Index",
+            "GVA: construction (Basic Price)": "GVA: Construction (₹ Cr)"
+        }
+    )
+    fig_scatter.update_traces(marker=dict(size=8, opacity=0.85))
+    fig_scatter.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font_color='white',
+        height=400
+    )
+    wrapped_chart("IAI vs GVA Construction (All Periods)", fig_scatter)
 
 # --- Line Chart ---
 st.subheader("📈 IAI Over Time")
@@ -218,7 +243,7 @@ st.plotly_chart(fig_line, use_container_width=True)
 
 # --- Data Table ---
 with st.expander("🔍 View Underlying Data Table"):
-    st.dataframe(df[[
+    st.dataframe(df[[ 
         'Month', 'Highway construction actual', 'Railway line construction actual',
         'Power T&D line constr (220KV plus)', 'Cement price',
         'GVA: construction (Basic Price)', 'Budgetary allocation for infrastructure sector', 'IAI'
