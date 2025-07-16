@@ -178,14 +178,14 @@ else:
 
 # === CDI Speedometer Gauge ===
 gauge_fig = go.Figure(go.Indicator(
-    mode="gauge+number+delta",
+    mode="gauge+number",
     value=selected_real,
     delta={'reference': 0, 'increasing': {'color': "green"}, 'decreasing': {'color': "red"}},
     number={'suffix': "", 'font': {'size': 36}},
     title={'text': f"<b>Consumer Demand Index</b><br>{label_period}", 'font': {'size': 18}},
     gauge={
         'axis': {'range': [-5, 5], 'tickwidth': 1, 'tickcolor': "darkgray"},
-        'bar': {'color': "crimson", 'thickness': 0.3},
+        'bar': {'color': "black", 'thickness': 0.3},
         'bgcolor': "white",
         'borderwidth': 1,
         'bordercolor': "gray",
