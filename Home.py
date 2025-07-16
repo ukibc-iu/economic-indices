@@ -128,18 +128,7 @@ def load_ev_adoption():
     try:
         ev_data = get_latest_ev_adoption()
         curr = ev_data["rate"]
-
-        # Reformat EV month
-        raw_month = ev_data.get("month", "–")
-        latest_month = "–"
-        match = re.match(r"^[A-Za-z]{3}-\d{4}$", raw_month)
-        if match:
-            try:
-                dt = datetime.strptime(raw_month, "%b-%Y")
-                latest_month = dt.strftime("%b-%y")  # Convert 'Apr-2025' → 'Apr-25'
-            except:
-                latest_month = "–"
-
+        latest_month = ev_data["month"]
         df_ev = pd.read_csv("data/EV_Adoption.csv")
         df_ev.columns = df_ev.columns.str.strip()
         df_ev['Date'] = pd.to_datetime(df_ev['Date'], format='%m/%d/%Y', errors='coerce')
