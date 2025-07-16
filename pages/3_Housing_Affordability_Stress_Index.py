@@ -118,11 +118,11 @@ def create_speedometer_gauge(value):
             'borderwidth': 1,
             'bordercolor': "gray",
             'steps': [
-                {'range': [0, 20], 'color': '#ff4d4d'},
-                {'range': [20, 40], 'color': '#ffa64d'},
-                {'range': [40, 60], 'color': '#ffff66'},
-                {'range': [60, 80], 'color': '#90ee90'},
-                {'range': [80, 100], 'color': '#228B22'},
+                {'range': [0, 20], 'color': '#F6725C'},
+                {'range': [20, 40], 'color': '#F34629'},
+                {'range': [40, 60], 'color': '#DA0000'},
+                {'range': [60, 80], 'color': '#960000'},
+                {'range': [80, 100], 'color': '#7A0000'},
             ],
         }
     ))
