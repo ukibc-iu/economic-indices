@@ -176,41 +176,44 @@ else:
     selected_real = quarter_df[quarter_df['Fiscal_Quarter'] == selected_quarter]['CDI_Real'].values[0]
     selected_scaled = quarter_df[quarter_df['Fiscal_Quarter'] == selected_quarter]['CDI_Scaled'].values[0]
 
-# === CDI Scale Bar ===
-# === CDI Scale Bar ===
-fig = go.Figure()
-color_map = {
-    -5: ("#800000", "Extremely Low"), -4: ("#bd0026", "Severely Low"),
-    -3: ("#e31a1c", "Very Low"), -2: ("#fc4e2a", "Low"),
-    -1: ("#fd8d3c", "Slightly Low"), 0: ("#fecc5c", "Neutral"),
-    1: ("#c2e699", "Slightly High"), 2: ("#78c679", "High"),
-    3: ("#31a354", "Very High"), 4: ("#006837", "Severely High"),
-    5: ("#004529", "Extremely High")
-}
-for val in range(-5, 6):
-    color, label = color_map[val]
-    fig.add_shape(type="rect", x0=val-0.5, x1=val+0.5, y0=-0.3, y1=0.3,
-                  line=dict(color="black", width=1), fillcolor=color, layer="below")
-    fig.add_trace(go.Scatter(x=[val], y=[0], mode='text', text=[str(val)],
-                             hovertext=[f"{label} ({val})"], showlegend=False,
-                             textfont=dict(color='white', size=16)))
+# === CDI Speedometer Gauge ===
+gauge_fig = go.Figure(go.Indicator(
+    mode="gauge+number+delta",
+    value=selected_real,
+    delta={'reference': 0, 'increasing': {'color': "green"}, 'decreasing': {'color': "red"}},
+    number={'suffix': "", 'font': {'size': 36}},
+    title={'text': f"<b>Consumer Demand Index</b><br>{label_period}", 'font': {'size': 18}},
+    gauge={
+        'axis': {'range': [-5, 5], 'tickwidth': 1, 'tickcolor': "darkgray"},
+        'bar': {'color': "crimson", 'thickness': 0.3},
+        'bgcolor': "white",
+        'borderwidth': 1,
+        'bordercolor': "gray",
+        'steps': [
+            {'range': [-5, -3], 'color': "#800000"},
+            {'range': [-3, -2], 'color': "#bd0026"},
+            {'range': [-2, -1], 'color': "#fc4e2a"},
+            {'range': [-1, 0], 'color': "#fd8d3c"},
+            {'range': [0, 1], 'color': "#fecc5c"},
+            {'range': [1, 2], 'color': "#c2e699"},
+            {'range': [2, 3], 'color': "#78c679"},
+            {'range': [3, 4], 'color': "#31a354"},
+            {'range': [4, 5], 'color': "#006837"}
+        ],
+        'threshold': {
+            'line': {'color': "black", 'width': 4},
+            'thickness': 0.75,
+            'value': selected_real
+        }
+    }
+))
 
-# ✅ USE selected_real & selected_scaled (NOT latest)
-fig.add_shape(type="rect", x0=selected_scaled-0.5, x1=selected_scaled+0.5,
-              y0=-0.35, y1=0.35, line=dict(color="crimson", width=3, dash="dot"),
-              fillcolor="rgba(0,0,0,0)", layer="above")
+gauge_fig.update_layout(
+    height=300,
+    margin=dict(l=40, r=40, t=50, b=30)
+)
 
-fig.add_trace(go.Scatter(x=[selected_scaled], y=[0.45], mode='text',
-                         text=[f"{selected_real:.2f}"], showlegend=False,
-                         textfont=dict(size=16, color='crimson')))
-
-fig.update_layout(title=f"Consumer Demand Index for {label_period} (Real: {selected_real:.2f})",
-                  xaxis=dict(range=[-5.5, 5.5], title='CDI Scale (-5 to +5)',
-                             showticklabels=False, showgrid=False),
-                  yaxis=dict(visible=False), height=280,
-                  margin=dict(l=30, r=30, t=60, b=30), showlegend=False)
-
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(gauge_fig, use_container_width=True)
 
 st.markdown("### 💡 Expert Opinion")
 
