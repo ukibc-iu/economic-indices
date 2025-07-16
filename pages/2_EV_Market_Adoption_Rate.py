@@ -150,11 +150,11 @@ with gauge_col:
         gauge_value = selected_ev_rate
         gauge_range = [0, 1]
         steps = [
-            {'range': [0.00, 0.05], 'color': '#fee5d9'},
-            {'range': [0.05, 0.10], 'color': '#fcae91'},
-            {'range': [0.10, 0.20], 'color': '#fb6a4a'},
-            {'range': [0.20, 0.40], 'color': '#de2d26'},
-            {'range': [0.40, 1.00], 'color': '#a50f15'}
+            {'range': [0.00, 0.05], 'color': '#CCFF66'},
+            {'range': [0.05, 0.10], 'color': '#99CC00'},
+            {'range': [0.10, 0.20], 'color': '#669900'},
+            {'range': [0.20, 0.40], 'color': '#336600'},
+            {'range': [0.40, 1.00], 'color': '#003300'}
         ]
 
     gauge_fig = go.Figure(go.Indicator(
