@@ -118,7 +118,7 @@ def chart_wrapper(fig, title=None):
 gauge_fig = go.Figure(go.Indicator(
     mode="gauge+number",
     value=selected_value,
-    title={'text': f"IMP Index for {label_period}", 'font': {'size': 18}},
+    title={'text': f"IMP Index for {label_period}", 'font': {'size': 16}},
     gauge={
         'axis': {'range': [-3, 3], 'tickwidth': 1, 'tickcolor': "white"},
         'bar': {'color': "white"},
@@ -139,7 +139,7 @@ gauge_fig = go.Figure(go.Indicator(
 ))
 gauge_fig.update_layout(
     height=350,  # Smaller height
-    margin=dict(l=20, r=20, t=40, b=20),
+    margin=dict(l=10, r=10, t=20, b=10),
     paper_bgcolor="rgba(0,0,0,0)",
     font=dict(color="white", family="Arial")
 )
