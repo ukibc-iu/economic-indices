@@ -108,24 +108,27 @@ else:
     selected_value = df[df['Fiscal_Quarter'] == selected_label]['Scale'].mean()
     label_period = selected_label
 
-# === Gauge Chart with Asymmetric Blue Gradient ===
+# === Chart Wrapper ===
+def chart_wrapper(fig, title=None):
+    if title:
+        st.markdown(f"#### {title}")
+    st.plotly_chart(fig, use_container_width=True)
+
+# === Gauge Chart ===
 gauge_fig = go.Figure(go.Indicator(
     mode="gauge+number",
     value=selected_value,
     title={'text': f"IMP Index for {label_period}", 'font': {'size': 20}},
-    delta={'reference': 0, 'increasing': {'color': 'blue'}, 'decreasing': {'color': 'blue'}},
     gauge={
         'axis': {'range': [-3, 3], 'tickwidth': 1, 'tickcolor': "white"},
         'bar': {'color': "white"},
-        'bgcolor': "white",
         'steps': [
-            {'range': [-3, -2], 'color': '#0B1D51'},   # very dark steel blue
-            {'range': [-2, -1], 'color': '#2C3E70'},   # medium dark steel blue
-            {'range': [-1,  0], 'color': '#6C8EBF'},   # light steel blue
-
-            {'range': [ 0,  1], 'color': '#AED9E0'},   # light ocean blue
-            {'range': [ 1,  2], 'color': '#3095B1'},   # medium ocean blue
-            {'range': [ 2,  3], 'color': '#005377'},   # deep ocean blue
+            {'range': [-3, -2], 'color': '#0B1D51'},
+            {'range': [-2, -1], 'color': '#2C3E70'},
+            {'range': [-1,  0], 'color': '#6C8EBF'},
+            {'range': [ 0,  1], 'color': '#AED9E0'},
+            {'range': [ 1,  2], 'color': '#3095B1'},
+            {'range': [ 2,  3], 'color': '#005377'},
         ],
         'threshold': {
             'line': {'color': "crimson", 'width': 4},
@@ -134,21 +137,16 @@ gauge_fig = go.Figure(go.Indicator(
         }
     }
 ))
-
 gauge_fig.update_layout(
-    margin=dict(l=40, r=40, t=60, b=40),
+    margin=dict(l=40, r=40, t=40, b=40),
     paper_bgcolor="rgba(0,0,0,0)",
-    font={'color': "white", 'family': "Arial"},
+    font=dict(color="white", family="Arial")
 )
+chart_wrapper(gauge_fig)
 
-st.plotly_chart(gauge_fig, use_container_width=True)
-
+# === Expert Opinion ===
 st.markdown("### 💡 Expert Opinion")
-
-# Expert opinion (static for now)
 expert_opinion = "IMP Index is currently neutral."
-
-# Styled display box
 st.markdown(f"""
 <div style="
     background-color: rgba(100, 100, 100, 0.3);
@@ -157,15 +155,13 @@ st.markdown(f"""
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
     font-style: italic;
-    font-size: 1rem;
-">
+    font-size: 1rem;">
     {expert_opinion}
 </div>
 """, unsafe_allow_html=True)
 
 # === Contribution Breakdown ===
 st.markdown("### Contribution Breakdown")
-
 contrib_weights = {
     "Real GDP": 40,
     "Balance of Trade": 20,
@@ -174,76 +170,60 @@ contrib_weights = {
     "Unemployment": 10
 }
 contrib_df = pd.DataFrame({
-    "Factor": list(contrib_weights.keys()),
-    "Weight": list(contrib_weights.values())
-}).sort_values(by="Weight", ascending=False)
+    "Factor": contrib_weights.keys(),
+    "Weight": contrib_weights.values()
+}).sort_values("Weight", ascending=False)
 
-color_map = {
-    40: "#003366",
-    20: "#3399cc",
-    10: "#99ccff"
-}
+color_map = {40: "#003366", 20: "#3399cc", 10: "#99ccff"}
 bar_colors = contrib_df["Weight"].map(color_map)
 
 bar_fig = go.Figure(go.Bar(
     y=contrib_df["Factor"],
     x=contrib_df["Weight"],
-    orientation='h',
-    marker=dict(color=bar_colors, line=dict(color='black', width=1)),
+    orientation="h",
+    marker=dict(color=bar_colors, line=dict(color="black", width=1)),
     text=[f"{w}%" for w in contrib_df["Weight"]],
-    textposition='auto'
+    textposition="auto"
 ))
-
 bar_fig.update_layout(
     height=400,
-    title="Factor Contributions to IMP Index",
     xaxis_title="Weight (%)",
-    yaxis=dict(categoryorder='total ascending'),
-    margin=dict(l=30, r=30, t=40, b=30),
+    yaxis=dict(categoryorder="total ascending"),
+    margin=dict(l=30, r=30, t=40, b=30)
 )
-st.plotly_chart(bar_fig, use_container_width=True)
+chart_wrapper(bar_fig, title="Factor Contributions to IMP Index")
 
-# === Line Graph of IMP Index Over Time ===
+# === Line Chart ===
 st.markdown("### IMP Index Trend Over Time")
-
 if mode == "Monthly":
     time_series = df.sort_values("Date")[["Date", "Scale"]]
     x_vals = time_series["Date"]
 else:
     quarter_df = df.groupby("Fiscal_Quarter")["Scale"].mean().reset_index()
     q_info = quarter_df["Fiscal_Quarter"].str.extract(r'Q(?P<q>\d) (?P<year>\d{4})')
-    q_info["q"] = q_info["q"].astype(int)
-    q_info["year"] = q_info["year"].astype(int)
-
-    quarter_start_dates = []
+    q_info = q_info.astype(int)
+    start_dates = []
     for _, row in q_info.iterrows():
-        q = row["q"]
-        fy = row["year"]
+        q, y = row["q"], row["year"]
         if q == 4:
-            start_date = pd.Timestamp(year=fy + 1, month=1, day=1)
+            start_dates.append(pd.Timestamp(y + 1, 1, 1))
         else:
-            start_month = 3 * (q - 1) + 4
-            start_date = pd.Timestamp(year=fy, month=start_month, day=1)
-        quarter_start_dates.append(start_date)
-
-    quarter_df["Quarter_Start"] = quarter_start_dates
+            start_dates.append(pd.Timestamp(y, 3 * (q - 1) + 4, 1))
+    quarter_df["Quarter_Start"] = start_dates
     time_series = quarter_df.sort_values("Quarter_Start")[["Quarter_Start", "Scale"]]
     x_vals = time_series["Quarter_Start"]
 
-line_fig = go.Figure()
-line_fig.add_trace(go.Scatter(
+line_fig = go.Figure(go.Scatter(
     x=x_vals,
     y=time_series["Scale"],
-    mode="lines",
+    mode="lines+markers",
     line=dict(color="#3f51b5", width=3),
-    name="IMP Index",
+    marker=dict(size=6),
     hovertemplate="Date: %{x}<br>IMP Index: %{y:.2f}<extra></extra>",
     showlegend=False
 ))
-
 line_fig.update_layout(
     height=400,
-    title=f"IMP Index Trend Over Time ({mode})",
     xaxis_title="Date",
     yaxis_title="IMP Index Value",
     margin=dict(l=30, r=30, t=50, b=30),
@@ -253,7 +233,7 @@ line_fig.update_layout(
     paper_bgcolor='rgba(0,0,0,0)',
     hoverlabel=dict(bgcolor="white", font_size=12, font_color="black"),
 )
-st.plotly_chart(line_fig, use_container_width=True)
+chart_wrapper(line_fig, title=f"IMP Index Trend ({mode})")
 
 # === Optional Data Table ===
 if st.checkbox("🔍 Show IMP Index Data Table"):
