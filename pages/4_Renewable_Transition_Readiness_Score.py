@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Renewable Readiness Score", layout="wide")
-st.title("🌿 Renewable Transition Readiness Score")
+st.title("Renewable Transition Readiness Score")
 st.markdown("*The Renewable Transition Readiness Score is a composite index measuring how prepared India is for clean energy adoption, based on MNRE investment and the share of renewables in total power consumption.*")
 
 # --- Load Data ---
