@@ -204,11 +204,11 @@ with right_col:
             'axis': {'range': [0, 1], 'tickcolor': 'white'},
             'bar': {'color': "black"},
             'steps': [
-                {'range': [0, 0.2], 'color': "#ff0000"},
-                {'range': [0.2, 0.4], 'color': "#ffa500"},
-                {'range': [0.4, 0.6], 'color': "#ffff00"},
-                {'range': [0.6, 0.8], 'color': "#90ee90"},
-                {'range': [0.8, 1.0], 'color': "#008000"},
+                {'range': [0, 0.2], 'color': "#66D7FA"},
+                {'range': [0.2, 0.4], 'color': "#08EEE3"},
+                {'range': [0.4, 0.6], 'color': "#059F98"},
+                {'range': [0.6, 0.8], 'color': "#047E78"},
+                {'range': [0.8, 1.0], 'color': "#024643"},
             ]
         }
     ))
