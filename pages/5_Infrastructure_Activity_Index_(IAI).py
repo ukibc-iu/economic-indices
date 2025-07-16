@@ -6,7 +6,6 @@ import streamlit.components.v1 as components
 import os
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
-import numpy as np
 
 st.set_page_config(page_title="Infrastructure Activity Index (IAI)", layout="wide")
 st.title("Infrastructure Activity Index (IAI)")
@@ -88,7 +87,7 @@ def load_data():
         else:
             q = "Q4"
         return f"{q} {fy_start}-{str(fy_end)[-2:]}"
-
+    
     df['Fiscal Quarter'] = df['Date'].apply(get_fiscal_quarter_label)
     df = df.sort_values('Date')
     return df
@@ -169,16 +168,22 @@ if filtered.empty:
     st.warning("⚠️ No data found for selected time period.")
     st.stop()
 
-# --- CHART WRAPPER (Revised) ---
+# --- CHART WRAPPER ---
 def wrapped_chart(title, fig, height=420):
-    with st.container():
-        st.markdown(f"""
-        <div style="background-color:#1e1e1e; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2); color: white;">
-            <h4 style="margin-top: 0; margin-bottom: 10px;">{title}</h4>
-        </div>
-        """, unsafe_allow_html=True)
-        fig.update_layout(height=height, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
-        st.plotly_chart(fig, use_container_width=True)
+    chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
+    components.html(f"""
+    <div style="
+        background-color: #1e1e1e;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        color: white;
+    ">
+        <h4 style="margin-top: 0; margin-bottom: 10px;">{title}</h4>
+        {chart_html}
+    </div>
+    """, height=height + 60)
 
 # --- Gauge Chart ---
 fig_gauge = go.Figure(go.Indicator(
@@ -197,29 +202,8 @@ fig_gauge = go.Figure(go.Indicator(
         ]
     }
 ))
+fig_gauge.update_layout(height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
 wrapped_chart(f"IAI Gauge – {display_label}", fig_gauge)
-
-# --- Correlation Heatmap ---
-st.subheader("🔍 Correlation Heatmap")
-corr_cols = [
-    "Highway construction actual",
-    "Railway line construction actual",
-    "Power T&D line constr (220KV plus)",
-    "Cement price",
-    "Budgetary allocation for infrastructure sector",
-    "GVA: construction (Basic Price)",
-    "IAI"
-]
-corr_matrix = df[corr_cols].corr()
-
-fig_corr = px.imshow(
-    corr_matrix,
-    text_auto=True,
-    color_continuous_scale='RdBu_r',
-    aspect="auto",
-    title="Correlation Matrix"
-)
-wrapped_chart("Correlation Heatmap (IAI & Components)", fig_corr)
 
 # --- Line Chart ---
 st.subheader("📈 IAI Over Time")
@@ -229,8 +213,8 @@ else:
     df_q = df.groupby('Fiscal Quarter').mean(numeric_only=True).reset_index()
     fig_line = px.line(df_q, x='Fiscal Quarter', y='IAI', markers=True, line_shape='linear', color_discrete_sequence=['#FF5733'])
 
-fig_line.update_layout(height=450)
-wrapped_chart("IAI Over Time", fig_line)
+fig_line.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white', height=450)
+st.plotly_chart(fig_line, use_container_width=True)
 
 # --- Data Table ---
 with st.expander("🔍 View Underlying Data Table"):
