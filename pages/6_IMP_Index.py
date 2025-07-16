@@ -108,71 +108,39 @@ else:
     selected_value = df[df['Fiscal_Quarter'] == selected_label]['Scale'].mean()
     label_period = selected_label
 
-# === Scale Bar ===
-color_map = {
-    -3: ("#800000", "Very Low"),
-    -2: ("#fc4e2a", "Low"),
-    -1: ("#fd8d3c", "Slightly Low"),
-     0: ("#fecc5c", "Neutral"),
-     1: ("#78c679", "Slightly High"),
-     2: ("#31a354", "High"),
-     3: ("#006837", "Very High")
-}
-
-fig = go.Figure()
-
-for val in range(-3, 4):
-    color, label = color_map[val]
-    
-    fig.add_shape(
-        type="rect", 
-        x0=val - 0.5, x1=val + 0.5, 
-        y0=-0.3, y1=0.3,
-        line=dict(color="black", width=1), 
-        fillcolor=color,
-        layer="below"
-    )
-    
-    text_color = 'black' if val == 0 else 'white'
-    
-    fig.add_trace(go.Scatter(
-        x=[val], y=[0], 
-        mode='text', 
-        text=[str(val)],
-        hovertext=[f"{label} ({val})"],
-        showlegend=False,
-        textfont=dict(color=text_color, size=16),
-    ))
-
-fig.add_shape(
-    type="rect", 
-    x0=selected_value - 0.5, x1=selected_value + 0.5,
-    y0=-0.35, y1=0.35,
-    line=dict(color="crimson", width=2.5, dash="dot"),
-    fillcolor="rgba(0,0,0,0)", 
-    layer="above"
-)
-
-fig.add_trace(go.Scatter(
-    x=[selected_value], y=[0.5], 
-    mode='text',
-    text=[f"{selected_value:.2f}"],
-    showlegend=False,
-    textfont=dict(size=16, color='crimson')
+# === Gauge Chart ===
+gauge_fig = go.Figure(go.Indicator(
+    mode="gauge+number+delta",
+    value=selected_value,
+    title={'text': f"IMP Index for {label_period}", 'font': {'size': 20}},
+    delta={'reference': 0, 'increasing': {'color': 'blue'}, 'decreasing': {'color': 'lightblue'}},
+    gauge={
+        'axis': {'range': [-3, 3], 'tickwidth': 1, 'tickcolor': "darkblue"},
+        'bar': {'color': "#1f77b4"},
+        'bgcolor': "white",
+        'steps': [
+            {'range': [-3, -2], 'color': '#b3cde0'},
+            {'range': [-2, -1], 'color': '#6497b1'},
+            {'range': [-1, 0], 'color': '#005b96'},
+            {'range': [0, 1], 'color': '#03396c'},
+            {'range': [1, 2], 'color': '#011f4b'},
+            {'range': [2, 3], 'color': '#001f3f'}
+        ],
+        'threshold': {
+            'line': {'color': "crimson", 'width': 4},
+            'thickness': 0.75,
+            'value': selected_value
+        }
+    }
 ))
 
-fig.update_layout(
-    title=f"IMP Index for {label_period} (Scale: {selected_value:.2f})",
-    xaxis=dict(range=[-3.5, 3.5], title='IMP Index Scale (-3 to +3)', showticklabels=False, showgrid=False, zeroline=False),
-    yaxis=dict(visible=False), 
-    height=280,
-    margin=dict(l=30, r=30, t=60, b=30), 
-    showlegend=False,
-    plot_bgcolor='rgba(0,0,0,0)',
-    paper_bgcolor='rgba(0,0,0,0)',
+gauge_fig.update_layout(
+    margin=dict(l=40, r=40, t=60, b=40),
+    paper_bgcolor="rgba(0,0,0,0)",
+    font={'color': "white", 'family': "Arial"},
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(gauge_fig, use_container_width=True)
 
 st.markdown("### 💡 Expert Opinion")
 
