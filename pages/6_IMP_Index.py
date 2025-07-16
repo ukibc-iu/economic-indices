@@ -138,7 +138,7 @@ gauge_fig = go.Figure(go.Indicator(
     }
 ))
 gauge_fig.update_layout(
-    height=350,  # Smaller height
+    height=300,  # Smaller height
     margin=dict(l=10, r=10, t=20, b=10),
     paper_bgcolor="rgba(0,0,0,0)",
     font=dict(color="white", family="Arial")
