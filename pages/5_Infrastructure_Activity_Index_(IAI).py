@@ -229,7 +229,25 @@ with col2:
         height=400
     )
     wrapped_chart("IAI vs GVA Construction (All Periods)", fig_scatter)
+st.markdown("### 💡 Expert Opinion")
 
+# Expert opinion (static for now)
+expert_opinion = "Infrastructure Activity Index is currently..."
+
+# Styled display box
+st.markdown(f"""
+<div style="
+    background-color: rgba(100, 100, 100, 0.3);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-style: italic;
+    font-size: 1rem;
+">
+    {expert_opinion}
+</div>
+""", unsafe_allow_html=True)
 # --- Line Chart ---
 st.subheader("📈 IAI Over Time")
 if view_type == "Monthly":

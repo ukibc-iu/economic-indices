@@ -137,6 +137,25 @@ def create_speedometer_gauge(value):
 st.subheader("Housing Affordability Index")
 gauge_fig = create_speedometer_gauge(score_val)
 st.plotly_chart(gauge_fig, use_container_width=True)
+st.markdown("### 💡 Expert Opinion")
+
+# Expert opinion (static for now)
+expert_opinion = "Housing Affordability Stress Index is currently..."
+
+# Styled display box
+st.markdown(f"""
+<div style="
+    background-color: rgba(100, 100, 100, 0.3);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-style: italic;
+    font-size: 1rem;
+">
+    {expert_opinion}
+</div>
+""", unsafe_allow_html=True)
 
 # --- Line Chart ---
 st.subheader("Affordability Index Over Time")

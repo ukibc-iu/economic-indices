@@ -239,7 +239,7 @@ st.markdown(f"""
 
 # === Line Chart ===
 st.subheader("📈 Readiness Score Over Time")
-fig_score = px.line(df, x='Month', y='Readiness Score', markers=True,
+fig_score = px.line(df, x='Month', y='Readiness Score', markers=False,
                     line_shape='linear',
                     color_discrete_sequence=['#FF5733'])
 fig_score.update_layout(
