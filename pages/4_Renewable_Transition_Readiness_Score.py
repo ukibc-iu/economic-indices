@@ -217,6 +217,25 @@ with right_col:
                             plot_bgcolor='rgba(0,0,0,0)',
                             font_color='white')
     wrapped_chart(f"Readiness Score – {selected_period}", fig_gauge)
+st.markdown("### 💡 Expert Opinion")
+
+# Expert opinion (static for now)
+expert_opinion = "Renewable Transition Readiness Score is currently neutral."
+
+# Styled display box
+st.markdown(f"""
+<div style="
+    background-color: rgba(100, 100, 100, 0.3);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-style: italic;
+    font-size: 1rem;
+">
+    {expert_opinion}
+</div>
+""", unsafe_allow_html=True)
 
 # === Line Chart ===
 st.subheader("📈 Readiness Score Over Time")
