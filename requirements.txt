@@ -8,3 +8,4 @@ xgboost
 openpyxl
 plotly
 python-dotenv
+statsmodels
