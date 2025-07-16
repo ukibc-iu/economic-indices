@@ -58,9 +58,9 @@ kpi_style = """
     font-weight: bold;
     text-align: center;
 }
-.green-card { background: linear-gradient(#004466, #006699, #3399cc); }
-.grey-card { background: linear-gradient(#336699, #6699cc, #99ccff); }
-.red-card { background: linear-gradient(#cccccc, #999999, #666666); }
+.green-card { background: linear-gradient(#7A0000, #960000, #B40000); }
+.grey-card { background: linear-gradient(#DA0000, #EE0000, #F23212); }
+.red-card { background: linear-gradient(#F34629, #F55E45, #F6725C); }
 </style>
 """
 st.markdown(kpi_style, unsafe_allow_html=True)
