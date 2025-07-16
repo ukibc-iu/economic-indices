@@ -199,7 +199,25 @@ with donut_right:
         legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
     )
     wrapped_chart(f"Total Vehicle Sales by Category - {selected_month}", total_sales_fig)
+st.markdown("### 💡 Expert Opinion")
 
+# Expert opinion (static for now)
+expert_opinion = "EV Market Adoption Rate is currently..."
+
+# Styled display box
+st.markdown(f"""
+<div style="
+    background-color: rgba(100, 100, 100, 0.3);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-style: italic;
+    font-size: 1rem;
+">
+    {expert_opinion}
+</div>
+""", unsafe_allow_html=True)
 # === Line Chart ===
 if display_format == "Percentage":
     y_data = df["EV Adoption Rate"] * 100
