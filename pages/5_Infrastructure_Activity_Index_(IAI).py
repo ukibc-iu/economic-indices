@@ -4,6 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit.components.v1 as components
 import os
+import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
 
@@ -185,25 +187,50 @@ def wrapped_chart(title, fig, height=420):
     </div>
     """, height=height + 60)
 
-# --- Gauge Chart ---
-fig_gauge = go.Figure(go.Indicator(
-    mode="gauge+number",
-    value=filtered['IAI'].values[0],
-    number={'font': {'color': 'white'}},
-    gauge={
-        'axis': {'range': [0, 1], 'tickcolor': 'white'},
-        'bar': {'color': "black"},
-        'steps': [
-            {'range': [0, 0.2], 'color': "#ff0000"},
-            {'range': [0.2, 0.4], 'color': "#ffa500"},
-            {'range': [0.4, 0.6], 'color': "#ffff00"},
-            {'range': [0.6, 0.8], 'color': "#90ee90"},
-            {'range': [0.8, 1.0], 'color': "#008000"},
-        ]
-    }
-))
-fig_gauge.update_layout(height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
-wrapped_chart(f"IAI Gauge – {display_label}", fig_gauge)
+# --- Gauge + Correlation Side by Side ---
+gauge_col, corr_col = st.columns([1.2, 1.4])
+
+with gauge_col:
+    fig_gauge = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=filtered['IAI'].values[0],
+        number={'font': {'color': 'white'}},
+        gauge={
+            'axis': {'range': [0, 1], 'tickcolor': 'white'},
+            'bar': {'color': "black"},
+            'steps': [
+                {'range': [0, 0.2], 'color': "#ff0000"},
+                {'range': [0.2, 0.4], 'color': "#ffa500"},
+                {'range': [0.4, 0.6], 'color': "#ffff00"},
+                {'range': [0.6, 0.8], 'color': "#90ee90"},
+                {'range': [0.8, 1.0], 'color': "#008000"},
+            ]
+        }
+    ))
+    fig_gauge.update_layout(height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
+    wrapped_chart(f"IAI Gauge – {display_label}", fig_gauge)
+
+with corr_col:
+    st.subheader("")  # vertical align
+    idv_cols = [
+        "Highway construction actual",
+        "Railway line construction actual",
+        "Power T&D line constr (220KV plus)",
+        "Cement price",
+        "Budgetary allocation for infrastructure sector"
+    ]
+    corr = df[idv_cols + ['IAI', 'GVA: construction (Basic Price)']].corr()
+
+    fig_corr, ax = plt.subplots(figsize=(6, 5))
+    sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", ax=ax, cbar=False)
+    ax.set_title("Correlation Heatmap", fontsize=12, color='white')
+    ax.tick_params(colors='white')
+    plt.xticks(rotation=45, ha='right')
+    plt.yticks(rotation=0)
+    fig_corr.patch.set_facecolor('#1e1e1e')
+    ax.set_facecolor('#1e1e1e')
+
+    wrapped_chart("Correlation Heatmap (IAI & Components)", fig_corr, height=420)
 
 # --- Line Chart ---
 st.subheader("📈 IAI Over Time")
