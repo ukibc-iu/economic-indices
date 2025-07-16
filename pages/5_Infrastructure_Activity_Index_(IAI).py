@@ -197,11 +197,11 @@ with col1:
             'axis': {'range': [0, 1], 'tickcolor': 'white'},
             'bar': {'color': "black"},
             'steps': [
-                {'range': [0, 0.2], 'color': "#ff0000"},
-                {'range': [0.2, 0.4], 'color': "#ffa500"},
-                {'range': [0.4, 0.6], 'color': "#ffff00"},
-                {'range': [0.6, 0.8], 'color': "#90ee90"},
-                {'range': [0.8, 1.0], 'color': "#008000"},
+                {'range': [0, 0.2], 'color': "#2E240F"},
+                {'range': [0.2, 0.4], 'color': "#4B3916"},
+                {'range': [0.4, 0.6], 'color': "#9D7F3F"},
+                {'range': [0.6, 0.8], 'color': "#6A501F"},
+                {'range': [0.8, 1.0], 'color': "#4C3814"},
             ]
         }
     ))
