@@ -4,10 +4,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit.components.v1 as components
 import os
-import seaborn as sns
-import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
+import numpy as np
 
 st.set_page_config(page_title="Infrastructure Activity Index (IAI)", layout="wide")
 st.title("Infrastructure Activity Index (IAI)")
@@ -89,7 +88,7 @@ def load_data():
         else:
             q = "Q4"
         return f"{q} {fy_start}-{str(fy_end)[-2:]}"
-    
+
     df['Fiscal Quarter'] = df['Date'].apply(get_fiscal_quarter_label)
     df = df.sort_values('Date')
     return df
@@ -170,67 +169,57 @@ if filtered.empty:
     st.warning("⚠️ No data found for selected time period.")
     st.stop()
 
-# --- CHART WRAPPER ---
+# --- CHART WRAPPER (Revised) ---
 def wrapped_chart(title, fig, height=420):
-    chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
-    components.html(f"""
-    <div style="
-        background-color: #1e1e1e;
-        padding: 1rem;
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        color: white;
-    ">
-        <h4 style="margin-top: 0; margin-bottom: 10px;">{title}</h4>
-        {chart_html}
-    </div>
-    """, height=height + 60)
+    with st.container():
+        st.markdown(f"""
+        <div style="background-color:#1e1e1e; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2); color: white;">
+            <h4 style="margin-top: 0; margin-bottom: 10px;">{title}</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        fig.update_layout(height=height, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
+        st.plotly_chart(fig, use_container_width=True)
 
-# --- Gauge + Correlation Side by Side ---
-gauge_col, corr_col = st.columns([1.2, 1.4])
+# --- Gauge Chart ---
+fig_gauge = go.Figure(go.Indicator(
+    mode="gauge+number",
+    value=filtered['IAI'].values[0],
+    number={'font': {'color': 'white'}},
+    gauge={
+        'axis': {'range': [0, 1], 'tickcolor': 'white'},
+        'bar': {'color': "black"},
+        'steps': [
+            {'range': [0, 0.2], 'color': "#ff0000"},
+            {'range': [0.2, 0.4], 'color': "#ffa500"},
+            {'range': [0.4, 0.6], 'color': "#ffff00"},
+            {'range': [0.6, 0.8], 'color': "#90ee90"},
+            {'range': [0.8, 1.0], 'color': "#008000"},
+        ]
+    }
+))
+wrapped_chart(f"IAI Gauge – {display_label}", fig_gauge)
 
-with gauge_col:
-    fig_gauge = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=filtered['IAI'].values[0],
-        number={'font': {'color': 'white'}},
-        gauge={
-            'axis': {'range': [0, 1], 'tickcolor': 'white'},
-            'bar': {'color': "black"},
-            'steps': [
-                {'range': [0, 0.2], 'color': "#ff0000"},
-                {'range': [0.2, 0.4], 'color': "#ffa500"},
-                {'range': [0.4, 0.6], 'color': "#ffff00"},
-                {'range': [0.6, 0.8], 'color': "#90ee90"},
-                {'range': [0.8, 1.0], 'color': "#008000"},
-            ]
-        }
-    ))
-    fig_gauge.update_layout(height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
-    wrapped_chart(f"IAI Gauge – {display_label}", fig_gauge)
+# --- Correlation Heatmap ---
+st.subheader("🔍 Correlation Heatmap")
+corr_cols = [
+    "Highway construction actual",
+    "Railway line construction actual",
+    "Power T&D line constr (220KV plus)",
+    "Cement price",
+    "Budgetary allocation for infrastructure sector",
+    "GVA: construction (Basic Price)",
+    "IAI"
+]
+corr_matrix = df[corr_cols].corr()
 
-with corr_col:
-    st.subheader("")  # vertical align
-    idv_cols = [
-        "Highway construction actual",
-        "Railway line construction actual",
-        "Power T&D line constr (220KV plus)",
-        "Cement price",
-        "Budgetary allocation for infrastructure sector"
-    ]
-    corr = df[idv_cols + ['IAI', 'GVA: construction (Basic Price)']].corr()
-
-    fig_corr, ax = plt.subplots(figsize=(6, 5))
-    sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", ax=ax, cbar=False)
-    ax.set_title("Correlation Heatmap", fontsize=12, color='white')
-    ax.tick_params(colors='white')
-    plt.xticks(rotation=45, ha='right')
-    plt.yticks(rotation=0)
-    fig_corr.patch.set_facecolor('#1e1e1e')
-    ax.set_facecolor('#1e1e1e')
-
-    wrapped_chart("Correlation Heatmap (IAI & Components)", fig_corr, height=420)
+fig_corr = px.imshow(
+    corr_matrix,
+    text_auto=True,
+    color_continuous_scale='RdBu_r',
+    aspect="auto",
+    title="Correlation Matrix"
+)
+wrapped_chart("Correlation Heatmap (IAI & Components)", fig_corr)
 
 # --- Line Chart ---
 st.subheader("📈 IAI Over Time")
@@ -240,8 +229,8 @@ else:
     df_q = df.groupby('Fiscal Quarter').mean(numeric_only=True).reset_index()
     fig_line = px.line(df_q, x='Fiscal Quarter', y='IAI', markers=True, line_shape='linear', color_discrete_sequence=['#FF5733'])
 
-fig_line.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white', height=450)
-st.plotly_chart(fig_line, use_container_width=True)
+fig_line.update_layout(height=450)
+wrapped_chart("IAI Over Time", fig_line)
 
 # --- Data Table ---
 with st.expander("🔍 View Underlying Data Table"):
