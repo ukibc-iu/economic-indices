@@ -4,6 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit.components.v1 as components
 import os
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import MinMaxScaler
 
 st.set_page_config(page_title="Infrastructure Activity Index (IAI)", layout="wide")
 st.title("🏗️ Infrastructure Activity Index (IAI)")
@@ -53,20 +55,26 @@ def load_data():
 
     df.dropna(inplace=True)
 
-    # Normalize each indicator
-    norm_df = df.copy()
-    for col in expected_cols[1:]:
-        norm_df[f"Norm_{col}"] = (df[col] - df[col].min()) / (df[col].max() - df[col].min())
+    # --- Regression-Based Weights ---
+    idv_cols = [
+        "Highway construction actual",
+        "Railway line construction actual",
+        "Power T&D line constr (220KV plus)",
+        "Cement price",
+        "Budgetary allocation for infrastructure sector"
+    ]
+    target_col = "GVA: construction (Basic Price)"
 
-    # Composite IAI score
-    df['IAI'] = (
-        norm_df['Norm_Highway construction actual'] +
-        norm_df['Norm_Railway line construction actual'] +
-        norm_df['Norm_Power T&D line constr (220KV plus)'] +
-        norm_df['Norm_Cement price'] +
-        norm_df['Norm_GVA: construction (Basic Price)'] +
-        norm_df['Norm_Budgetary allocation for infrastructure sector']
-    ) / 6
+    scaler = MinMaxScaler()
+    X_scaled = scaler.fit_transform(df[idv_cols])
+    X = pd.DataFrame(X_scaled, columns=idv_cols)
+    y = df[target_col].values
+
+    model = LinearRegression()
+    model.fit(X, y)
+    weights = model.coef_ / model.coef_.sum()
+
+    df['IAI'] = X.dot(weights)
 
     df = df.sort_values('Date')
     return df
