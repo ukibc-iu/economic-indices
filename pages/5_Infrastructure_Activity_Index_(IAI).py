@@ -233,7 +233,7 @@ with col2:
 # --- Line Chart ---
 st.subheader("📈 IAI Over Time")
 if view_type == "Monthly":
-    fig_line = px.line(df, x='Month', y='IAI', markers=True, line_shape='linear', color_discrete_sequence=['#FF5733'])
+    fig_line = px.line(df, x='Month', y='IAI', markers=True, line_shape='linear', color_discrete_sequence=['#624E20'])
 else:
     df_q = df.groupby('Fiscal Quarter').mean(numeric_only=True).reset_index()
     fig_line = px.line(df_q, x='Fiscal Quarter', y='IAI', markers=True, line_shape='linear', color_discrete_sequence=['#624E20'])
