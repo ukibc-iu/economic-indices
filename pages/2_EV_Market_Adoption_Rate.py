@@ -232,7 +232,7 @@ line_fig = go.Figure()
 line_fig.add_trace(go.Scatter(
     x=df["Date"],
     y=y_data,
-    mode="lines+markers",
+    mode="lines",
     line=dict(color="green"),
     name="EV Adoption Rate",
     hovertemplate="Date: %{x|%b %Y}<br>Rate: " + hover_format + "<extra></extra>"
