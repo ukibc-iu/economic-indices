@@ -39,17 +39,23 @@ X_train_scaled = scaler.fit_transform(df_train[numeric_cols])
 pca = PCA(n_components=1)
 train_index = pca.fit_transform(X_train_scaled)
 
-# Save the scaler and PCA model for future consistency (optional)
+# Save the scaler and PCA model (optional)
 # joblib.dump(scaler, "scaler.pkl")
 # joblib.dump(pca, "pca.pkl")
 
-# === Apply same transformation to all data ===
+# === Apply PCA to all data using trained scaler ===
 X_all_scaled = scaler.transform(df_clean[numeric_cols])
 df_clean['Retail Index'] = pca.transform(X_all_scaled)
 
-# === Normalize Index based on training range ===
+# === Normalize Index based on training min/max ===
 min_val, max_val = train_index.min(), train_index.max()
 df_clean['Retail Index'] = (df_clean['Retail Index'] - min_val) / (max_val - min_val)
+
+# === Clip to ensure range stays within [0,1] ===
+df_clean['Retail Index'] = df_clean['Retail Index'].clip(0, 1)
+
+# === Optional: Rebase to 100-style index ===
+# df_clean['Retail Index'] = df_clean['Retail Index'] * 100
 
 # === Header ===
 st.title("Retail Health Index Dashboard")
