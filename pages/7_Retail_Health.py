@@ -3,6 +3,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+import joblib
+import os
 
 st.set_page_config(layout="wide")
 
@@ -25,18 +27,29 @@ df['Inflation'] = -df['Inflation']
 df['Repo Rate'] = -df['Repo Rate']
 
 # === Drop Rows with Missing Values ===
-df_clean = df.dropna(subset=numeric_cols)
+df_clean = df.dropna(subset=numeric_cols).copy()
 
-# === Standardize Data ===
+# === Fixed PCA Training Window ===
+training_end = pd.to_datetime("2024-03-01")
+df_train = df_clean[df_clean['Date'] <= training_end].copy()
+
+# === Fit PCA only on training data ===
 scaler = StandardScaler()
-X_scaled = scaler.fit_transform(df_clean[numeric_cols])
-
-# === PCA ===
+X_train_scaled = scaler.fit_transform(df_train[numeric_cols])
 pca = PCA(n_components=1)
-df_clean['Retail Index'] = pca.fit_transform(X_scaled)
+train_index = pca.fit_transform(X_train_scaled)
 
-# === Normalize Retail Index to 0–1 ===
-df_clean['Retail Index'] = (df_clean['Retail Index'] - df_clean['Retail Index'].min()) / (df_clean['Retail Index'].max() - df_clean['Retail Index'].min())
+# Save the scaler and PCA model for future consistency (optional)
+# joblib.dump(scaler, "scaler.pkl")
+# joblib.dump(pca, "pca.pkl")
+
+# === Apply same transformation to all data ===
+X_all_scaled = scaler.transform(df_clean[numeric_cols])
+df_clean['Retail Index'] = pca.transform(X_all_scaled)
+
+# === Normalize Index based on training range ===
+min_val, max_val = train_index.min(), train_index.max()
+df_clean['Retail Index'] = (df_clean['Retail Index'] - min_val) / (max_val - min_val)
 
 # === Header ===
 st.title("Retail Health Index Dashboard")
