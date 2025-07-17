@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 st.set_page_config(layout="wide")
 
@@ -18,23 +20,33 @@ numeric_cols = ['CCI', 'Inflation', 'Private Consumption', 'UPI Transactions', '
 for col in numeric_cols:
     df[col] = pd.to_numeric(df[col], errors='coerce')
 
-# === Normalize Variables ===
-df_norm = df.copy()
-for col in numeric_cols:
-    df_norm[col + ' (norm)'] = (df[col] - df[col].min()) / (df[col].max() - df[col].min())
+# === Adjust Directionality ===
+df['Inflation'] = -df['Inflation']
+df['Repo Rate'] = -df['Repo Rate']
 
-# === Composite Index ===
-df_norm['Retail Index'] = df_norm[[col + ' (norm)' for col in numeric_cols]].mean(axis=1)
+# === Drop Rows with Missing Values ===
+df_clean = df.dropna(subset=numeric_cols)
+
+# === Standardize Data ===
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(df_clean[numeric_cols])
+
+# === PCA ===
+pca = PCA(n_components=1)
+df_clean['Retail Index'] = pca.fit_transform(X_scaled)
+
+# === Normalize Retail Index to 0–1 ===
+df_clean['Retail Index'] = (df_clean['Retail Index'] - df_clean['Retail Index'].min()) / (df_clean['Retail Index'].max() - df_clean['Retail Index'].min())
 
 # === Header ===
 st.title("Retail Health Index Dashboard")
-st.markdown("*This dashboard presents a composite Retail Health Index derived from economic and consumption indicators.*")
+st.markdown("*This dashboard presents a Retail Health Index derived from PCA on key economic indicators, adjusted for inflation and interest rates.*")
 
 # === Latest Metrics ===
-latest = df_norm.sort_values("Date").iloc[-1]
+latest = df_clean.sort_values("Date").iloc[-1]
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.metric("Retail Index", f"{latest['Retail Index']*100:.1f}%")
+    st.metric("Retail Index (PCA-based)", f"{latest['Retail Index']*100:.1f}%")
 with col2:
     st.metric("Consumer Confidence Index (CCI)", f"{latest['CCI']:.1f}")
 with col3:
@@ -42,16 +54,16 @@ with col3:
 
 # === Line Chart ===
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=df['Date'], y=df_norm['Retail Index'], mode='lines+markers', name='Retail Index'))
+fig.add_trace(go.Scatter(x=df_clean['Date'], y=df_clean['Retail Index'], mode='lines+markers', name='Retail Index'))
 fig.update_layout(
-    title='Retail Index Over Time',
+    title='Retail Index Over Time (PCA)',
     xaxis_title='Date',
-    yaxis_title='Normalized Index (0–1)',
+    yaxis_title='Retail Index (0–1)',
     template='plotly_dark',
     height=450
 )
 st.plotly_chart(fig, use_container_width=True)
 
 # === Breakdown Table ===
-if st.checkbox("Show Raw & Normalized Data"):
-    st.dataframe(df_norm[['Date', 'Month'] + numeric_cols + [col + ' (norm)' for col in numeric_cols] + ['Retail Index']])
+if st.checkbox("Show Raw Data & Retail Index"):
+    st.dataframe(df_clean[['Date', 'Month'] + numeric_cols + ['Retail Index']])
