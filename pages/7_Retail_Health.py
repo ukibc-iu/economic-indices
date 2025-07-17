@@ -73,7 +73,7 @@ with col3:
 
 # === Line Chart ===
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=df_clean['Date'], y=df_clean['Retail Index'], mode='lines+markers', name='Retail Index'))
+fig.add_trace(go.Scatter(x=df_clean['Date'], y=df_clean['Retail Index'], mode='lines', name='Retail Index'))
 fig.update_layout(
     title='Retail Index Over Time (PCA)',
     xaxis_title='Date',
