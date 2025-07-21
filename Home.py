@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
 from shared.ev_index import get_latest_ev_adoption
+from shared.retail_index import compute_retail_index
 
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
 st.title("Economic Indices Dashboard")
@@ -198,15 +199,41 @@ def load_retail_health():
         df = pd.read_csv("data/Retail_Health.csv")
         df.columns = df.columns.str.strip()
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-        df = df.dropna(subset=['Retail Index', 'Date'])
-        df = df.sort_values('Date')
-        curr = df['Retail Index'].iloc[-1]
-        prev = df['Retail Index'].iloc[-2]
-        latest_month = df['Date'].iloc[-1].strftime('%b-%y')
+        df = df.dropna(subset=['Date'])
+
+        # --- Clean numeric columns
+        numeric_cols = ['CCI', 'Inflation', 'Private Consumption', 'UPI Transactions', 'Repo Rate', 'Per Capita NNI']
+        for col in numeric_cols:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+
+        # --- Adjust directionality (negative indicators)
+        df['Inflation'] = -df['Inflation']
+        df['Repo Rate'] = -df['Repo Rate']
+
+        df_clean = df.dropna(subset=numeric_cols).copy()
+
+        # --- Perform PCA with training cutoff
+        training_end = pd.to_datetime("2024-03-01")
+        df_train = df_clean[df_clean['Date'] <= training_end].copy()
+
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(df_train[numeric_cols])
+        pca = PCA(n_components=1)
+        train_index = pca.fit_transform(X_train_scaled)
+
+        X_all_scaled = scaler.transform(df_clean[numeric_cols])
+        df_clean['Retail Index Raw'] = pca.transform(X_all_scaled)
+        min_val, max_val = train_index.min(), train_index.max()
+        df_clean['Retail Index'] = (df_clean['Retail Index Raw'] - min_val) / (max_val - min_val)
+        df_clean['Retail Index'] = df_clean['Retail Index'].clip(0, 1)
+
+        df_clean = df_clean.sort_values("Date")
+        curr = df_clean['Retail Index'].iloc[-1]
+        prev = df_clean['Retail Index'].iloc[-2]
+        latest_month = df_clean['Date'].iloc[-1].strftime('%b-%y')
         return prev, curr, latest_month
     except:
         return None, None, "–"
-
 # Load All Values
 INDEX_CONFIG['Consumer Demand Index (CDI)']['prev'], INDEX_CONFIG['Consumer Demand Index (CDI)']['value'], INDEX_CONFIG['Consumer Demand Index (CDI)']['month'] = load_cdi()
 INDEX_CONFIG['IMP Index']['prev'], INDEX_CONFIG['IMP Index']['value'], INDEX_CONFIG['IMP Index']['month'] = load_imp()
