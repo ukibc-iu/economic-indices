@@ -3,45 +3,52 @@ import pandas as pd
 import plotly.graph_objects as go
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+import numpy as np
 
-# === Set Page Config ===
+# === Set up page ===
 st.set_page_config(layout="wide")
 st.title("🛍️ Retail Health Index Dashboard")
 st.markdown("*A PCA-based index combining key retail indicators.*")
 
-# === Load and Prepare Data ===
+# === Load and Clean Data ===
 df = pd.read_csv("data/Retail_Health.csv")
 df.columns = df.columns.str.strip()
 df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
 df = df.dropna(subset=['Date'])
 df['Month'] = df['Date'].dt.strftime('%b-%y')
 
-# Custom Fiscal Quarter Format
+# --- Create Indian Fiscal Quarters ---
 def get_fiscal_quarter(date):
     month = date.month
     year = date.year
     if 4 <= month <= 6:
-        return f"Q1 {year}-{str(year+1)[-2:]}"
+        qtr = "Q1"
+        fy = f"{year}-{str(year + 1)[-2:]}"
     elif 7 <= month <= 9:
-        return f"Q2 {year}-{str(year+1)[-2:]}"
+        qtr = "Q2"
+        fy = f"{year}-{str(year + 1)[-2:]}"
     elif 10 <= month <= 12:
-        return f"Q3 {year}-{str(year+1)[-2:]}"
-    else:  # Jan-Mar
-        return f"Q4 {year-1}-{str(year)[-2:]}"
+        qtr = "Q3"
+        fy = f"{year}-{str(year + 1)[-2:]}"
+    else:  # Jan–Mar
+        qtr = "Q4"
+        fy = f"{year - 1}-{str(year)[-2:]}"
+    return f"{qtr} {fy}"
+
 df['Quarter'] = df['Date'].apply(get_fiscal_quarter)
 
-# Clean numeric fields
+# Clean numeric columns
 numeric_cols = ['CCI', 'Inflation', 'Private Consumption', 'UPI Transactions', 'Repo Rate', 'Per Capita NNI']
 for col in numeric_cols:
     df[col] = pd.to_numeric(df[col], errors='coerce')
 
-# Reverse negative economic indicators
+# Adjust directionality for negative indicators
 df['Inflation'] = -df['Inflation']
 df['Repo Rate'] = -df['Repo Rate']
 
 df_clean = df.dropna(subset=numeric_cols).copy()
 
-# === PCA ===
+# === PCA Index Calculation ===
 training_end = pd.to_datetime("2024-03-01")
 df_train = df_clean[df_clean['Date'] <= training_end].copy()
 
@@ -52,13 +59,11 @@ train_index = pca.fit_transform(X_train_scaled)
 
 X_all_scaled = scaler.transform(df_clean[numeric_cols])
 df_clean['Retail Index Raw'] = pca.transform(X_all_scaled)
-
-# Normalize to 0–1
 min_val, max_val = train_index.min(), train_index.max()
 df_clean['Retail Index'] = (df_clean['Retail Index Raw'] - min_val) / (max_val - min_val)
 df_clean['Retail Index'] = df_clean['Retail Index'].clip(0, 1)
 
-# === Latest Month/Quarter KPIs ===
+# === Display KPI Cards ===
 latest = df_clean.sort_values("Date").iloc[-1]
 
 col1, col2, col3 = st.columns(3)
@@ -72,7 +77,8 @@ with col3:
     with st.container(border=True):
         st.metric("Quarter", latest["Quarter"])
 
-# === View Controls ===
+# === View Selection ===
+st.markdown("### 🔍 Select Period to Explore")
 view_option = st.radio("View Mode", ["Monthly", "Quarterly"], horizontal=True)
 
 if view_option == "Monthly":
@@ -89,18 +95,18 @@ if filtered_df.empty:
     st.warning(f"No data for {selected_period}")
     st.stop()
 
-selected_row = filtered_df.sort_values("Date").iloc[-1]
+selected_latest = filtered_df.sort_values("Date").iloc[-1]
 
-# === Chart Wrapper ===
-def chart_wrapper(title, fig, height=350):
-    st.markdown(f"### {title}")
-    fig.update_layout(height=height, margin=dict(t=40, b=20, l=10, r=10))
-    st.plotly_chart(fig, use_container_width=True)
+# === Gauge Chart Wrapper ===
+st.markdown("### 🧭 Retail Index Gauge")
+def chart_wrapper(title, figure):
+    with st.container(border=True):
+        st.markdown(f"**{title}**")
+        st.plotly_chart(figure, use_container_width=True)
 
-# === Gauge Chart ===
-gauge_fig = go.Figure(go.Indicator(
+gauge = go.Figure(go.Indicator(
     mode="gauge+number",
-    value=selected_row["Retail Index"] * 100,
+    value=selected_latest["Retail Index"] * 100,
     number={'suffix': "%"},
     gauge={
         'axis': {'range': [0, 100]},
@@ -113,45 +119,53 @@ gauge_fig = go.Figure(go.Indicator(
     },
     title={'text': f"Retail Index - {selected_period}"}
 ))
+gauge.update_layout(height=350)
+chart_wrapper("Retail Index Gauge", gauge)
 
-# === PCA Contribution Doughnut ===
-pca_weights = pca.components_[0]
+# === PCA Component Breakdown (Donut) ===
+st.markdown("### 📊 PCA Contribution Breakdown")
+explained = np.abs(pca.components_[0])
+explained = explained / explained.sum()
+
 labels = numeric_cols
-values = [abs(w) for w in pca_weights]
+values = explained * 100
 
-donut_fig = go.Figure(go.Pie(
+donut = go.Figure(data=[go.Pie(
     labels=labels,
     values=values,
     hole=0.5,
+    sort=False,
+    direction="clockwise",
+    textinfo='none',
+    marker=dict(colors=[
+        "#FFA07A", "#DDA0DD", "#87CEFA", "#FFD700", "#90EE90", "#00CED1"
+    ])
+)])
+donut.update_layout(
     showlegend=True,
-    textinfo='none',  # Remove inner % labels
-))
-donut_fig.update_traces(marker=dict(colors=px.colors.qualitative.Pastel))
-donut_fig.update_layout(title="PCA Component Breakdown")
+    height=400,
+    legend=dict(orientation="v", x=1, y=0.5),
+)
+chart_wrapper("PCA Component Breakdown", donut)
 
-# === Chart Row ===
-c1, c2 = st.columns(2)
-with c1:
-    chart_wrapper("🧭 Retail Index Gauge", gauge_fig)
-with c2:
-    chart_wrapper("📊 PCA Contribution Breakdown", donut_fig)
-
-# === Trend Over Time ===
-line_fig = go.Figure()
-line_fig.add_trace(go.Scatter(
+# === Trend Line ===
+st.markdown("### 📈 Retail Index Over Time")
+trend = go.Figure()
+trend.add_trace(go.Scatter(
     x=df_clean['Date'],
     y=df_clean['Retail Index'],
     mode='lines',
     name='Retail Index',
     line=dict(color='deepskyblue')
 ))
-line_fig.update_layout(
+trend.update_layout(
     xaxis_title='Date',
     yaxis_title='Retail Index (0–1)',
-    template='plotly_white'
+    template='plotly_white',
+    height=400
 )
-chart_wrapper("📈 Retail Index Over Time", line_fig)
+st.plotly_chart(trend, use_container_width=True)
 
-# === Optional Data Table ===
+# === Raw Data (Optional) ===
 with st.expander("🔍 Show Raw Data"):
     st.dataframe(df_clean[['Date', 'Month', 'Quarter'] + numeric_cols + ['Retail Index']])
