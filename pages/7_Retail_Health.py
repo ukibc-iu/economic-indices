@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+import plotly.express as px
 
 # === Load and Prepare Data ===
 df = pd.read_csv("data/Retail_Health.csv")
