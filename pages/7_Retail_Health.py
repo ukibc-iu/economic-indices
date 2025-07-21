@@ -4,6 +4,12 @@ import plotly.graph_objects as go
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
+# === Chart Wrapper Function ===
+def chart_wrapper(title, chart_obj):
+    with st.container(border=True):
+        st.subheader(title)
+        st.plotly_chart(chart_obj, use_container_width=True)
+
 # === Load and Prepare Data ===
 df = pd.read_csv("data/Retail_Health.csv")
 df.columns = df.columns.str.strip()
@@ -76,43 +82,60 @@ with col3:
     with st.container(border=True):
         st.metric("UPI Transactions (B)", f"{latest['UPI Transactions']:.2f}")
 
-# === Gauge Chart ===
-st.markdown("### 🧭 Retail Index Gauge")
-gauge = go.Figure(go.Indicator(
-    mode="gauge+number",
-    value=latest["Retail Index"] * 100,
-    number={'suffix': "%"},
-    gauge={
-        'axis': {'range': [0, 100]},
-        'bar': {'color': "limegreen"},
-        'steps': [
-            {'range': [0, 40], 'color': "crimson"},
-            {'range': [40, 70], 'color': "gold"},
-            {'range': [70, 100], 'color': "lightgreen"},
-        ],
-    },
-    title={'text': f"Retail Index - {selected_period}"}
-))
-gauge.update_layout(height=350)
-st.plotly_chart(gauge, use_container_width=True)
+# === Gauge + Doughnut in Wrapper Containers ===
+st.markdown("### 🧭 Retail Health Index Insights")
+col_g1, col_g2 = st.columns(2)
+
+with col_g1:
+    gauge_fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=latest["Retail Index"] * 100,
+        number={'suffix': "%"},
+        gauge={
+            'axis': {'range': [0, 100]},
+            'bar': {'color': "limegreen"},
+            'steps': [
+                {'range': [0, 40], 'color': "crimson"},
+                {'range': [40, 70], 'color': "gold"},
+                {'range': [70, 100], 'color': "lightgreen"},
+            ],
+        },
+    ))
+    gauge_fig.update_layout(height=300, margin=dict(t=30, b=0))
+    chart_wrapper(f"Retail Index – {selected_period}", gauge_fig)
+
+with col_g2:
+    pca_weights = pca.components_[0]
+    weight_labels = numeric_cols
+    weight_values = abs(pca_weights) / abs(pca_weights).sum()
+
+    donut_fig = go.Figure(data=[go.Pie(
+        labels=weight_labels,
+        values=weight_values,
+        hole=0.6,
+        textinfo='label+percent',
+        marker=dict(line=dict(color='#000000', width=1))
+    )])
+    donut_fig.update_layout(height=300, margin=dict(t=30, b=0), showlegend=False)
+    chart_wrapper("PCA Component Contributions", donut_fig)
 
 # === Trend Line ===
 st.markdown("### 📈 Retail Index Over Time")
-fig = go.Figure()
-fig.add_trace(go.Scatter(
+trend_fig = go.Figure()
+trend_fig.add_trace(go.Scatter(
     x=df_clean['Date'],
     y=df_clean['Retail Index'],
-    mode='lines+markers',
+    mode='lines',
     name='Retail Index',
     line=dict(color='deepskyblue')
 ))
-fig.update_layout(
+trend_fig.update_layout(
     xaxis_title='Date',
     yaxis_title='Retail Index (0–1)',
     template='plotly_white',
     height=400
 )
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(trend_fig, use_container_width=True)
 
 # === Optional Raw Data Table ===
 with st.expander("🔍 Show Raw Data"):
