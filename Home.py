@@ -63,6 +63,13 @@ INDEX_CONFIG = {
         "image": "images/IMP.jpg",
         "page": "6_IMP_Index",
         "description": "Measures India's overall economic well-being."
+    },
+    "Retail Health Index": {
+        "file": "data/Retail_Health_Index.csv",
+        "scale": (-3, 3),
+        "image": "images/Retail.jpg",
+        "page": "7_Retail_Health",
+        "description": "Reflects the overall economic environment influencing retail activity."
     }
 }
 
@@ -101,14 +108,10 @@ def load_imp():
         df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
         df.dropna(subset=['Date', 'Scale'], inplace=True)
         df = df.sort_values('Date')
-        if len(df) < 2:
-            st.warning("⚠️ Not enough data to calculate change for IMP Index")
-            return None, None, "–"
         curr, prev = df['Scale'].iloc[-1], df['Scale'].iloc[-2]
         latest_month = df['Date'].iloc[-1].strftime('%b-%y')
         return prev, curr, latest_month
-    except Exception as e:
-        st.error(f"❌ Error loading IMP Index: {e}")
+    except:
         return None, None, "–"
 
 def load_housing():
@@ -170,8 +173,7 @@ def load_renewable():
         prev = df['Readiness Score'].iloc[-2] if len(df) > 1 else None
         latest_month = df['Date'].iloc[-1].strftime('%b-%y')
         return prev, curr, latest_month
-    except Exception as e:
-        st.error(f"❌ Error loading Renewable Score: {e}")
+    except:
         return None, None, "–"
 
 def load_iai():
@@ -205,8 +207,20 @@ def load_iai():
         prev = df['IAI'].iloc[-2] if len(df) > 1 else None
         latest_month = df['Date'].iloc[-1].strftime('%b-%y')
         return prev, curr, latest_month
-    except Exception as e:
-        st.error(f"❌ Error loading IAI: {e}")
+    except:
+        return None, None, "–"
+
+def load_retail_health():
+    try:
+        df = pd.read_csv(INDEX_CONFIG['Retail Health Index']['file'])
+        df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
+        df.dropna(subset=['Date', 'Scale'], inplace=True)
+        df = df.sort_values('Date')
+        curr = df['Scale'].iloc[-1]
+        prev = df['Scale'].iloc[-2]
+        latest_month = df['Date'].iloc[-1].strftime('%b-%y')
+        return prev, curr, latest_month
+    except:
         return None, None, "–"
 
 # Load values
@@ -216,10 +230,10 @@ INDEX_CONFIG['Housing Affordability Stress Index']['prev'], INDEX_CONFIG['Housin
 INDEX_CONFIG['EV Market Adoption Rate']['prev'], INDEX_CONFIG['EV Market Adoption Rate']['value'], INDEX_CONFIG['EV Market Adoption Rate']['month'] = load_ev_adoption()
 INDEX_CONFIG['Renewable Transition Readiness Score']['prev'], INDEX_CONFIG['Renewable Transition Readiness Score']['value'], INDEX_CONFIG['Renewable Transition Readiness Score']['month'] = load_renewable()
 INDEX_CONFIG['Infrastructure Activity Index (IAI)']['prev'], INDEX_CONFIG['Infrastructure Activity Index (IAI)']['value'], INDEX_CONFIG['Infrastructure Activity Index (IAI)']['month'] = load_iai()
+INDEX_CONFIG['Retail Health Index']['prev'], INDEX_CONFIG['Retail Health Index']['value'], INDEX_CONFIG['Retail Health Index']['month'] = load_retail_health()
 
 # Display Table
 data = []
-
 for name, cfg in INDEX_CONFIG.items():
     curr, prev = cfg.get('value'), cfg.get('prev')
     min_val, max_val = cfg['scale']
@@ -252,7 +266,6 @@ df_display = pd.DataFrame(data)
 # Render Table
 for i in range(len(df_display)):
     cols = st.columns([1, 3, 2, 2, 2, 1])
-
     img_path = df_display.iloc[i]['Image']
     if img_path and os.path.exists(img_path):
         cols[0].image(img_path, width=50)
@@ -266,4 +279,4 @@ for i in range(len(df_display)):
 
     if df_display.iloc[i]['Action'] != "–":
         if cols[5].button("Open", key=f"btn-{i}"):
-            st.switch_page(f"pages/{INDEX_CONFIG[list(INDEX_CONFIG.keys())[i]]['page']}.py")
+            st.switch_page(f"pages/{INDEX_CONFIG[df_display.iloc[i]['Index']]['page']}.py")
