@@ -8,7 +8,6 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
 from shared.ev_index import get_latest_ev_adoption
 
-# Page Config
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
 st.title("Economic Indices Dashboard")
 st.markdown("*Track key economic indicators and analyze their month-over-month changes.*")
@@ -24,11 +23,8 @@ INDEX_CONFIG = {
         "description": "The Consumer Demand Index captures shifts in real-time consumer activity."
     },
     "EV Market Adoption Rate": {
-        "value": None,
-        "prev": None,
-        "scale": (0, 10),
-        "image": "images/EV.jpg",
-        "page": "2_EV_Market_Adoption_Rate",
+        "value": None, "prev": None, "scale": (0, 10),
+        "image": "images/EV.jpg", "page": "2_EV_Market_Adoption_Rate",
         "description": "Tracks how quickly India is transitioning to electric mobility.",
         "month": "–"
     },
@@ -40,35 +36,27 @@ INDEX_CONFIG = {
         "description": "Measures how financially stretched households are in buying homes."
     },
     "Renewable Transition Readiness Score": {
-        "value": None,
-        "prev": None,
-        "scale": (0, 5),
-        "image": "images/Renewable.jpg",
-        "page": "4_Renewable_Transition_Readiness_Score",
+        "value": None, "prev": None, "scale": (0, 5),
+        "image": "images/Renewable.jpg", "page": "4_Renewable_Transition_Readiness_Score",
         "description": "Measures how prepared India is to shift from fossil fuels to clean energy.",
         "month": "–"
     },
     "Infrastructure Activity Index (IAI)": {
-        "value": None,
-        "prev": None,
-        "scale": (0, 5),
-        "image": "images/Infra.jpg",
-        "page": "5_Infrastructure_Activity_Index_(IAI)",
+        "value": None, "prev": None, "scale": (0, 5),
+        "image": "images/Infra.jpg", "page": "5_Infrastructure_Activity_Index_(IAI)",
         "description": "Tracks and forecasts the pace of infrastructure development.",
         "month": "–"
     },
     "IMP Index": {
         "file": "data/IMP_Index.csv",
         "scale": (-3, 3),
-        "image": "images/IMP.jpg",
-        "page": "6_IMP_Index",
+        "image": "images/IMP.jpg", "page": "6_IMP_Index",
         "description": "Measures India's overall economic well-being."
     },
     "Retail Health Index": {
-        "file": "data/Retail_Health_Index.csv",
-        "scale": (-3, 3),
-        "image": "images/Retail.jpg",
-        "page": "7_Retail_Health",
+        "file": "data/Retail_Health.csv",
+        "scale": (0, 1),
+        "image": "images/Retail.jpg", "page": "7_Retail_Health",
         "description": "Reflects the overall economic environment influencing retail activity."
     }
 }
@@ -83,7 +71,7 @@ def percent_change(prev, curr, min_val, max_val):
     except:
         return None
 
-# === Loaders === #
+# Individual Loaders
 def load_cdi():
     try:
         cfg = INDEX_CONFIG["Consumer Demand Index (CDI)"]
@@ -182,19 +170,14 @@ def load_iai():
         df.columns = df.columns.str.strip()
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
         df.dropna(subset=['Date'], inplace=True)
-
         idv_cols = [
-            "Highway construction actual",
-            "Railway line construction actual",
-            "Power T&D line constr (220KV plus)",
-            "Cement price",
+            "Highway construction actual", "Railway line construction actual",
+            "Power T&D line constr (220KV plus)", "Cement price",
             "Budgetary allocation for infrastructure sector"
         ]
         target_col = "GVA: construction (Basic Price)"
-
         for col in idv_cols + [target_col]:
             df[col] = pd.to_numeric(df[col], errors='coerce')
-
         df.dropna(inplace=True)
         scaler = MinMaxScaler()
         X_scaled = scaler.fit_transform(df[idv_cols])
@@ -212,18 +195,19 @@ def load_iai():
 
 def load_retail_health():
     try:
-        df = pd.read_csv(INDEX_CONFIG['Retail Health Index']['file'])
-        df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
-        df.dropna(subset=['Date', 'Scale'], inplace=True)
+        df = pd.read_csv("data/Retail_Health.csv")
+        df.columns = df.columns.str.strip()
+        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+        df = df.dropna(subset=['Retail Index', 'Date'])
         df = df.sort_values('Date')
-        curr = df['Scale'].iloc[-1]
-        prev = df['Scale'].iloc[-2]
+        curr = df['Retail Index'].iloc[-1]
+        prev = df['Retail Index'].iloc[-2]
         latest_month = df['Date'].iloc[-1].strftime('%b-%y')
         return prev, curr, latest_month
     except:
         return None, None, "–"
 
-# Load values
+# Load All Values
 INDEX_CONFIG['Consumer Demand Index (CDI)']['prev'], INDEX_CONFIG['Consumer Demand Index (CDI)']['value'], INDEX_CONFIG['Consumer Demand Index (CDI)']['month'] = load_cdi()
 INDEX_CONFIG['IMP Index']['prev'], INDEX_CONFIG['IMP Index']['value'], INDEX_CONFIG['IMP Index']['month'] = load_imp()
 INDEX_CONFIG['Housing Affordability Stress Index']['prev'], INDEX_CONFIG['Housing Affordability Stress Index']['value'], INDEX_CONFIG['Housing Affordability Stress Index']['month'] = load_housing()
@@ -232,7 +216,7 @@ INDEX_CONFIG['Renewable Transition Readiness Score']['prev'], INDEX_CONFIG['Rene
 INDEX_CONFIG['Infrastructure Activity Index (IAI)']['prev'], INDEX_CONFIG['Infrastructure Activity Index (IAI)']['value'], INDEX_CONFIG['Infrastructure Activity Index (IAI)']['month'] = load_iai()
 INDEX_CONFIG['Retail Health Index']['prev'], INDEX_CONFIG['Retail Health Index']['value'], INDEX_CONFIG['Retail Health Index']['month'] = load_retail_health()
 
-# Display Table
+# === Render Table ===
 data = []
 for name, cfg in INDEX_CONFIG.items():
     curr, prev = cfg.get('value'), cfg.get('prev')
@@ -263,14 +247,14 @@ for name, cfg in INDEX_CONFIG.items():
 
 df_display = pd.DataFrame(data)
 
-# Render Table
+# Render rows
 for i in range(len(df_display)):
     cols = st.columns([1, 3, 2, 2, 2, 1])
     img_path = df_display.iloc[i]['Image']
     if img_path and os.path.exists(img_path):
         cols[0].image(img_path, width=50)
     else:
-        cols[0].markdown("📄")
+        cols[0].markdown("📄"
 
     cols[1].markdown(f"**{df_display.iloc[i]['Index']}**")
     cols[2].markdown(df_display.iloc[i]['Latest Month'])
