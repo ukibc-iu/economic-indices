@@ -18,18 +18,18 @@ df = df.dropna(subset=['Date'])
 df['Month'] = df['Date'].dt.strftime('%b-%y')
 df['Quarter'] = df['Date'].dt.to_period('Q').astype(str)
 
-# Numeric cleaning
+# Clean numeric columns
 numeric_cols = ['CCI', 'Inflation', 'Private Consumption', 'UPI Transactions', 'Repo Rate', 'Per Capita NNI']
 for col in numeric_cols:
     df[col] = pd.to_numeric(df[col], errors='coerce')
 
-# Adjust for negative economic signals
+# Adjust for directionality
 df['Inflation'] = -df['Inflation']
 df['Repo Rate'] = -df['Repo Rate']
 
 df_clean = df.dropna(subset=numeric_cols).copy()
 
-# === PCA-based Index Calculation ===
+# === PCA Index Calculation ===
 training_end = pd.to_datetime("2024-03-01")
 df_train = df_clean[df_clean['Date'] <= training_end].copy()
 
@@ -45,12 +45,27 @@ min_val, max_val = train_index.min(), train_index.max()
 df_clean['Retail Index'] = (df_clean['Retail Index Raw'] - min_val) / (max_val - min_val)
 df_clean['Retail Index'] = df_clean['Retail Index'].clip(0, 1)
 
-# === UI Start ===
+# === UI Setup ===
 st.set_page_config(layout="wide")
 st.title("🛍️ Retail Health Index Dashboard")
 st.markdown("*A PCA-based index combining key retail indicators.*")
 
-# === Controls ===
+# === KPI Cards with Latest Data ===
+latest_row = df_clean.sort_values("Date").iloc[-1]
+st.markdown("### 📊 Latest Retail KPIs")
+col1, col2, col3 = st.columns(3)
+with col1:
+    with st.container(border=True):
+        st.metric("Retail Index", f"{latest_row['Retail Index'] * 100:.1f}%")
+with col2:
+    with st.container(border=True):
+        st.metric("CCI", f"{latest_row['CCI']:.1f}")
+with col3:
+    with st.container(border=True):
+        st.metric("UPI Transactions (B)", f"{latest_row['UPI Transactions']:.2f}")
+
+# === Controls for Exploring Historical Data ===
+st.markdown("### 🔎 Explore Historical Data")
 view_option = st.radio("View Mode", ["Monthly", "Quarterly"], horizontal=True)
 
 if view_option == "Monthly":
@@ -67,22 +82,10 @@ if filtered_df.empty:
     st.warning(f"No data available for {selected_period}.")
     st.stop()
 
+# Use selected data for visuals only
 latest = filtered_df.sort_values("Date").iloc[-1]
 
-# === KPI Cards in Boxes ===
-st.markdown("### 📊 Key Metrics")
-col1, col2, col3 = st.columns(3)
-with col1:
-    with st.container(border=True):
-        st.metric("Retail Index", f"{latest['Retail Index'] * 100:.1f}%")
-with col2:
-    with st.container(border=True):
-        st.metric("CCI", f"{latest['CCI']:.1f}")
-with col3:
-    with st.container(border=True):
-        st.metric("UPI Transactions (B)", f"{latest['UPI Transactions']:.2f}")
-
-# === Gauge + Doughnut in Wrapper Containers ===
+# === Gauge and Doughnut Charts ===
 st.markdown("### 🧭 Retail Health Index Insights")
 col_g1, col_g2 = st.columns(2)
 
@@ -119,7 +122,7 @@ with col_g2:
     donut_fig.update_layout(height=300, margin=dict(t=30, b=0), showlegend=False)
     chart_wrapper("PCA Component Contributions", donut_fig)
 
-# === Trend Line ===
+# === Line Chart ===
 st.markdown("### 📈 Retail Index Over Time")
 trend_fig = go.Figure()
 trend_fig.add_trace(go.Scatter(
@@ -137,6 +140,6 @@ trend_fig.update_layout(
 )
 st.plotly_chart(trend_fig, use_container_width=True)
 
-# === Optional Raw Data Table ===
+# === Optional: Show Raw Data Table ===
 with st.expander("🔍 Show Raw Data"):
     st.dataframe(df_clean[['Date', 'Month', 'Quarter'] + numeric_cols + ['Retail Index']])
