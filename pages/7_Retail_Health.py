@@ -78,7 +78,6 @@ with col3:
         st.metric("Quarter", latest["Quarter"])
 
 # === View Selection ===
-st.markdown("###Select Period")
 view_option = st.radio("View Mode", ["Monthly", "Quarterly"], horizontal=True)
 
 if view_option == "Monthly":
