@@ -7,8 +7,8 @@ import numpy as np
 
 # === Set up page ===
 st.set_page_config(layout="wide")
-st.title("🛍️ Retail Health Index Dashboard")
-st.markdown("*A PCA-based index combining key retail indicators.*")
+st.title("Retail Health Index Dashboard")
+st.markdown("*The Retail Health Index reflects the overall economic environment influencing retail activity, combining key macro-financial indicators that impact retail performance.*")
 
 # === Load and Clean Data ===
 df = pd.read_csv("data/Retail_Health.csv")
@@ -78,7 +78,7 @@ with col3:
         st.metric("Quarter", latest["Quarter"])
 
 # === View Selection ===
-st.markdown("### 🔍 Select Period to Explore")
+st.markdown("###Select Period")
 view_option = st.radio("View Mode", ["Monthly", "Quarterly"], horizontal=True)
 
 if view_option == "Monthly":
