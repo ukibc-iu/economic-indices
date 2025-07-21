@@ -63,7 +63,7 @@ min_val, max_val = train_index.min(), train_index.max()
 df_clean['Retail Index'] = (df_clean['Retail Index Raw'] - min_val) / (max_val - min_val)
 df_clean['Retail Index'] = df_clean['Retail Index'].clip(0, 1)
 
-# === Display KPI Cards ===
+# === KPI Cards (Latest Overall) ===
 latest = df_clean.sort_values("Date").iloc[-1]
 
 col1, col2, col3 = st.columns(3)
@@ -97,56 +97,58 @@ if filtered_df.empty:
 
 selected_latest = filtered_df.sort_values("Date").iloc[-1]
 
-# === Gauge Chart Wrapper ===
-st.markdown("### 🧭 Retail Index Gauge")
+# === Chart Wrapper ===
 def chart_wrapper(title, figure):
     with st.container(border=True):
         st.markdown(f"**{title}**")
         st.plotly_chart(figure, use_container_width=True)
 
-gauge = go.Figure(go.Indicator(
-    mode="gauge+number",
-    value=selected_latest["Retail Index"] * 100,
-    number={'suffix': "%"},
-    gauge={
-        'axis': {'range': [0, 100]},
-        'bar': {'color': "limegreen"},
-        'steps': [
-            {'range': [0, 40], 'color': "crimson"},
-            {'range': [40, 70], 'color': "gold"},
-            {'range': [70, 100], 'color': "lightgreen"},
-        ],
-    },
-    title={'text': f"Retail Index - {selected_period}"}
-))
-gauge.update_layout(height=350)
-chart_wrapper("Retail Index Gauge", gauge)
+# === Gauge and Donut Side by Side ===
+col_gauge, col_donut = st.columns(2)
 
-# === PCA Component Breakdown (Donut) ===
-st.markdown("### 📊 PCA Contribution Breakdown")
-explained = np.abs(pca.components_[0])
-explained = explained / explained.sum()
+with col_gauge:
+    gauge = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=selected_latest["Retail Index"] * 100,
+        number={'suffix': "%"},
+        gauge={
+            'axis': {'range': [0, 100]},
+            'bar': {'color': "limegreen"},
+            'steps': [
+                {'range': [0, 40], 'color': "crimson"},
+                {'range': [40, 70], 'color': "gold"},
+                {'range': [70, 100], 'color': "lightgreen"},
+            ],
+        },
+        title={'text': f"Retail Index - {selected_period}"}
+    ))
+    gauge.update_layout(height=350)
+    chart_wrapper("Retail Index Gauge", gauge)
 
-labels = numeric_cols
-values = explained * 100
+with col_donut:
+    explained = np.abs(pca.components_[0])
+    explained = explained / explained.sum()
 
-donut = go.Figure(data=[go.Pie(
-    labels=labels,
-    values=values,
-    hole=0.5,
-    sort=False,
-    direction="clockwise",
-    textinfo='none',
-    marker=dict(colors=[
-        "#FFA07A", "#DDA0DD", "#87CEFA", "#FFD700", "#90EE90", "#00CED1"
-    ])
-)])
-donut.update_layout(
-    showlegend=True,
-    height=400,
-    legend=dict(orientation="v", x=1, y=0.5),
-)
-chart_wrapper("PCA Component Breakdown", donut)
+    labels = numeric_cols
+    values = explained * 100
+
+    donut = go.Figure(data=[go.Pie(
+        labels=labels,
+        values=values,
+        hole=0.5,
+        sort=False,
+        direction="clockwise",
+        textinfo='none',
+        marker=dict(colors=[
+            "#FFA07A", "#DDA0DD", "#87CEFA", "#FFD700", "#90EE90", "#00CED1"
+        ])
+    )])
+    donut.update_layout(
+        showlegend=True,
+        height=350,
+        legend=dict(orientation="v", x=1, y=0.5),
+    )
+    chart_wrapper("PCA Component Breakdown", donut)
 
 # === Trend Line ===
 st.markdown("### 📈 Retail Index Over Time")
