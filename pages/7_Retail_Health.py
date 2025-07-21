@@ -1,11 +1,11 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.express as px
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-import plotly.express as px
 
-# === Load and Prepare Data ===
+# === Load & Prepare Data ===
 df = pd.read_csv("data/Retail_Health.csv")
 df.columns = df.columns.str.strip()
 df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
@@ -17,12 +17,11 @@ numeric_cols = ['CCI', 'Inflation', 'Private Consumption', 'UPI Transactions', '
 for col in numeric_cols:
     df[col] = pd.to_numeric(df[col], errors='coerce')
 
-# Adjust directionality
 df['Inflation'] = -df['Inflation']
 df['Repo Rate'] = -df['Repo Rate']
 df_clean = df.dropna(subset=numeric_cols).copy()
 
-# === PCA Calculation ===
+# === PCA-based Index Calculation ===
 training_end = pd.to_datetime("2024-03-01")
 df_train = df_clean[df_clean['Date'] <= training_end].copy()
 
@@ -38,28 +37,27 @@ min_val, max_val = train_index.min(), train_index.max()
 df_clean['Retail Index'] = (df_clean['Retail Index Raw'] - min_val) / (max_val - min_val)
 df_clean['Retail Index'] = df_clean['Retail Index'].clip(0, 1)
 
-# === Streamlit UI ===
+# === Page Setup ===
 st.set_page_config(layout="wide")
 st.title("🛍️ Retail Health Index Dashboard")
 st.markdown("*A PCA-based index combining key retail indicators.*")
 
 # === KPI Cards ===
-latest_row = df_clean.sort_values("Date").iloc[-1]
-st.markdown("### 📊 Latest Retail KPI Summary")
+latest = df_clean.sort_values("Date").iloc[-1]
 col1, col2, col3 = st.columns(3)
 with col1:
     with st.container(border=True):
-        st.metric("Retail Index", f"{latest_row['Retail Index'] * 100:.1f}%")
+        st.metric("Retail Index", f"{latest['Retail Index'] * 100:.1f}%")
 with col2:
     with st.container(border=True):
-        st.metric("Latest Month", latest_row['Month'])
+        st.metric("Latest Month", latest['Month'])
 with col3:
     with st.container(border=True):
-        st.metric("Latest Quarter", latest_row['Quarter'])
+        st.metric("Latest Quarter", latest['Quarter'])
 
-# === Controls Below KPI ===
-st.markdown("### 🔎 Explore Historical Data")
-view_option = st.radio("View Mode", ["Monthly", "Quarterly"], horizontal=True)
+# === View Mode Selection (Moved Below Cards) ===
+st.markdown("---")
+view_option = st.radio("Select View Mode", ["Monthly", "Quarterly"], horizontal=True)
 
 if view_option == "Monthly":
     unique_periods = df_clean['Month'].unique()[::-1]
@@ -75,69 +73,75 @@ if filtered_df.empty:
     st.warning(f"No data available for {selected_period}.")
     st.stop()
 
-selected_latest = filtered_df.sort_values("Date").iloc[-1]
+latest_selected = filtered_df.sort_values("Date").iloc[-1]
 
-# === Chart Wrapper ===
-def chart_wrapper(title, fig):
-    with st.container(border=True):
-        st.markdown(f"#### {title}")
-        st.plotly_chart(fig, use_container_width=True)
+# === Charts Row ===
+chart_col1, chart_col2 = st.columns([1, 1])
 
 # === Gauge Chart ===
-gauge_fig = go.Figure(go.Indicator(
-    mode="gauge+number",
-    value=selected_latest["Retail Index"] * 100,
-    number={'suffix': "%"},
-    gauge={
-        'axis': {'range': [0, 100]},
-        'bar': {'color': "limegreen"},
-        'steps': [
-            {'range': [0, 40], 'color': "crimson"},
-            {'range': [40, 70], 'color': "gold"},
-            {'range': [70, 100], 'color': "lightgreen"},
-        ],
-    },
-    title={'text': f"Retail Index - {selected_period}"}
-))
-gauge_fig.update_layout(height=350)
+with chart_col1:
+    with st.container(border=True):
+        st.markdown("#### 🧭 Retail Index Gauge")
+        gauge = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=latest_selected["Retail Index"] * 100,
+            number={'suffix': "%"},
+            gauge={
+                'axis': {'range': [0, 100]},
+                'bar': {'color': "limegreen"},
+                'steps': [
+                    {'range': [0, 40], 'color': "crimson"},
+                    {'range': [40, 70], 'color': "gold"},
+                    {'range': [70, 100], 'color': "lightgreen"},
+                ],
+            },
+            title={'text': f"Retail Index - {selected_period}"}
+        ))
+        gauge.update_layout(height=350)
+        st.plotly_chart(gauge, use_container_width=True)
 
-# === PCA Component Doughnut ===
-component_weights = pca.components_[0]
-component_labels = numeric_cols
-doughnut_fig = go.Figure(data=[go.Pie(
-    labels=component_labels,
-    values=abs(component_weights),
-    hole=0.5,
-    marker=dict(colors=px.colors.qualitative.Pastel),
-    textinfo='label+percent'
-)])
-doughnut_fig.update_layout(title="PCA Component Breakdown", height=350, showlegend=True)
+# === PCA Component Doughnut Chart (no duplicated labels) ===
+with chart_col2:
+    with st.container(border=True):
+        st.markdown("#### 📊 PCA Contribution Breakdown")
+        component_weights = pca.components_[0]
+        components_df = pd.DataFrame({
+            'Feature': numeric_cols,
+            'Contribution': abs(component_weights) / abs(component_weights).sum() * 100
+        })
 
-# === Display Charts in Row ===
-col1, col2 = st.columns(2)
-with col1:
-    chart_wrapper("🧭 Retail Index Gauge", gauge_fig)
-with col2:
-    chart_wrapper("📊 PCA Contribution Breakdown", doughnut_fig)
+        fig = go.Figure(go.Pie(
+            labels=components_df['Feature'],
+            values=components_df['Contribution'],
+            hole=0.5,
+            textinfo="none",  # ✅ No duplicate labels
+            marker=dict(colors=px.colors.qualitative.Pastel)
+        ))
+        fig.update_layout(
+            title="PCA Component Breakdown",
+            height=350,
+            legend_title_text="Features"
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
-# === Line Chart ===
-line_fig = go.Figure()
-line_fig.add_trace(go.Scatter(
+# === Retail Index Trend Chart ===
+st.markdown("### 📈 Retail Index Over Time")
+trend_fig = go.Figure()
+trend_fig.add_trace(go.Scatter(
     x=df_clean['Date'],
     y=df_clean['Retail Index'],
     mode='lines',
     name='Retail Index',
     line=dict(color='deepskyblue')
 ))
-line_fig.update_layout(
-    title="📈 Retail Index Over Time",
+trend_fig.update_layout(
     xaxis_title='Date',
     yaxis_title='Retail Index (0–1)',
     template='plotly_white',
     height=400
 )
-chart_wrapper("Retail Index Over Time", line_fig)
+st.plotly_chart(trend_fig, use_container_width=True)
 
-# === Raw Data ===
+# === Raw Data Table (optional) ===
 with st.expander("🔍 Show Raw Data"):
     st.dataframe(df_clean[['Date', 'Month', 'Quarter'] + numeric_cols + ['Retail Index']])
