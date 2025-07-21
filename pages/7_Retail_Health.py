@@ -151,7 +151,7 @@ with col_donut:
 
 # === Expert Opinion ===
 st.markdown("### 💡 Expert Opinion")
-expert_opinion = "Reatil Health Index is currently..."
+expert_opinion = "Retail Health Index is currently..."
 st.markdown(f"""
 <div style="
     background-color: rgba(100, 100, 100, 0.3);
