@@ -254,7 +254,7 @@ for i in range(len(df_display)):
     if img_path and os.path.exists(img_path):
         cols[0].image(img_path, width=50)
     else:
-        cols[0].markdown("📄"
+        cols[0].markdown("📄")
 
     cols[1].markdown(f"**{df_display.iloc[i]['Index']}**")
     cols[2].markdown(df_display.iloc[i]['Latest Month'])
