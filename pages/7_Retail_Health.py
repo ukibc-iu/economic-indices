@@ -166,7 +166,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # === Trend Line ===
-st.markdown("### 📈 Retail Index Over Time")
+st.markdown("### Index Over Time")
 trend = go.Figure()
 trend.add_trace(go.Scatter(
     x=df_clean['Date'],
