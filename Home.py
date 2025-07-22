@@ -308,9 +308,14 @@ try:
 
     # Create columns for layout
     col1, col2, col3 = st.columns([2, 2, 2])
-    col1.markdown("**Parameter**")
-    col2.markdown("**🇬🇧 UK**")
-    col3.markdown("**🇮🇳 India**")
+
+    # Use flag images from CDN
+    uk_flag = "<img src='https://flagcdn.com/24x18/gb.png' width='20' style='margin-right:6px;'>"
+    in_flag = "<img src='https://flagcdn.com/24x18/in.png' width='20' style='margin-right:6px;'>"
+
+    col1.markdown("**Parameter**", unsafe_allow_html=True)
+    col2.markdown(f"**{uk_flag}UK**", unsafe_allow_html=True)
+    col3.markdown(f"**{in_flag}India**", unsafe_allow_html=True)
 
     # Define styling function for MoM changes
     def styled_change(change_str):
