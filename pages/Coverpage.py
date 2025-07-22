@@ -6,10 +6,13 @@ st.set_page_config(layout="wide")
 # Load data from Excel
 df = pd.read_excel("data/Macro_MoM_Comparison.xlsx")
 
-# Convert column names to standard format
+# Strip whitespace from column names
 df.columns = df.columns.str.strip()
 
-# Create mapping from Parameter to display names (optional)
+# Parameters that need % appended if missing
+percent_params = ["Repo Rate", "Inflation Rate", "Unemployment Rate"]
+
+# Optional: Mapping from Excel parameter names to display names
 display_names = {
     "Repo Rate": "Repo / Interest Rates",
     "Inflation Rate": "Inflation",
@@ -20,37 +23,51 @@ display_names = {
     "Merchandise Exports": "Merchandise Exports"
 }
 
-# Flag URLs
+# Flag image URLs
 flags = {
     "India": "https://flagcdn.com/in.svg",
     "UK": "https://flagcdn.com/gb.svg"
 }
 
-# Convert dataframe into structured dictionary
+# Build structured dictionary from dataframe
 data = {}
 for _, row in df.iterrows():
     param = row["Parameter"].strip()
     display_label = display_names.get(param, param)
-    
+
+    # Format values and append % if needed
+    value_india = str(row["India"]).strip()
+    value_uk = str(row["UK"]).strip()
+    if param in percent_params:
+        if not value_india.endswith("%"):
+            value_india += "%"
+        if not value_uk.endswith("%"):
+            value_uk += "%"
+
+    # Format colors
     india_color = "green" if "+" in str(row["India MoM Change"]) else "red" if "-" in str(row["India MoM Change"]) else "grey"
     uk_color = "green" if "+" in str(row["UK MoM Change"]) else "red" if "-" in str(row["UK MoM Change"]) else "grey"
 
+    # Format dates to mmm-yy
+    india_date = row["India Date"].strftime("%b-%y") if pd.notnull(row["India Date"]) else ""
+    uk_date = row["UK Date"].strftime("%b-%y") if pd.notnull(row["UK Date"]) else ""
+
     data[display_label] = {
         "India": {
-            "value": str(row["India"]),
-            "date": row["India Date"].strftime("%b-%y"),
+            "value": value_india,
+            "date": india_date,
             "change": str(row["India MoM Change"]),
             "color": india_color
         },
         "UK": {
-            "value": str(row["UK"]),
-            "date": row["UK Date"].strftime("%b-%y"),
+            "value": value_uk,
+            "date": uk_date,
             "change": str(row["UK MoM Change"]),
             "color": uk_color
         }
     }
 
-# Card rendering function
+# Card rendering
 def card(country, details):
     return f"""
     <div style="text-align: center; background-color: #111; padding: 15px; border-radius: 10px; border: 1px solid #333;">
@@ -61,14 +78,13 @@ def card(country, details):
     </div>
     """
 
-# Group parameters in pairs (2 per row)
+# Group 2 parameters per row
 param_names = list(data.keys())
 param_pairs = [param_names[i:i+2] for i in range(0, len(param_names), 2)]
 
 # Render layout
 for pair in param_pairs:
     col_block = st.columns(2)
-    
     for i, param in enumerate(pair):
         with col_block[i]:
             st.markdown(f"<h3 style='text-align: center; color: white;'>{param}</h3>", unsafe_allow_html=True)
