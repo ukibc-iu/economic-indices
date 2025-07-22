@@ -298,7 +298,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.markdown("---")
-st.subheader("Key Macroeconomic Changes")
+st.subheader("UK-India Macroeconomic Comparison")
 
 try:
     # Load data
