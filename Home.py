@@ -311,7 +311,7 @@ try:
             return "–"
         text = change_str.strip().lower()
         if text in ["no change", "0 bps", "0.0%", "0%", "+0 bps", "+0%", "0", "–", "-", "", "na", "n/a"]:
-            return "<span style='color:white;'>No Change</span>"
+            return "<span style='color:grey;'>No Change</span>"
         up = "+" in text
         down = "-" in text
         if param.lower() in ["inflation rate", "unemployment rate"]:
@@ -380,6 +380,5 @@ try:
     """,
     unsafe_allow_html=True
 )
-
 except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
