@@ -9,7 +9,7 @@ df = pd.read_excel("data/Macro_MoM_Comparison.xlsx")
 # Strip whitespace from column names
 df.columns = df.columns.str.strip()
 
-# Parameters that need % appended if missing
+# Parameters that need % formatting
 percent_params = ["Repo Rate", "Inflation Rate", "Unemployment Rate"]
 
 # Optional: Mapping from Excel parameter names to display names
@@ -35,20 +35,31 @@ for _, row in df.iterrows():
     param = row["Parameter"].strip()
     display_label = display_names.get(param, param)
 
-    # Format values and append % if needed
-    value_india = str(row["India"]).strip()
-    value_uk = str(row["UK"]).strip()
+    # --- Format values correctly ---
+    # For % fields, format float to string percentage
     if param in percent_params:
-        if not value_india.endswith("%"):
-            value_india += "%"
-        if not value_uk.endswith("%"):
-            value_uk += "%"
+        if isinstance(row["India"], (int, float)):
+            value_india = f"{row['India'] * 100:.2f}%"
+        else:
+            value_india = str(row["India"]).strip()
+            if not value_india.endswith("%"):
+                value_india += "%"
 
-    # Format colors
+        if isinstance(row["UK"], (int, float)):
+            value_uk = f"{row['UK'] * 100:.2f}%"
+        else:
+            value_uk = str(row["UK"]).strip()
+            if not value_uk.endswith("%"):
+                value_uk += "%"
+    else:
+        value_india = str(row["India"]).strip()
+        value_uk = str(row["UK"]).strip()
+
+    # Format change color
     india_color = "green" if "+" in str(row["India MoM Change"]) else "red" if "-" in str(row["India MoM Change"]) else "grey"
     uk_color = "green" if "+" in str(row["UK MoM Change"]) else "red" if "-" in str(row["UK MoM Change"]) else "grey"
 
-    # Format dates to mmm-yy
+    # Format dates
     india_date = row["India Date"].strftime("%b-%y") if pd.notnull(row["India Date"]) else ""
     uk_date = row["UK Date"].strftime("%b-%y") if pd.notnull(row["UK Date"]) else ""
 
