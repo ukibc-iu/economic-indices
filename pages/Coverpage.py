@@ -29,7 +29,7 @@ flags = {
 
 def card(country, details):
     return f"""
-    <div style='text-align: center; background-color: #111; padding: 15px; border-radius: 10px;'>
+    <div style="text-align: center; background-color: #111; padding: 15px; border-radius: 10px; border: 1px solid #333;">
         <img src='{flags[country]}' width='32'><br>
         <span style='font-size: 20px; font-weight: bold;'>{details["value"]}</span><br>
         <span style='font-size: 13px; color: grey;'>{details["date"]}</span><br>
