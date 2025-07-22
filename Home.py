@@ -295,71 +295,66 @@ for i in range(len(df_display)):
 import re
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 st.markdown("---")
 st.subheader("Key Macroeconomic Changes")
 
 try:
-    # Load specific sheet from Excel
+    # Load data
     macro_df = pd.read_excel("data/Macro_MoM_Comparison.xlsx", sheet_name="June")
-    
-    # Keep only selected parameters
     display_params = ["Repo Rate", "Inflation", "Unemployment"]
     macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
 
-    # Define styling function for MoM changes
+    # Change styling
     def styled_change(change_str):
         if not isinstance(change_str, str):
             return "–"
-
         text = change_str.strip().lower()
-
         if text in ["no change", "0 bps", "0.0%", "0%", "+0 bps", "+0%", "0", "–", "-", "", "na", "n/a"]:
             return "<span style='color:grey;'>No M-o-M Change</span>"
-
         up = "+" in text
         down = "-" in text
-        color = "green" if up else "red" if down else "black"
-        arrow = "▲" if up else "▼" if down else ""
+        color = "green" if up else "red"
+        arrow = "▲" if up else "▼"
         return f"<span style='color:{color};'>{arrow} {change_str.strip()}</span>"
 
-    # Flag images
-    uk_flag = "<img src='https://flagcdn.com/32x24/gb.png' width='28'>"
-    in_flag = "<img src='https://flagcdn.com/32x24/in.png' width='28'>"
+    # Flag URLs
+    uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
+    in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
-    # HTML table
-    html = """
+    # HTML
+    html = f"""
     <style>
         .macro-table {{
             width: 100%;
             border-collapse: collapse;
+            font-family: sans-serif;
         }}
         .macro-table th, .macro-table td {{
             text-align: center;
-            padding: 8px 12px;
-            font-size: 15px;
+            padding: 10px;
+            font-size: 16px;
         }}
         .macro-table th {{
-            font-weight: bold;
+            font-weight: 600;
         }}
         .macro-table td:first-child {{
             text-align: left;
         }}
     </style>
-
     <table class='macro-table'>
         <tr>
             <th>Parameter</th>
             <th>{uk_flag}</th>
             <th>{in_flag}</th>
         </tr>
-    """.format(uk_flag=uk_flag, in_flag=in_flag)
+    """
 
     for _, row in macro_df.iterrows():
         param = row["Parameter"]
         uk_change = styled_change(str(row["UK MoM Change"]))
         in_change = styled_change(str(row["India MoM Change"]))
-
         html += f"""
         <tr>
             <td>{param}</td>
@@ -367,11 +362,10 @@ try:
             <td>{in_change}</td>
         </tr>
         """
-
     html += "</table>"
 
-    # ✅ Render properly with HTML allowed
-    st.markdown(html, unsafe_allow_html=True)
+    # ✅ Use components.html for reliable rendering
+    components.html(html, height=300)
 
 except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
