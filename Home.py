@@ -338,11 +338,11 @@ try:
         }}
         .macro-table th {{
             font-weight: 600;
-            color: #DDDDDD;
+            color: grey;
         }}
         .macro-table td:first-child {{
             text-align: left;
-            color: #DDDDDD;
+            color: grey;
             font-weight: 500;
         }}
     </style>
