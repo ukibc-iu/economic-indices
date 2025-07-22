@@ -1,32 +1,56 @@
 import streamlit as st
+import pandas as pd
 
 st.set_page_config(layout="wide")
 
-# Dummy data
-data = {
-    "Repo / Interest Rates": {
-        "India": {"value": "5.50%", "date": "June-2025", "change": "▼ 50 bps", "color": "red"},
-        "UK": {"value": "4.25%", "date": "June-2025", "change": "No change", "color": "grey"},
-    },
-    "Inflation": {
-        "India": {"value": "6.1%", "date": "June-2025", "change": "▲ 20 bps", "color": "red"},
-        "UK": {"value": "3.8%", "date": "June-2025", "change": "▼ 10 bps", "color": "green"},
-    },
-    "Unemployment": {
-        "India": {"value": "7.2%", "date": "June-2025", "change": "▼ 15 bps", "color": "green"},
-        "UK": {"value": "4.3%", "date": "June-2025", "change": "▲ 5 bps", "color": "red"},
-    },
-    "GDP Growth": {
-        "India": {"value": "7.0%", "date": "2024-25", "change": "▲ 0.2%", "color": "green"},
-        "UK": {"value": "1.2%", "date": "2024-25", "change": "▼ 0.1%", "color": "red"},
-    }
+# Load data from Excel
+df = pd.read_excel("data/Macro_MoM_Comparison.xlsx")
+
+# Convert column names to standard format
+df.columns = df.columns.str.strip()
+
+# Create mapping from Parameter to display names (optional)
+display_names = {
+    "Repo Rate": "Repo / Interest Rates",
+    "Inflation Rate": "Inflation",
+    "Unemployment Rate": "Unemployment",
+    "GDP Growth": "GDP Growth",
+    "Manufacturing PMI": "Manufacturing PMI",
+    "Merchandise Imports": "Merchandise Imports",
+    "Merchandise Exports": "Merchandise Exports"
 }
 
+# Flag URLs
 flags = {
     "India": "https://flagcdn.com/in.svg",
     "UK": "https://flagcdn.com/gb.svg"
 }
 
+# Convert dataframe into structured dictionary
+data = {}
+for _, row in df.iterrows():
+    param = row["Parameter"].strip()
+    display_label = display_names.get(param, param)
+    
+    india_color = "green" if "+" in str(row["India MoM Change"]) else "red" if "-" in str(row["India MoM Change"]) else "grey"
+    uk_color = "green" if "+" in str(row["UK MoM Change"]) else "red" if "-" in str(row["UK MoM Change"]) else "grey"
+
+    data[display_label] = {
+        "India": {
+            "value": str(row["India"]),
+            "date": str(row["India Date"]),
+            "change": str(row["India MoM Change"]),
+            "color": india_color
+        },
+        "UK": {
+            "value": str(row["UK"]),
+            "date": str(row["UK Date"]),
+            "change": str(row["UK MoM Change"]),
+            "color": uk_color
+        }
+    }
+
+# Card rendering function
 def card(country, details):
     return f"""
     <div style="text-align: center; background-color: #111; padding: 15px; border-radius: 10px; border: 1px solid #333;">
@@ -41,6 +65,7 @@ def card(country, details):
 param_names = list(data.keys())
 param_pairs = [param_names[i:i+2] for i in range(0, len(param_names), 2)]
 
+# Render layout
 for pair in param_pairs:
     col_block = st.columns(2)
     
