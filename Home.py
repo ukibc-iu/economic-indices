@@ -291,3 +291,40 @@ for i in range(len(df_display)):
     if df_display.iloc[i]['Action'] != "–":
         if cols[5].button("Open", key=f"btn-{i}"):
             st.switch_page(f"pages/{INDEX_CONFIG[df_display.iloc[i]['Index']]['page']}.py")
+
+import re
+
+st.markdown("---")
+st.subheader("Key Macroeconomic Changes")
+
+try:
+    # Load specific sheet from Excel
+    macro_df = pd.read_excel("data/Macro_MoM_Comparison.xlsx", sheet_name="June")
+    
+    # Keep only selected parameters
+    display_params = ["Repo Rate", "Inflation", "Unemployment"]
+    macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
+
+    col1, col2, col3 = st.columns([2, 2, 2])
+    col1.markdown("**Parameter**")
+    col2.markdown("**🇬🇧 UK**")
+    col3.markdown("**🇮🇳 India**")
+
+    def styled_change(change_str):
+        if not isinstance(change_str, str) or change_str.strip().lower() in ["–", "no change", "", "0.00%", "+0 bps", "0 bps"]:
+            return "–"
+        
+        up = "+" in change_str
+        down = "-" in change_str
+        value = change_str.strip()
+        color = "green" if up else "red" if down else "black"
+        arrow = "▲" if up else "▼" if down else ""
+        return f"<span style='color:{color};'>{arrow} {value}</span>"
+
+    for _, row in macro_df.iterrows():
+        col1.markdown(row["Parameter"])
+        col2.markdown(styled_change(str(row["UK MoM Change"])), unsafe_allow_html=True)
+        col3.markdown(styled_change(str(row["India MoM Change"])), unsafe_allow_html=True)
+
+except Exception as e:
+    st.warning("Could not load macroeconomic comparison data.")
