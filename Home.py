@@ -341,7 +341,7 @@ try:
             color: grey;
         }}
         .macro-table td:first-child {{
-            text-align: left;
+            text-align: center;
             color: darkgrey;
             font-weight: 500;
         }}
