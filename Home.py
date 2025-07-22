@@ -373,10 +373,10 @@ try:
     st.markdown(
     """
     <div style='display: flex; align-items: center; gap: 12px;'>
-        <span style='font-weight: 600; font-size: 16px;'>For an in-depth look at other economic parameters ⬇️</span>
+        <span style='font-weight: 600; font-size: 16px;'>For an in-depth look at other economic parameters</span>
         <a href='/Coverpage' target='_self'>
             <button style='padding:6px 14px; font-size:14px; border-radius:6px; background-color:#444; color:white; border:none; cursor:pointer;'>
-                Open Detailed Dashboard
+                Click
             </button>
         </a>
     </div>
