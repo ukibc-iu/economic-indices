@@ -342,6 +342,7 @@ try:
         .macro-table td:first-child {{
             text-align: center;
             font-weight: 500;
+            color: white;
         }}
     </style>
     <table class='macro-table'>
