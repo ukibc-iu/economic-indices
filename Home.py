@@ -350,7 +350,7 @@ try:
         }}
         .macro-table td:first-child {{
             text-align: left;
-            color: #DDDDDD;  /* Light gray for visibility on dark themes */
+            color: darkgrey
             font-weight: 500;
         }}
     </style>
