@@ -291,6 +291,7 @@ for i in range(len(df_display)):
     if df_display.iloc[i]['Action'] != "–":
         if cols[5].button("Open", key=f"btn-{i}"):
             st.switch_page(f"pages/{INDEX_CONFIG[df_display.iloc[i]['Index']]['page']}.py")
+
 import re
 import pandas as pd
 import streamlit as st
@@ -305,17 +306,6 @@ try:
     # Keep only selected parameters
     display_params = ["Repo Rate", "Inflation", "Unemployment"]
     macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
-
-    # Create columns for layout
-    col1, col2, col3 = st.columns([2, 2, 2])
-
-    # Use flag images from CDN
-    uk_flag = "<img src='https://flagcdn.com/32x24/gb.png' width='24' style='margin-right:4px;'>"
-    in_flag = "<img src='https://flagcdn.com/32x24/in.png' width='24' style='margin-right:4px;'>"
-
-    col1.markdown("**Parameter**", unsafe_allow_html=True)
-    col2.markdown(f"{uk_flag}", unsafe_allow_html=True)
-    col3.markdown(f"{in_flag}", unsafe_allow_html=True)
 
     # Define styling function for MoM changes
     def styled_change(change_str):
@@ -335,11 +325,52 @@ try:
         arrow = "▲" if up else "▼" if down else ""
         return f"<span style='color:{color};'>{arrow} {change_str.strip()}</span>"
 
-    # Render the data row by row
+    # Prepare HTML table
+    uk_flag = "<img src='https://flagcdn.com/32x24/gb.png' width='28'>"
+    in_flag = "<img src='https://flagcdn.com/32x24/in.png' width='28'>"
+
+    html = """
+    <style>
+        .macro-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .macro-table th, .macro-table td {
+            text-align: center;
+            padding: 8px 12px;
+            font-size: 15px;
+        }
+        .macro-table th {
+            font-weight: bold;
+        }
+        .macro-table td:first-child {
+            text-align: left;
+        }
+    </style>
+
+    <table class='macro-table'>
+        <tr>
+            <th>Parameter</th>
+            <th>{uk_flag}</th>
+            <th>{in_flag}</th>
+        </tr>
+    """.format(uk_flag=uk_flag, in_flag=in_flag)
+
     for _, row in macro_df.iterrows():
-        col1.markdown(row["Parameter"])
-        col2.markdown(styled_change(str(row["UK MoM Change"])), unsafe_allow_html=True)
-        col3.markdown(styled_change(str(row["India MoM Change"])), unsafe_allow_html=True)
+        param = row["Parameter"]
+        uk_change = styled_change(str(row["UK MoM Change"]))
+        in_change = styled_change(str(row["India MoM Change"]))
+
+        html += f"""
+        <tr>
+            <td>{param}</td>
+            <td>{uk_change}</td>
+            <td>{in_change}</td>
+        </tr>
+        """
+
+    html += "</table>"
+    st.markdown(html, unsafe_allow_html=True)
 
 except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
