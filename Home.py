@@ -379,16 +379,14 @@ try:
     # Render in Streamlit
     components.html(html, height=180)
 
-# Add CTA line and navigation button
-    st.markdown(
-       "<div style='margin-top: 20px; font-size: 16px;'>"
-       "For an in-depth look at other economic parameters <span style='font-size:18px;'>↘️</span>"
-       "</div>",
-       unsafe_allow_html=True
-    )
+col1, col2 = st.columns([5, 2])  # Adjust width ratios if needed
 
-    if st.button("Open Detailed Dashboard"):
-       st.switch_page("pages/Coverpage.py")
+with col1:
+    st.markdown("**For an in-depth look at other economic parameters** :arrow_down_small:")
+
+with col2:
+    with st.expander("Open Detailed Dashboard"):
+        st.write("Under progress...")
 
 except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
