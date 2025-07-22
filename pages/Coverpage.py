@@ -38,13 +38,13 @@ for _, row in df.iterrows():
     data[display_label] = {
         "India": {
             "value": str(row["India"]),
-            "date": str(row["India Date"]),
+            "date": row["India Date"].strftime("%b-%y"),
             "change": str(row["India MoM Change"]),
             "color": india_color
         },
         "UK": {
             "value": str(row["UK"]),
-            "date": str(row["UK Date"]),
+            "date": row["UK Date"].strftime("%b-%y"),
             "change": str(row["UK MoM Change"]),
             "color": uk_color
         }
