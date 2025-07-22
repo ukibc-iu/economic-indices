@@ -311,7 +311,7 @@ try:
             return "–"
         text = change_str.strip().lower()
         if text in ["no change", "0 bps", "0.0%", "0%", "+0 bps", "+0%", "0", "–", "-", "", "na", "n/a"]:
-            return "<span style='color:grey;'>No Change</span>"
+            return "<span style='color:white;'>No Change</span>"
         up = "+" in text
         down = "-" in text
         if param.lower() in ["inflation rate", "unemployment rate"]:
@@ -358,17 +358,11 @@ try:
         in_change = styled_change(str(row["India MoM Change"]), param)
         html += f"""
         <tr>
-        <td>{param}</td>
-        <td>
-            <div style='color: white; font-weight: 500;'>{uk_value}</div>
-            {uk_change}
-        </td>
-        <td>
-            <div style='color: white; font-weight: 500;'>{in_value}</div>
-            {in_change}
-        </td>
-    </tr>
-    """
+            <td>{param}</td>
+            <td>{uk_change}</td>
+            <td>{in_change}</td>
+        </tr>
+        """
     html += "</table>"
     components.html(html, height=200)
 
