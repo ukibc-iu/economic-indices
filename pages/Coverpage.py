@@ -2,13 +2,12 @@ import streamlit as st
 
 st.set_page_config(layout="wide")
 
-# Header
 st.markdown("<h2 style='text-align: center;'>Macroeconomic Briefing: India and United Kingdom</h2>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; color: teal;'>June 2025</h3><hr>", unsafe_allow_html=True)
 
-# Aligned block: India | Title | UK
 html_block = """
-<div style="display: flex; justify-content: space-around; align-items: flex-start; background-color: #111; padding: 20px; border-radius: 10px;">
+<!-- Parent container: flexbox layout -->
+<div style="display: flex; justify-content: space-around; align-items: flex-start; padding: 20px;">
 
     <!-- India Column -->
     <div style="text-align: center; width: 30%;">
@@ -34,5 +33,5 @@ html_block = """
 </div>
 """
 
-# Render it
+# Display it in Streamlit
 st.markdown(html_block, unsafe_allow_html=True)
