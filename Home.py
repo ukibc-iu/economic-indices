@@ -310,12 +310,12 @@ try:
     col1, col2, col3 = st.columns([2, 2, 2])
 
     # Use flag images from CDN
-    uk_flag = "<img src='https://flagcdn.com/24x18/gb.png' width='20' style='margin-right:6px;'>"
-    in_flag = "<img src='https://flagcdn.com/24x18/in.png' width='20' style='margin-right:6px;'>"
+    uk_flag = "<img src='https://flagcdn.com/32x24/gb.png' width='24' style='margin-right:4px;'>"
+    in_flag = "<img src='https://flagcdn.com/32x24/in.png' width='24' style='margin-right:4px;'>"
 
     col1.markdown("**Parameter**", unsafe_allow_html=True)
-    col2.markdown(f"**{uk_flag}UK**", unsafe_allow_html=True)
-    col3.markdown(f"**{in_flag}India**", unsafe_allow_html=True)
+    col2.markdown(f"{uk_flag}", unsafe_allow_html=True)
+    col3.markdown(f"{in_flag}", unsafe_allow_html=True)
 
     # Define styling function for MoM changes
     def styled_change(change_str):
