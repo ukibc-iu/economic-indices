@@ -2,11 +2,11 @@ import streamlit as st
 
 st.set_page_config(layout="wide")
 
-# Header
 st.markdown("<h2 style='text-align:center;'>Macroeconomic Briefing: India and United Kingdom</h2>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align:center; color: teal;'>June 2025</h3>", unsafe_allow_html=True)
+st.markdown("<hr>", unsafe_allow_html=True)
 
-# Data for each metric box (manually for now, can be from a CSV later)
+# Sample data: Add 6 dicts like this
 metrics = [
     {
         "title": "Repo / Interest Rates",
@@ -16,41 +16,64 @@ metrics = [
         "uk_date": "June-2025",
         "in_change": "▼ 50 bps",
         "uk_change": "No change",
-        "in_color": "#e6fff2",
-        "uk_color": "#fff8e6",
         "in_change_color": "red",
-        "uk_change_color": "grey",
+        "uk_change_color": "grey"
     },
-    # Repeat for other metrics...
+    {
+        "title": "Inflation Rate",
+        "in_value": "2.82%",
+        "uk_value": "3.40%",
+        "in_date": "May-2025",
+        "uk_date": "May-2025",
+        "in_change": "▼ 34 bps",
+        "uk_change": "No change",
+        "in_change_color": "green",
+        "uk_change_color": "grey"
+    },
+    # Add 4 more metric boxes...
 ]
 
-# Helper to render a metric box
-def render_metric_box(metric):
-    col1, col2, col3 = st.columns([1, 0.2, 1])
+def render_metric(metric):
+    box_style = """
+        border: 1px solid #444; 
+        border-radius: 10px; 
+        padding: 12px 10px; 
+        background-color: #111111;
+    """
+    
+    html = f"""
+    <div style="{box_style}">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <!-- India Column -->
+            <div style="text-align: center; width: 30%;">
+                <img src="https://flagcdn.com/in.svg" width="32"><br>
+                <span style="font-size: 20px; font-weight: bold;">{metric['in_value']}</span><br>
+                <span style="font-size: 13px; color: grey;">{metric['in_date']}</span><br>
+                <span style="color:{metric['in_change_color']}; font-size: 13px;">{metric['in_change']}</span>
+            </div>
 
-    with col1:
-        st.image("https://flagcdn.com/in.svg", width=32)
-        st.markdown(f"<div style='font-size:22px; font-weight:bold;'>{metric['in_value']}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div style='color:grey; font-size:14px;'>{metric['in_date']}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div style='color:{metric['in_change_color']}; font-size:14px;'>{metric['in_change']}</div>", unsafe_allow_html=True)
+            <!-- Title Center -->
+            <div style="text-align: center; width: 40%;">
+                <div style="font-size: 15px; font-weight: 600; color: white;">{metric['title']}</div>
+            </div>
 
-    with col2:
-        st.markdown(f"<div style='text-align:center; font-weight:600; font-size:16px;'>{metric['title']}</div>", unsafe_allow_html=True)
+            <!-- UK Column -->
+            <div style="text-align: center; width: 30%;">
+                <img src="https://flagcdn.com/gb.svg" width="32"><br>
+                <span style="font-size: 20px; font-weight: bold;">{metric['uk_value']}</span><br>
+                <span style="font-size: 13px; color: grey;">{metric['uk_date']}</span><br>
+                <span style="color:{metric['uk_change_color']}; font-size: 13px;">{metric['uk_change']}</span>
+            </div>
+        </div>
+    </div>
+    """
+    return html
 
-    with col3:
-        st.image("https://flagcdn.com/gb.svg", width=32)
-        st.markdown(f"<div style='font-size:22px; font-weight:bold;'>{metric['uk_value']}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div style='color:grey; font-size:14px;'>{metric['uk_date']}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div style='color:{metric['uk_change_color']}; font-size:14px;'>{metric['uk_change']}</div>", unsafe_allow_html=True)
+# Render 2 rows of 3 columns each
+rows = [metrics[:3], metrics[3:]]
 
-st.divider()
-
-# Render cards (2 rows, 3 columns layout)
-row1 = metrics[:3]
-row2 = metrics[3:]  # Add later
-
-for row in [row1, row2]:
+for row in rows:
     cols = st.columns(3)
-    for idx, metric in enumerate(row):
-        with cols[idx]:
-            render_metric_box(metric)
+    for i, metric in enumerate(row):
+        with cols[i]:
+            st.markdown(render_metric(metric), unsafe_allow_html=True)
