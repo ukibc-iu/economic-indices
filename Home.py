@@ -377,7 +377,7 @@ try:
     html += "</table>"
 
     # Render in Streamlit
-    components.html(html, height=100)
+    components.html(html, height=180)
 
 # Add CTA line and navigation button
     st.markdown(
