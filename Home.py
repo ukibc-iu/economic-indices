@@ -348,7 +348,6 @@ try:
     </style>
     <table class='macro-table'>
         <tr>
-            <th>Parameter</th>
             <th>{uk_flag}</th>
             <th>{in_flag}</th>
         </tr>
