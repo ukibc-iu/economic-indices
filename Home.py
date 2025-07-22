@@ -342,7 +342,7 @@ try:
         }}
         .macro-table td:first-child {{
             text-align: left;
-            color: #DDDDDD;
+            color: #FFFFFF;
             font-weight: 500;
         }}
     </style>
