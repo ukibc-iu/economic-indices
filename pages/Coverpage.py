@@ -8,8 +8,8 @@ st.markdown("""
     <hr>
 """, unsafe_allow_html=True)
 
-# Style Block
-html = """
+# ✅ WORKING HTML
+st.markdown("""
 <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 60px;">
 
     <!-- India -->
@@ -34,6 +34,4 @@ html = """
     </div>
 
 </div>
-"""
-
-st.markdown(html, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
