@@ -291,7 +291,6 @@ for i in range(len(df_display)):
     if df_display.iloc[i]['Action'] != "–":
         if cols[5].button("Open", key=f"btn-{i}"):
             st.switch_page(f"pages/{INDEX_CONFIG[df_display.iloc[i]['Index']]['page']}.py")
-
 import re
 import pandas as pd
 import streamlit as st
@@ -322,7 +321,7 @@ try:
 
         # Handle 'no change' or 0 values
         if text in ["no change", "0 bps", "0.0%", "0%", "+0 bps", "+0%", "0", "–", "-", "", "na", "n/a"]:
-            return "<span style='color:grey;'>0 bps</span>" if "bps" in text else "<span style='color:grey;'>0%</span>"
+            return "<span style='color:grey;'>No M-o-M Change</span>"
 
         # Detect direction
         up = "+" in text
@@ -331,7 +330,7 @@ try:
         arrow = "▲" if up else "▼" if down else ""
         return f"<span style='color:{color};'>{arrow} {change_str.strip()}</span>"
 
-    # Render the table
+    # Render the data row by row
     for _, row in macro_df.iterrows():
         col1.markdown(row["Parameter"])
         col2.markdown(styled_change(str(row["UK MoM Change"])), unsafe_allow_html=True)
