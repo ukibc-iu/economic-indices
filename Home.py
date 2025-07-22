@@ -370,14 +370,19 @@ try:
     components.html(html, height=200)
 
     # Inline layout using HTML and Streamlit button side by side
-    st.markdown("""
-    <div style='display: flex; align-items: center; gap: 10px;'>
-        <span style='font-weight: 600;'>For an in-depth look at other economic parameters ⬇️</span>
+    st.markdown(
+    """
+    <div style='display: flex; align-items: center; gap: 12px;'>
+        <span style='font-weight: 600; font-size: 16px;'>For an in-depth look at other economic parameters ⬇️</span>
+        <a href='/Coverpage' target='_self'>
+            <button style='padding:6px 14px; font-size:14px; border-radius:6px; background-color:#444; color:white; border:none; cursor:pointer;'>
+                Open Detailed Dashboard
+            </button>
+        </a>
     </div>
-    """, unsafe_allow_html=True)
-
-    if st.button("Open Detailed Dashboard"):
-        st.switch_page("pages/Coverpage.py")
+    """,
+    unsafe_allow_html=True
+)
 
 except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
