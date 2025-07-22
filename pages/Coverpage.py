@@ -15,36 +15,40 @@ data = {
     "Unemployment": {
         "India": {"value": "7.2%", "date": "June-2025", "change": "▼ 15 bps", "color": "green"},
         "UK": {"value": "4.3%", "date": "June-2025", "change": "▲ 5 bps", "color": "red"},
+    },
+    "GDP Growth": {
+        "India": {"value": "7.0%", "date": "2024-25", "change": "▲ 0.2%", "color": "green"},
+        "UK": {"value": "1.2%", "date": "2024-25", "change": "▼ 0.1%", "color": "red"},
     }
 }
-
-def country_box(flag_url, value, date, change, color):
-    return f"""
-    <div style='text-align: center; background-color: #111; padding: 15px; border-radius: 10px;'>
-        <img src='{flag_url}' width='32'><br>
-        <span style='font-size: 20px; font-weight: bold;'>{value}</span><br>
-        <span style='font-size: 13px; color: grey;'>{date}</span><br>
-        <span style='color: {color}; font-size: 13px;'>{change}</span>
-    </div>
-    """
 
 flags = {
     "India": "https://flagcdn.com/in.svg",
     "UK": "https://flagcdn.com/gb.svg"
 }
 
-# Loop through each parameter section
-for parameter, values in data.items():
-    st.markdown(f"### {parameter}")
+def card(country, details):
+    return f"""
+    <div style='text-align: center; background-color: #111; padding: 15px; border-radius: 10px;'>
+        <img src='{flags[country]}' width='32'><br>
+        <span style='font-size: 20px; font-weight: bold;'>{details["value"]}</span><br>
+        <span style='font-size: 13px; color: grey;'>{details["date"]}</span><br>
+        <span style='color: {details["color"]}; font-size: 13px;'>{details["change"]}</span>
+    </div>
+    """
 
-    col1, col2 = st.columns([1, 1])
+# Group parameters in pairs (2 per row)
+param_names = list(data.keys())
+param_pairs = [param_names[i:i+2] for i in range(0, len(param_names), 2)]
 
-    with col1:
-        india = values["India"]
-        st.markdown(country_box(flags["India"], india["value"], india["date"], india["change"], india["color"]), unsafe_allow_html=True)
-
-    with col2:
-        uk = values["UK"]
-        st.markdown(country_box(flags["UK"], uk["value"], uk["date"], uk["change"], uk["color"]), unsafe_allow_html=True)
-
-    st.markdown("---")
+for pair in param_pairs:
+    col_block = st.columns(2)
+    
+    for i, param in enumerate(pair):
+        with col_block[i]:
+            st.markdown(f"### {param}")
+            subcols = st.columns(2)
+            with subcols[0]:
+                st.markdown(card("India", data[param]["India"]), unsafe_allow_html=True)
+            with subcols[1]:
+                st.markdown(card("UK", data[param]["UK"]), unsafe_allow_html=True)
