@@ -3,16 +3,17 @@ import pandas as pd
 
 st.set_page_config(layout="wide")
 
-# Load data from Excel
+# Load data
 df = pd.read_excel("data/Macro_MoM_Comparison.xlsx")
-
-# Strip whitespace from column names
 df.columns = df.columns.str.strip()
 
-# Parameters that need % formatting
+# Define reverse logic parameters
+reverse_logic_params = ["Unemployment Rate", "Inflation Rate", "Merchandise Imports"]
+
+# % fields to format
 percent_params = ["Repo Rate", "Inflation Rate", "Unemployment Rate"]
 
-# Optional: Mapping from Excel parameter names to display names
+# Parameter display mapping
 display_names = {
     "Repo Rate": "Repo / Interest Rates",
     "Inflation Rate": "Inflation",
@@ -23,45 +24,51 @@ display_names = {
     "Merchandise Exports": "Merchandise Exports"
 }
 
-# Flag image URLs
+# Flags
 flags = {
     "India": "https://flagcdn.com/in.svg",
     "UK": "https://flagcdn.com/gb.svg"
 }
 
-# Build structured dictionary from dataframe
+# Function to assign color based on logic
+def get_color(change, is_reverse=False):
+    change_str = str(change)
+    if "+" in change_str:
+        return "red" if is_reverse else "green"
+    elif "-" in change_str:
+        return "green" if is_reverse else "red"
+    else:
+        return "grey"
+
+# Build data
 data = {}
 for _, row in df.iterrows():
     param = row["Parameter"].strip()
     display_label = display_names.get(param, param)
+    is_reverse = param in reverse_logic_params
 
-    # --- Format values correctly ---
-    # For % fields, format float to string percentage
+    # Format values
+    value_india = str(row["India"]).strip()
+    value_uk = str(row["UK"]).strip()
+
     if param in percent_params:
         if isinstance(row["India"], (int, float)):
             value_india = f"{row['India'] * 100:.2f}%"
-        else:
-            value_india = str(row["India"]).strip()
-            if not value_india.endswith("%"):
-                value_india += "%"
-
+        elif not value_india.endswith("%"):
+            value_india += "%"
+        
         if isinstance(row["UK"], (int, float)):
             value_uk = f"{row['UK'] * 100:.2f}%"
-        else:
-            value_uk = str(row["UK"]).strip()
-            if not value_uk.endswith("%"):
-                value_uk += "%"
-    else:
-        value_india = str(row["India"]).strip()
-        value_uk = str(row["UK"]).strip()
-
-    # Format change color
-    india_color = "green" if "+" in str(row["India MoM Change"]) else "red" if "-" in str(row["India MoM Change"]) else "grey"
-    uk_color = "green" if "+" in str(row["UK MoM Change"]) else "red" if "-" in str(row["UK MoM Change"]) else "grey"
+        elif not value_uk.endswith("%"):
+            value_uk += "%"
 
     # Format dates
     india_date = row["India Date"].strftime("%b-%y") if pd.notnull(row["India Date"]) else ""
     uk_date = row["UK Date"].strftime("%b-%y") if pd.notnull(row["UK Date"]) else ""
+
+    # Format color using logic
+    india_color = get_color(row["India MoM Change"], is_reverse)
+    uk_color = get_color(row["UK MoM Change"], is_reverse)
 
     data[display_label] = {
         "India": {
@@ -89,11 +96,10 @@ def card(country, details):
     </div>
     """
 
-# Group 2 parameters per row
+# Render layout
 param_names = list(data.keys())
 param_pairs = [param_names[i:i+2] for i in range(0, len(param_names), 2)]
 
-# Render layout
 for pair in param_pairs:
     col_block = st.columns(2)
     for i, param in enumerate(pair):
