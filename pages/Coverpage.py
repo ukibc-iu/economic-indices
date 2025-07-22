@@ -111,3 +111,14 @@ for pair in param_pairs:
                 st.markdown(card("India", data[param]["India"]), unsafe_allow_html=True)
             with subcols[1]:
                 st.markdown(card("UK", data[param]["UK"]), unsafe_allow_html=True)
+
+st.markdown("""
+<div style='font-size: 12px; font-style: italic; color: grey; margin-top: 30px;'>
+    <strong>Note:</strong> 
+    1. bps refers to basis points; 
+    2. PMI refers to Purchasing Managers' Index; 
+    3. Unit for merchandise imports and exports is US$; 
+    4. 1$ = 86.60 INR; 
+    5. 1£ = 1.35$.
+</div>
+""", unsafe_allow_html=True)
