@@ -325,6 +325,5 @@ try:
         col1.markdown(row["Parameter"])
         col2.markdown(styled_change(str(row["UK MoM Change"])), unsafe_allow_html=True)
         col3.markdown(styled_change(str(row["India MoM Change"])), unsafe_allow_html=True)
-
 except Exception as e:
-    st.warning("Could not load macroeconomic comparison data.")
+    st.error(f"Could not load macroeconomic comparison data: {e}")
