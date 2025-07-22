@@ -303,7 +303,7 @@ st.subheader("UK-India Macroeconomic Comparison")
 try:
     # Load data
     macro_df = pd.read_excel("data/Macro_MoM_Comparison.xlsx", sheet_name="June")
-    display_params = ["Repo Rate", "Inflation", "Unemployment"]
+    display_params = ["Repo Rate", "Inflation Rate", "Unemployment Rate"]
     macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
 
     def styled_change(change_str, param):
@@ -314,7 +314,7 @@ try:
             return "<span style='color:grey;'>No M-o-M Change</span>"
         up = "+" in text
         down = "-" in text
-        if param.lower() in ["inflation", "unemployment"]:
+        if param.lower() in ["inflation rate", "unemployment rate"]:
             color = "red" if up else "green"
         else:
             color = "green" if up else "red"
