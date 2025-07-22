@@ -306,7 +306,6 @@ try:
     display_params = ["Repo Rate", "Inflation", "Unemployment"]
     macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
 
-    # Styling logic
     def styled_change(change_str, param):
         if not isinstance(change_str, str):
             return "–"
@@ -322,11 +321,9 @@ try:
         arrow = "▲" if up else "▼"
         return f"<span style='color:{color};'>{arrow} {change_str.strip()}</span>"
 
-    # Flags
     uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
-    # HTML table
     html = f"""
     <style>
         .macro-table {{
@@ -372,15 +369,15 @@ try:
     html += "</table>"
     components.html(html, height=200)
 
-    # Inline line + button with Streamlit navigation
-    st.markdown("")  # spacing
+    # Inline layout using HTML and Streamlit button side by side
+    st.markdown("""
+    <div style='display: flex; align-items: center; gap: 10px;'>
+        <span style='font-weight: 600;'>For an in-depth look at other economic parameters ⬇️</span>
+    </div>
+    """, unsafe_allow_html=True)
 
-    col1, col2 = st.columns([7, 3])
-    with col1:
-        st.markdown("**For an in-depth look at other economic parameters ⬇️**", unsafe_allow_html=True)
-    with col2:
-        if st.button("Open Detailed Dashboard"):
-            st.switch_page("pages/Coverpage.py")
+    if st.button("Open Detailed Dashboard"):
+        st.switch_page("pages/Coverpage.py")
 
 except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
