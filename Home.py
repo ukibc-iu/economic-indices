@@ -306,24 +306,32 @@ try:
     display_params = ["Repo Rate", "Inflation", "Unemployment"]
     macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
 
-    # Change styling
-    def styled_change(change_str):
+    # Enhanced styling logic with reversed color for Inflation and Unemployment
+    def styled_change(change_str, param):
         if not isinstance(change_str, str):
             return "–"
         text = change_str.strip().lower()
+
         if text in ["no change", "0 bps", "0.0%", "0%", "+0 bps", "+0%", "0", "–", "-", "", "na", "n/a"]:
             return "<span style='color:grey;'>No M-o-M Change</span>"
+
         up = "+" in text
         down = "-" in text
-        color = "green" if up else "red"
+
+        # Reverse color logic for Inflation and Unemployment
+        if param.lower() in ["inflation", "unemployment"]:
+            color = "red" if up else "green"
+        else:
+            color = "green" if up else "red"
+
         arrow = "▲" if up else "▼"
         return f"<span style='color:{color};'>{arrow} {change_str.strip()}</span>"
 
-    # Flag URLs
+    # Flag icons
     uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
-    # HTML
+    # HTML table with styling
     html = f"""
     <style>
         .macro-table {{
@@ -342,7 +350,7 @@ try:
         }}
         .macro-table td:first-child {{
             text-align: left;
-            color: grey;
+            color: #DDDDDD;  /* Light gray for visibility on dark themes */
             font-weight: 500;
         }}
     </style>
@@ -356,8 +364,8 @@ try:
 
     for _, row in macro_df.iterrows():
         param = row["Parameter"]
-        uk_change = styled_change(str(row["UK MoM Change"]))
-        in_change = styled_change(str(row["India MoM Change"]))
+        uk_change = styled_change(str(row["UK MoM Change"]), param)
+        in_change = styled_change(str(row["India MoM Change"]), param)
         html += f"""
         <tr>
             <td>{param}</td>
@@ -365,9 +373,10 @@ try:
             <td>{in_change}</td>
         </tr>
         """
+
     html += "</table>"
 
-    # ✅ Use components.html for reliable rendering
+    # Render in Streamlit
     components.html(html, height=300)
 
 except Exception as e:
