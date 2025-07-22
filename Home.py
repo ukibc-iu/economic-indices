@@ -314,21 +314,20 @@ try:
 
         text = change_str.strip().lower()
 
-        # Handle 'no change' or 0 values
         if text in ["no change", "0 bps", "0.0%", "0%", "+0 bps", "+0%", "0", "–", "-", "", "na", "n/a"]:
             return "<span style='color:grey;'>No M-o-M Change</span>"
 
-        # Detect direction
         up = "+" in text
         down = "-" in text
         color = "green" if up else "red" if down else "black"
         arrow = "▲" if up else "▼" if down else ""
         return f"<span style='color:{color};'>{arrow} {change_str.strip()}</span>"
 
-    # Prepare HTML table
+    # Flag images
     uk_flag = "<img src='https://flagcdn.com/32x24/gb.png' width='28'>"
     in_flag = "<img src='https://flagcdn.com/32x24/in.png' width='28'>"
 
+    # HTML table
     html = """
     <style>
         .macro-table {{
@@ -370,6 +369,8 @@ try:
         """
 
     html += "</table>"
+
+    # ✅ Render properly with HTML allowed
     st.markdown(html, unsafe_allow_html=True)
 
 except Exception as e:
