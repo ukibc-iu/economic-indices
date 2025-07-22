@@ -1,15 +1,16 @@
 import streamlit as st
 
-# ---- PAGE CONFIG ----
 st.set_page_config(layout="wide")
+
+# ---- HEADER ----
 st.markdown("<h2 style='text-align: center;'>Macroeconomic Briefing: India and United Kingdom</h2>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; color: teal;'>June 2025</h3>", unsafe_allow_html=True)
 st.markdown("<hr>", unsafe_allow_html=True)
 
-# ---- METRIC FUNCTION ----
+# ---- CARD FUNCTION ----
 def render_metric(title, india_value, india_date, india_change, uk_value, uk_date, uk_change):
     html = f"""
-    <div style="display: flex; justify-content: center; gap: 30px; background-color: #111; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #00000033;">
+    <div style="display: flex; justify-content: space-around; align-items: flex-start; background-color: #111; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
         <!-- India Column -->
         <div style="text-align: center; width: 30%;">
             <img src="https://flagcdn.com/in.svg" width="32"><br>
@@ -18,9 +19,9 @@ def render_metric(title, india_value, india_date, india_change, uk_value, uk_dat
             <span style="color:{'green' if '-' in india_change else 'red'}; font-size: 13px;">{india_change}</span>
         </div>
 
-        <!-- Title Center -->
-        <div style="text-align: center; width: 40%;">
-            <div style="font-size: 15px; font-weight: 600; color: white;">{title}</div>
+        <!-- Title Column -->
+        <div style="text-align: center; width: 30%;">
+            <span style="font-size: 15px; font-weight: 600; color: white;">{title}</span>
         </div>
 
         <!-- UK Column -->
@@ -34,7 +35,7 @@ def render_metric(title, india_value, india_date, india_change, uk_value, uk_dat
     """
     return html
 
-# ---- DATA ----
+# ---- METRICS ----
 metrics = [
     {
         "title": "Repo / Interest Rates",
@@ -65,9 +66,6 @@ metrics = [
     }
 ]
 
-# ---- RENDER ROWS ----
-for i in range(0, len(metrics), 3):
-    cols = st.columns(3)
-    for j, metric in enumerate(metrics[i:i+3]):
-        with cols[j]:
-            st.markdown(render_metric(**metric), unsafe_allow_html=True)
+# ---- RENDER ALL ----
+for metric in metrics:
+    st.markdown(render_metric(**metric), unsafe_allow_html=True)
