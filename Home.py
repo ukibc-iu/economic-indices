@@ -299,7 +299,7 @@ st.subheader("Key Macroeconomic Changes")
 
 try:
     # Load specific sheet from Excel
-    macro_df = pd.read_excel("data/Macro_MoM_Comparison.xlsx", sheet_name="June")
+    macro_df = pd.read_excel("data/Macro_MoM_Comparison.xlsx")
     
     # Keep only selected parameters
     display_params = ["Repo Rate", "Inflation", "Unemployment"]
