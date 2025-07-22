@@ -358,12 +358,17 @@ try:
         in_change = styled_change(str(row["India MoM Change"]), param)
         html += f"""
         <tr>
-            <td>{param}</td>
-            <td>{uk_change}</td>
-            <td>{in_change}</td>
-        </tr>
-        """
-
+        <td>{param}</td>
+        <td>
+            <div style='color: white; font-weight: 500;'>{uk_value}</div>
+            {uk_change}
+        </td>
+        <td>
+            <div style='color: white; font-weight: 500;'>{in_value}</div>
+            {in_change}
+        </td>
+    </tr>
+    """
     html += "</table>"
     components.html(html, height=200)
 
