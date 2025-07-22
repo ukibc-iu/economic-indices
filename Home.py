@@ -331,21 +331,21 @@ try:
 
     html = """
     <style>
-        .macro-table {
+        .macro-table {{
             width: 100%;
             border-collapse: collapse;
-        }
-        .macro-table th, .macro-table td {
+        }}
+        .macro-table th, .macro-table td {{
             text-align: center;
             padding: 8px 12px;
             font-size: 15px;
-        }
-        .macro-table th {
+        }}
+        .macro-table th {{
             font-weight: bold;
-        }
-        .macro-table td:first-child {
+        }}
+        .macro-table td:first-child {{
             text-align: left;
-        }
+        }}
     </style>
 
     <table class='macro-table'>
