@@ -306,24 +306,19 @@ try:
     display_params = ["Repo Rate", "Inflation", "Unemployment"]
     macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
 
-    # Styling logic with reversed color for Inflation and Unemployment
+    # Styling logic
     def styled_change(change_str, param):
         if not isinstance(change_str, str):
             return "–"
         text = change_str.strip().lower()
-
         if text in ["no change", "0 bps", "0.0%", "0%", "+0 bps", "+0%", "0", "–", "-", "", "na", "n/a"]:
             return "<span style='color:grey;'>No M-o-M Change</span>"
-
         up = "+" in text
         down = "-" in text
-
-        # Reverse logic for Inflation and Unemployment
         if param.lower() in ["inflation", "unemployment"]:
             color = "red" if up else "green"
         else:
             color = "green" if up else "red"
-
         arrow = "▲" if up else "▼"
         return f"<span style='color:{color};'>{arrow} {change_str.strip()}</span>"
 
@@ -331,7 +326,7 @@ try:
     uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
-    # Table HTML
+    # HTML table
     html = f"""
     <style>
         .macro-table {{
@@ -375,20 +370,17 @@ try:
         """
 
     html += "</table>"
-
-    # Render HTML
     components.html(html, height=200)
 
-    # Add vertical spacing after table
-    st.markdown("")
+    # Inline line + button with Streamlit navigation
+    st.markdown("")  # spacing
 
-    # Inline line + button layout
-    col1, col2 = st.columns([6, 2])
+    col1, col2 = st.columns([7, 3])
     with col1:
-        st.markdown("**For an in-depth look at other economic parameters** :arrow_down_small:")
+        st.markdown("**For an in-depth look at other economic parameters ⬇️**", unsafe_allow_html=True)
     with col2:
-        with st.expander("Open Detailed Dashboard"):
-            st.write("Under progress...")
+        if st.button("Open Detailed Dashboard"):
+            st.switch_page("pages/Coverpage.py")
 
 except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
