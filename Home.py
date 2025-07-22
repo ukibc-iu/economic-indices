@@ -306,7 +306,7 @@ try:
     display_params = ["Repo Rate", "Inflation", "Unemployment"]
     macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
 
-    # Enhanced styling logic with reversed color for Inflation and Unemployment
+    # Styling logic with reversed color for Inflation and Unemployment
     def styled_change(change_str, param):
         if not isinstance(change_str, str):
             return "–"
@@ -318,7 +318,7 @@ try:
         up = "+" in text
         down = "-" in text
 
-        # Reverse color logic for Inflation and Unemployment
+        # Reverse logic for Inflation and Unemployment
         if param.lower() in ["inflation", "unemployment"]:
             color = "red" if up else "green"
         else:
@@ -327,11 +327,11 @@ try:
         arrow = "▲" if up else "▼"
         return f"<span style='color:{color};'>{arrow} {change_str.strip()}</span>"
 
-    # Flag icons
+    # Flags
     uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
-    # HTML table with styling
+    # Table HTML
     html = f"""
     <style>
         .macro-table {{
@@ -376,17 +376,19 @@ try:
 
     html += "</table>"
 
-    # Render in Streamlit
-    components.html(html, height=180)
+    # Render HTML
+    components.html(html, height=200)
 
-col1, col2 = st.columns([5, 2])  # Adjust width ratios if needed
+    # Add vertical spacing after table
+    st.markdown("")
 
-with col1:
-    st.markdown("**For an in-depth look at other economic parameters** :arrow_down_small:")
-
-with col2:
-    with st.expander("Open Detailed Dashboard"):
-        st.write("Under progress...")
+    # Inline line + button layout
+    col1, col2 = st.columns([6, 2])
+    with col1:
+        st.markdown("**For an in-depth look at other economic parameters** :arrow_down_small:")
+    with col2:
+        with st.expander("Open Detailed Dashboard"):
+            st.write("Under progress...")
 
 except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
