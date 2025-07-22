@@ -2,34 +2,49 @@ import streamlit as st
 
 st.set_page_config(layout="wide")
 
-# Title
-st.markdown("<h2 style='text-align: center;'>Macroeconomic Briefing: India and United Kingdom</h2>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: teal;'>June 2025</h3>", unsafe_allow_html=True)
-st.markdown("---")
+# Dummy data
+data = {
+    "Repo / Interest Rates": {
+        "India": {"value": "5.50%", "date": "June-2025", "change": "▼ 50 bps", "color": "red"},
+        "UK": {"value": "4.25%", "date": "June-2025", "change": "No change", "color": "grey"},
+    },
+    "Inflation": {
+        "India": {"value": "6.1%", "date": "June-2025", "change": "▲ 20 bps", "color": "red"},
+        "UK": {"value": "3.8%", "date": "June-2025", "change": "▼ 10 bps", "color": "green"},
+    },
+    "Unemployment": {
+        "India": {"value": "7.2%", "date": "June-2025", "change": "▼ 15 bps", "color": "green"},
+        "UK": {"value": "4.3%", "date": "June-2025", "change": "▲ 5 bps", "color": "red"},
+    }
+}
 
-# Create 3 side-by-side columns
-col1, col2, col3 = st.columns([1, 1, 1])
+def country_box(flag_url, value, date, change, color):
+    return f"""
+    <div style='text-align: center; background-color: #111; padding: 15px; border-radius: 10px;'>
+        <img src='{flag_url}' width='32'><br>
+        <span style='font-size: 20px; font-weight: bold;'>{value}</span><br>
+        <span style='font-size: 13px; color: grey;'>{date}</span><br>
+        <span style='color: {color}; font-size: 13px;'>{change}</span>
+    </div>
+    """
 
-# India Column
-with col1:
-    st.markdown("<div style='text-align: center; background-color: #111; padding: 15px; border-radius: 10px;'>"
-                "<img src='https://flagcdn.com/in.svg' width='32'><br>"
-                "<span style='font-size: 20px; font-weight: bold;'>5.50%</span><br>"
-                "<span style='font-size: 13px; color: grey;'>June-2025</span><br>"
-                "<span style='color: red; font-size: 13px;'>▼ 50 bps</span>"
-                "</div>", unsafe_allow_html=True)
+flags = {
+    "India": "https://flagcdn.com/in.svg",
+    "UK": "https://flagcdn.com/gb.svg"
+}
 
-# Center Label Column
-with col2:
-    st.markdown("<div style='text-align: center; padding-top: 25px;'>"
-                "<span style='font-size: 16px; font-weight: 600;'>Repo / Interest Rates</span>"
-                "</div>", unsafe_allow_html=True)
+# Loop through each parameter section
+for parameter, values in data.items():
+    st.markdown(f"### {parameter}")
 
-# UK Column
-with col3:
-    st.markdown("<div style='text-align: center; background-color: #111; padding: 15px; border-radius: 10px;'>"
-                "<img src='https://flagcdn.com/gb.svg' width='32'><br>"
-                "<span style='font-size: 20px; font-weight: bold;'>4.25%</span><br>"
-                "<span style='font-size: 13px; color: grey;'>June-2025</span><br>"
-                "<span style='color: grey; font-size: 13px;'>No change</span>"
-                "</div>", unsafe_allow_html=True)
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+        india = values["India"]
+        st.markdown(country_box(flags["India"], india["value"], india["date"], india["change"], india["color"]), unsafe_allow_html=True)
+
+    with col2:
+        uk = values["UK"]
+        st.markdown(country_box(flags["UK"], uk["value"], uk["date"], uk["change"], uk["color"]), unsafe_allow_html=True)
+
+    st.markdown("---")
