@@ -46,7 +46,7 @@ for pair in param_pairs:
     
     for i, param in enumerate(pair):
         with col_block[i]:
-            st.markdown(f"### {param}")
+            st.markdown(f"<h3 style='text-align: center; color: white;'>{param}</h3>", unsafe_allow_html=True)
             subcols = st.columns(2)
             with subcols[0]:
                 st.markdown(card("India", data[param]["India"]), unsafe_allow_html=True)
