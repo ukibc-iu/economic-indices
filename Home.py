@@ -388,7 +388,7 @@ st.markdown("---")
 import streamlit as st
 import pandas as pd
 
-# Load Excel data
+# Load Excel data for Fertiliser
 df = pd.read_excel("data/Agri_Model.xlsx")
 df = df.dropna(subset=["Predicted"])
 latest_row = df.tail(1)
@@ -400,25 +400,40 @@ predicted = latest_row["Predicted"].values[0]
 actual_str = f"{actual:.2f}" if actual != "NA" else "NA"
 predicted_str = f"{predicted:.2f}"
 
-# Render "button-like" card with embedded info
 st.markdown("### Sectoral Forecasts")
 
-st.markdown(f"""
-<a href='/fertiliser_demand' target='_self' style='text-decoration: none;'>
-    <div style='
-        border-radius: 12px;
-        padding: 16px;
-        background-color: #f0f8f5;
-        border: 1px solid #ccc;
-        box-shadow: 2px 4px 8px rgba(0,0,0,0.05);
-        transition: background-color 0.2s ease-in-out;
-    ' onmouseover="this.style.backgroundColor='#e4f3ec'" onmouseout="this.style.backgroundColor='#f0f8f5'">
-        <div style='font-size: 15px; font-weight: 600; color: #111;'>Fertiliser Demand Forecast →</div>
-        <div style='font-size: 13px; color: #444; padding-top: 4px;'>Quarter: {quarter}</div>
-        <div style='font-size: 13px;'>
-            <span style='color: #007381;'>Actual: {actual_str} MMT</span> &nbsp;|&nbsp;
-            <span style='color: #E85412;'>Predicted: {predicted_str} MMT</span>
+# Shared card style
+def render_card(title, link, quarter="—", actual="—", predicted="—"):
+    st.markdown(f"""
+    <a href='/{link}' target='_self' style='text-decoration: none;'>
+        <div style='
+            width: 100%;
+            border-radius: 12px;
+            padding: 16px;
+            background-color: #111;
+            border: 1px solid #333;
+            box-shadow: 1px 2px 6px rgba(0,0,0,0.15);
+            transition: 0.2s ease-in-out;
+        ' onmouseover="this.style.backgroundColor='#1e1e1e'" onmouseout="this.style.backgroundColor='#111'">
+            <div style='font-size: 15px; font-weight: 600; color: #fff;'>{title} →</div>
+            <div style='font-size: 13px; color: #ccc; padding-top: 4px;'>Quarter: {quarter}</div>
+            <div style='font-size: 13px; color: #ccc;'>
+                <span style='color: #007381;'>Actual: {actual} MMT</span> &nbsp;|&nbsp;
+                <span style='color: #E85412;'>Predicted: {predicted} MMT</span>
+            </div>
         </div>
-    </div>
-</a>
-""", unsafe_allow_html=True)
+    </a>
+    """, unsafe_allow_html=True)
+
+# Layout: 2 per row
+col1, col2 = st.columns(2)
+with col1:
+    render_card("Fertiliser Demand Forecast", "fertiliser_demand", quarter, actual_str, predicted_str)
+with col2:
+    render_card("Vehicle Production Forecast", "vehicle_production")
+
+col3, col4 = st.columns(2)
+with col3:
+    render_card("Houses Construction Forecast", "houses_construction")
+with col4:
+    render_card("Renewable Capacity Addition Forecast", "RE_ADDITION")
