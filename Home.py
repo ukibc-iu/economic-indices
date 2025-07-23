@@ -388,21 +388,34 @@ st.markdown("---")
 import streamlit as st
 import pandas as pd
 
-# Load Excel data for Fertiliser Demand
-df = pd.read_excel("data/Agri_Model.xlsx")
-df = df.dropna(subset=["Predicted"])
-latest_row = df.tail(1)
+# --- Fertiliser Demand Data ---
+fert_df = pd.read_excel("data/Agri_Model.xlsx")
+fert_df = fert_df.dropna(subset=["Predicted"])
+fert_latest = fert_df.tail(1)
 
-quarter = latest_row["Quarter"].values[0]
-actual = latest_row["Actual"].values[0] if pd.notna(latest_row["Actual"].values[0]) else "NA"
-predicted = latest_row["Predicted"].values[0]
+fert_quarter = fert_latest["Quarter"].values[0]
+fert_actual = fert_latest["Actual"].values[0] if pd.notna(fert_latest["Actual"].values[0]) else "NA"
+fert_predicted = fert_latest["Predicted"].values[0]
 
-actual_str = f"{actual:.2f}" if actual != "NA" else "NA"
-predicted_str = f"{predicted:.2f}"
+fert_actual_str = f"{fert_actual:.2f}" if fert_actual != "NA" else "NA"
+fert_predicted_str = f"{fert_predicted:.2f}"
 
+# --- Houses Construction Data ---
+house_df = pd.read_excel("data/Housing_Model.xlsx")
+house_df = house_df.dropna(subset=["Predicted"])
+house_latest = house_df.tail(1)
+
+house_quarter = house_latest["Quarter"].values[0]
+house_actual = house_latest["Actual"].values[0] if pd.notna(house_latest["Actual"].values[0]) else "NA"
+house_predicted = house_latest["Predicted"].values[0]
+
+house_actual_str = f"{house_actual:.2f}" if house_actual != "NA" else "NA"
+house_predicted_str = f"{house_predicted:.2f}"
+
+# --- Header ---
 st.markdown("### Sectoral Forecasts")
 
-# Shared card component
+# --- Card Renderer ---
 def render_card(title, link, quarter="—", actual="—", predicted="—", unit=""):
     st.markdown(f"""
     <a href='/{link}' target='_self' style='text-decoration: none;'>
@@ -427,19 +440,19 @@ def render_card(title, link, quarter="—", actual="—", predicted="—", unit=
     </a>
     """, unsafe_allow_html=True)
 
-# First row
+# --- First row ---
 col1, col2 = st.columns(2)
 with col1:
-    render_card("Fertiliser Demand Forecast", "fertiliser_demand", quarter, actual_str, predicted_str, unit="MMT")
+    render_card("Fertiliser Demand Forecast", "fertiliser_demand", fert_quarter, fert_actual_str, fert_predicted_str, unit="MMT")
 with col2:
     render_card("Vehicle Production Forecast", "vehicle_production", unit="Thousand Units")
 
-# Spacer between rows
+# --- Spacer ---
 st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
 
-# Second row
+# --- Second row ---
 col3, col4 = st.columns(2)
 with col3:
-    render_card("Houses Construction Forecast", "houses_construction", unit="Lakh Houses")
+    render_card("Houses Construction Forecast", "houses_construction", house_quarter, house_actual_str, house_predicted_str, unit="Units")
 with col4:
     render_card("Renewable Capacity Addition Forecast", "RE_addition", unit="GW")
