@@ -385,40 +385,27 @@ except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
 st.markdown("---")
 
-import streamlit as st
-import pandas as pd
-
-# Load Excel data
-df = pd.read_excel("data/Agri_Model.xlsx")
-df = df.dropna(subset=["Predicted"])
-latest_row = df.tail(1)
-
-quarter = latest_row["Quarter"].values[0]
-actual = latest_row["Actual"].values[0] if pd.notna(latest_row["Actual"].values[0]) else "NA"
-predicted = latest_row["Predicted"].values[0]
-
-actual_str = f"{actual:.2f}" if actual != "NA" else "NA"
-predicted_str = f"{predicted:.2f}"
-
-# Render "button-like" card with embedded info
 st.markdown("### Sectoral Forecasts")
 
-st.markdown(f"""
-<a href='/Fertiliser_Demand' target='_self' style='text-decoration: none;'>
-    <div style='
-        border-radius: 12px;
-        padding: 16px;
-        background-color: #f0f8f5;
-        border: 1px solid #ccc;
-        box-shadow: 2px 4px 8px rgba(0,0,0,0.05);
-        transition: background-color 0.2s ease-in-out;
-    ' onmouseover="this.style.backgroundColor='#e4f3ec'" onmouseout="this.style.backgroundColor='#f0f8f5'">
-        <div style='font-size: 15px; font-weight: 600; color: #111;'>Fertiliser Demand Forecast →</div>
-        <div style='font-size: 13px; color: #444; padding-top: 4px;'>Quarter: {quarter}</div>
-        <div style='font-size: 13px;'>
-            <span style='color: #007381;'>Actual: {actual_str} MMT</span> &nbsp;|&nbsp;
-            <span style='color: #E85412;'>Predicted: {predicted_str} MMT</span>
-        </div>
-    </div>
-</a>
-""", unsafe_allow_html=True)
+# First row
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("Vehicle Production Forecast →", key="btn-vehicle"):
+        st.switch_page("pages/vehicle_production.py")
+
+with col2:
+    if st.button("Houses Construction Forecast →", key="btn-housing"):
+        st.switch_page("pages/houses_constructed.py")
+
+# Spacer between rows
+st.markdown("")
+
+# Second row
+col3, col4 = st.columns(2)
+with col3:
+    if st.button("Fertiliser Demand Forecast →", key="btn-fertiliser"):
+        st.switch_page("pages/fertiliser_demand.py")
+
+with col4:
+    if st.button("Renewable Capacity Addition Forecast →", key="btn-renewable"):
+        st.switch_page("pages/RE_addition.py")
