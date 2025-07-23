@@ -391,11 +391,11 @@ st.markdown("### Sectoral Forecasts")
 # First row
 col1, col2 = st.columns(2)
 with col1:
-    if st.button("Vehicle Production", key="btn-vehicle"):
+    if st.button("Vehicle Production Forecast", key="btn-vehicle"):
         st.switch_page("pages/vehicle_production.py")
 
 with col2:
-    if st.button("Houses Constructed", key="btn-housing"):
+    if st.button("Houses Construction Forecast", key="btn-housing"):
         st.switch_page("pages/houses_constructed.py")
 
 # Spacer between rows
@@ -404,9 +404,9 @@ st.markdown("")
 # Second row
 col3, col4 = st.columns(2)
 with col3:
-    if st.button("Fertiliser Sales", key="btn-fertiliser"):
+    if st.button("Fertiliser Sales Forecast", key="btn-fertiliser"):
         st.switch_page("pages/fertiliser_sales.py")
 
 with col4:
-    if st.button("Renewable Capacity Addition", key="btn-renewable"):
+    if st.button("Renewable Capacity Addition Forecast", key="btn-renewable"):
         st.switch_page("pages/RE_addition.py")
