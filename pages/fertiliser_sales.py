@@ -9,43 +9,45 @@ st.markdown("---")
 df = pd.read_excel("data/Agri_Model.xlsx")
 df.columns = [c.strip() for c in df.columns]
 
-# Convert numeric safely
 df['Actual'] = pd.to_numeric(df['Actual'], errors='coerce')
 df['Predicted'] = pd.to_numeric(df['Predicted'], errors='coerce')
 
-# Show each quarter as a separate chart
+# Always use both categories to reserve height
+categories = ["Actual", "Predicted"]
+
 for _, row in df.iterrows():
     quarter = row['Quarter']
     actual = row['Actual']
     predicted = row['Predicted']
-    
-    fig = go.Figure()
 
-    # Actual bar (teal)
-    if pd.notna(actual):
-        fig.add_trace(go.Bar(
-            y=["Actual"],
-            x=[actual],
-            orientation='h',
-            name='Actual',
-            marker_color='#007381',
-            text=[f"{actual:.2f}"],
-            textposition='auto'
-        ))
+    values = []
+    texts = []
+    colors = []
 
-    # Predicted bar (orange)
-    if pd.notna(predicted):
-        fig.add_trace(go.Bar(
-            y=["Predicted"],
-            x=[predicted],
-            orientation='h',
-            name='Predicted',
-            marker_color='#E85412',
-            text=[f"{predicted:.2f}"],
-            textposition='auto'
-        ))
+    # Ensure both positions are filled (None if missing)
+    for cat in categories:
+        if cat == "Actual":
+            val = actual if pd.notna(actual) else 0
+            text = f"{actual:.2f}" if pd.notna(actual) else ""
+            color = '#007381'
+        else:
+            val = predicted if pd.notna(predicted) else 0
+            text = f"{predicted:.2f}" if pd.notna(predicted) else ""
+            color = '#E85412'
 
-    # Layout tweaks
+        values.append(val)
+        texts.append(text)
+        colors.append(color)
+
+    fig = go.Figure(go.Bar(
+        y=categories,
+        x=values,
+        orientation='h',
+        marker_color=colors,
+        text=texts,
+        textposition='auto'
+    ))
+
     fig.update_layout(
         title=f"{quarter}",
         xaxis_title='',
