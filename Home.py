@@ -383,3 +383,28 @@ try:
 )
 except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
+
+st.markdown("### Sectoral Forecasts")
+
+# First row
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("Vehicle Production", key="btn-vehicle"):
+        st.switch_page("pages/vehicle_production.py")
+
+with col2:
+    if st.button("Houses Constructed", key="btn-housing"):
+        st.switch_page("pages/houses_constructed.py")
+
+# Spacer between rows
+st.markdown("")
+
+# Second row
+col3, col4 = st.columns(2)
+with col3:
+    if st.button("Fertiliser Sales", key="btn-fertiliser"):
+        st.switch_page("pages/fertiliser_sales.py")
+
+with col4:
+    if st.button("Renewable Capacity Addition", key="btn-renewable"):
+        st.switch_page("pages/RE_addition.py")
