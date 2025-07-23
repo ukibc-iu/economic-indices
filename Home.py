@@ -404,7 +404,7 @@ predicted_str = f"{predicted:.2f}"
 st.markdown("### Sectoral Forecasts")
 
 st.markdown(f"""
-<a href='/Fertiliser_Demand' target='_self' style='text-decoration: none;'>
+<a href='/fertiliser_demand' target='_self' style='text-decoration: none;'>
     <div style='
         border-radius: 12px;
         padding: 16px;
