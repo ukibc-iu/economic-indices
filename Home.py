@@ -453,6 +453,6 @@ st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
 # --- Second row ---
 col3, col4 = st.columns(2)
 with col3:
-    render_card("Houses Construction Forecast", "houses_construction", house_quarter, house_actual_str, house_predicted_str, unit="Units")
+    render_card("Houses Construction Forecast", "houses_constructed", house_quarter, house_actual_str, house_predicted_str, unit="Units")
 with col4:
     render_card("Renewable Capacity Addition Forecast", "RE_addition", unit="GW")
