@@ -400,6 +400,21 @@ predicted = latest_row["Predicted"].values[0]
 actual_str = f"{actual:.2f}" if actual != "NA" else "NA"
 predicted_str = f"{predicted:.2f}"
 
+import streamlit as st
+import pandas as pd
+
+# Load Excel data for Fertiliser Demand
+df = pd.read_excel("data/Agri_Model.xlsx")
+df = df.dropna(subset=["Predicted"])
+latest_row = df.tail(1)
+
+quarter = latest_row["Quarter"].values[0]
+actual = latest_row["Actual"].values[0] if pd.notna(latest_row["Actual"].values[0]) else "NA"
+predicted = latest_row["Predicted"].values[0]
+
+actual_str = f"{actual:.2f}" if actual != "NA" else "NA"
+predicted_str = f"{predicted:.2f}"
+
 st.markdown("### Sectoral Forecasts")
 
 # Shared card component with dynamic unit
@@ -416,7 +431,9 @@ def render_card(title, link, quarter="—", actual="—", predicted="—", unit=
             box-shadow: 1px 2px 6px rgba(0,0,0,0.15);
             transition: 0.2s ease-in-out;
         ' onmouseover="this.style.backgroundColor='#1e1e1e'" onmouseout="this.style.backgroundColor='#111'">
-            <div style='font-size: 15px; font-weight: 600; color: #fff;'>{title} →</div>
+            <div style='font-size: 15px; font-weight: 600; color: #fff;'>
+                {title} ({unit}) →
+            </div>
             <div style='font-size: 13px; color: #ccc; padding-top: 4px;'>Quarter: {quarter}</div>
             <div style='font-size: 13px; color: #ccc;'>
                 <span style='color: #007381;'>Actual: {actual}{unit_display}</span> &nbsp;|&nbsp;
