@@ -388,9 +388,9 @@ st.markdown("---")
 import streamlit as st
 import pandas as pd
 
-# Read latest quarter data
+# Read data
 df = pd.read_excel("data/Agri_Model.xlsx")
-df = df.dropna(subset=["Predicted"])  # Ensure at least predicted value exists
+df = df.dropna(subset=["Predicted"])
 latest_row = df.tail(1)
 
 quarter = latest_row["Quarter"].values[0]
@@ -402,32 +402,31 @@ predicted_str = f"{predicted:.2f}"
 
 st.markdown("### Sectoral Forecasts")
 
-# Render button-like styled HTML
-col1, _ = st.columns([1, 1])
-with col1:
-    if st.button(
+# Create a unique form to capture the click
+with st.form(key="fertiliser_form", clear_on_submit=False):
+    clicked = st.form_submit_button(
         label="",
-        key="btn-fert-custom",
-        help=None,
-        type="secondary",
-    ):
-        st.switch_page("pages/fertiliser_demand.py")
+        use_container_width=True
+    )
 
-    # HTML block inside markdown — visually replaces label
     st.markdown(f"""
     <div style='
-        position: relative;
-        top: -60px;
+        margin-top: -60px;
+        cursor: pointer;
         border-radius: 10px;
         padding: 16px;
         background-color: #f7f7f7;
         border: 1px solid #ccc;
         box-shadow: 1px 2px 6px rgba(0,0,0,0.06);
-        transition: 0.2s ease-in-out;
-    '>
+        transition: background-color 0.2s ease-in-out;
+    ' onmouseover="this.style.backgroundColor='#e9f4f2'" onmouseout="this.style.backgroundColor='#f7f7f7'">
         <strong style='font-size: 16px; color: #111;'>Fertiliser Demand Forecast →</strong><br>
         <span style='font-size: 13px; color: #555;'>Quarter: {quarter}</span><br>
         <span style='font-size: 13px; color: #007381;'>Actual: {actual_str} MMT</span> &nbsp;|&nbsp;
         <span style='font-size: 13px; color: #E85412;'>Predicted: {predicted_str} MMT</span>
     </div>
     """, unsafe_allow_html=True)
+
+# Redirect on click
+if clicked:
+    st.switch_page("pages/fertiliser_demand.py")
