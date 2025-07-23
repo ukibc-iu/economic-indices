@@ -442,4 +442,4 @@ col3, col4 = st.columns(2)
 with col3:
     render_card("Houses Construction Forecast", "houses_construction", unit="Lakh Houses")
 with col4:
-    render_card("Renewable Capacity Addition Forecast", "RE_ADDITION", unit="GW")
+    render_card("Renewable Capacity Addition Forecast", "RE_addition", unit="GW")
