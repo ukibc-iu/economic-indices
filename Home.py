@@ -386,27 +386,41 @@ except Exception as e:
 
 st.markdown("---")
 
+import pandas as pd
+import streamlit as st
+
+# Load data
+df = pd.read_excel("data/Agri_Model.xlsx")
+df.columns = [c.strip() for c in df.columns]
+
+# Use last row (latest quarter)
+latest_row = df.iloc[-1]
+quarter = latest_row['Quarter']
+actual = latest_row['Actual']
+predicted = latest_row['Predicted']
+
+# Format safely
+actual_str = f"{actual:.2f}" if pd.notna(actual) else "NA"
+predicted_str = f"{predicted:.2f}" if pd.notna(predicted) else "NA"
+
+# Render button as HTML block
 st.markdown("### Sectoral Forecasts")
+st.markdown("---")
 
-# First row
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("Vehicle Production Forecast →", key="btn-vehicle"):
-        st.switch_page("pages/vehicle_production.py")
-
-with col2:
-    if st.button("Houses Construction Forecast →", key="btn-housing"):
-        st.switch_page("pages/houses_constructed.py")
-
-# Spacer between rows
-st.markdown("")
-
-# Second row
-col3, col4 = st.columns(2)
-with col3:
-    if st.button("Fertiliser Demand Forecast →", key="btn-fertiliser"):
-        st.switch_page("pages/fertiliser_demand.py")
-
-with col4:
-    if st.button("Renewable Capacity Addition Forecast →", key="btn-renewable"):
-        st.switch_page("pages/RE_addition.py")
+st.markdown(f"""
+<a href='/Fertiliser_Demand' target='_self' style='text-decoration: none;'>
+    <div style='
+        border-radius: 10px;
+        padding: 16px;
+        background-color: #f7f7f7;
+        border: 1px solid #ccc;
+        box-shadow: 1px 2px 6px rgba(0,0,0,0.06);
+        transition: 0.2s ease-in-out;
+    ' onmouseover="this.style.backgroundColor='#e9f4f2'" onmouseout="this.style.backgroundColor='#f7f7f7'">
+        <strong style='font-size: 16px; color: #111;'>Fertiliser Demand Forecast →</strong><br>
+        <span style='font-size: 13px; color: #555;'>Quarter: {quarter}</span><br>
+        <span style='font-size: 13px; color: #007381;'>Actual: {actual_str} MMT</span> &nbsp;|&nbsp;
+        <span style='font-size: 13px; color: #E85412;'>Predicted: {predicted_str} MMT</span>
+    </div>
+</a>
+""", unsafe_allow_html=True)
