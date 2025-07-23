@@ -388,7 +388,7 @@ st.markdown("---")
 import streamlit as st
 import pandas as pd
 
-# Load the latest quarter data
+# Load Excel data
 df = pd.read_excel("data/Agri_Model.xlsx")
 df = df.dropna(subset=["Predicted"])
 latest_row = df.tail(1)
@@ -400,29 +400,25 @@ predicted = latest_row["Predicted"].values[0]
 actual_str = f"{actual:.2f}" if actual != "NA" else "NA"
 predicted_str = f"{predicted:.2f}"
 
+# Render "button-like" card with embedded info
 st.markdown("### Sectoral Forecasts")
 
-# Simulated card layout
-with st.container():
-    # Create a visual card using columns
-    with st.columns([1])[0]:
-        st.markdown(
-            f"""
-            <div style='
-                border-radius: 12px;
-                padding: 16px;
-                background-color: #f7f7f7;
-                border: 1px solid #ccc;
-                box-shadow: 1px 2px 6px rgba(0,0,0,0.06);
-            '>
-                <strong style='font-size: 16px; color: #111;'>Fertiliser Demand Forecast →</strong><br>
-                <span style='font-size: 13px; color: #555;'>Quarter: {quarter}</span><br>
-                <span style='font-size: 13px; color: #007381;'>Actual: {actual_str} MMT</span> &nbsp;|&nbsp;
-                <span style='font-size: 13px; color: #E85412;'>Predicted: {predicted_str} MMT</span><br><br>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-        # Render button just below inside the same column, feels inside card
-        if st.button("📈 Go to Forecast Page", key="go_fert_card"):
-            st.switch_page("pages/fertiliser_demand.py")
+st.markdown(f"""
+<a href='/Fertiliser_Demand' target='_self' style='text-decoration: none;'>
+    <div style='
+        border-radius: 12px;
+        padding: 16px;
+        background-color: #f0f8f5;
+        border: 1px solid #ccc;
+        box-shadow: 2px 4px 8px rgba(0,0,0,0.05);
+        transition: background-color 0.2s ease-in-out;
+    ' onmouseover="this.style.backgroundColor='#e4f3ec'" onmouseout="this.style.backgroundColor='#f0f8f5'">
+        <div style='font-size: 15px; font-weight: 600; color: #111;'>Fertiliser Demand Forecast →</div>
+        <div style='font-size: 13px; color: #444; padding-top: 4px;'>Quarter: {quarter}</div>
+        <div style='font-size: 13px;'>
+            <span style='color: #007381;'>Actual: {actual_str} MMT</span> &nbsp;|&nbsp;
+            <span style='color: #E85412;'>Predicted: {predicted_str} MMT</span>
+        </div>
+    </div>
+</a>
+""", unsafe_allow_html=True)
