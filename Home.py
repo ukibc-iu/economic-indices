@@ -388,21 +388,6 @@ st.markdown("---")
 import streamlit as st
 import pandas as pd
 
-# Load Excel data for Fertiliser
-df = pd.read_excel("data/Agri_Model.xlsx")
-df = df.dropna(subset=["Predicted"])
-latest_row = df.tail(1)
-
-quarter = latest_row["Quarter"].values[0]
-actual = latest_row["Actual"].values[0] if pd.notna(latest_row["Actual"].values[0]) else "NA"
-predicted = latest_row["Predicted"].values[0]
-
-actual_str = f"{actual:.2f}" if actual != "NA" else "NA"
-predicted_str = f"{predicted:.2f}"
-
-import streamlit as st
-import pandas as pd
-
 # Load Excel data for Fertiliser Demand
 df = pd.read_excel("data/Agri_Model.xlsx")
 df = df.dropna(subset=["Predicted"])
@@ -417,9 +402,8 @@ predicted_str = f"{predicted:.2f}"
 
 st.markdown("### Sectoral Forecasts")
 
-# Shared card component with dynamic unit
+# Shared card component
 def render_card(title, link, quarter="—", actual="—", predicted="—", unit=""):
-    unit_display = f" {unit}" if unit else ""
     st.markdown(f"""
     <a href='/{link}' target='_self' style='text-decoration: none;'>
         <div style='
@@ -436,8 +420,8 @@ def render_card(title, link, quarter="—", actual="—", predicted="—", unit=
             </div>
             <div style='font-size: 13px; color: #ccc; padding-top: 4px;'>Quarter: {quarter}</div>
             <div style='font-size: 13px; color: #ccc;'>
-                <span style='color: #007381;'>Actual: {actual}{unit_display}</span> &nbsp;|&nbsp;
-                <span style='color: #E85412;'>Predicted: {predicted}{unit_display}</span>
+                <span style='color: #007381;'>Actual: {actual}</span> &nbsp;|&nbsp;
+                <span style='color: #E85412;'>Predicted: {predicted}</span>
             </div>
         </div>
     </a>
@@ -450,7 +434,7 @@ with col1:
 with col2:
     render_card("Vehicle Production Forecast", "vehicle_production", unit="Thousand Units")
 
-# Vertical spacing between rows
+# Spacer between rows
 st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
 
 # Second row
