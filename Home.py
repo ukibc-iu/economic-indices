@@ -388,7 +388,7 @@ st.markdown("---")
 import streamlit as st
 import pandas as pd
 
-# Load the data
+# Load the latest quarter data
 df = pd.read_excel("data/Agri_Model.xlsx")
 df = df.dropna(subset=["Predicted"])
 latest_row = df.tail(1)
@@ -402,23 +402,27 @@ predicted_str = f"{predicted:.2f}"
 
 st.markdown("### Sectoral Forecasts")
 
-# Styled info card
-st.markdown(f"""
-<div style='
-    border-radius: 10px;
-    padding: 16px;
-    background-color: #f7f7f7;
-    border: 1px solid #ccc;
-    box-shadow: 1px 2px 6px rgba(0,0,0,0.06);
-    margin-bottom: 8px;
-'>
-    <strong style='font-size: 16px; color: #111;'>Fertiliser Demand Forecast →</strong><br>
-    <span style='font-size: 13px; color: #555;'>Quarter: {quarter}</span><br>
-    <span style='font-size: 13px; color: #007381;'>Actual: {actual_str} MMT</span> &nbsp;|&nbsp;
-    <span style='font-size: 13px; color: #E85412;'>Predicted: {predicted_str} MMT</span>
-</div>
-""", unsafe_allow_html=True)
-
-# Add the actual button below it
-if st.button("🔗 Go to Forecast Page", key="go_fertiliser"):
-    st.switch_page("pages/fertiliser_demand.py")
+# Simulated card layout
+with st.container():
+    # Create a visual card using columns
+    with st.columns([1])[0]:
+        st.markdown(
+            f"""
+            <div style='
+                border-radius: 12px;
+                padding: 16px;
+                background-color: #f7f7f7;
+                border: 1px solid #ccc;
+                box-shadow: 1px 2px 6px rgba(0,0,0,0.06);
+            '>
+                <strong style='font-size: 16px; color: #111;'>Fertiliser Demand Forecast →</strong><br>
+                <span style='font-size: 13px; color: #555;'>Quarter: {quarter}</span><br>
+                <span style='font-size: 13px; color: #007381;'>Actual: {actual_str} MMT</span> &nbsp;|&nbsp;
+                <span style='font-size: 13px; color: #E85412;'>Predicted: {predicted_str} MMT</span><br><br>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        # Render button just below inside the same column, feels inside card
+        if st.button("📈 Go to Forecast Page", key="go_fert_card"):
+            st.switch_page("pages/fertiliser_demand.py")
