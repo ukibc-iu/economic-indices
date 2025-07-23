@@ -21,26 +21,26 @@ for _, row in df.iterrows():
     
     fig = go.Figure()
 
-    # Actual bar (if available)
+    # Actual bar (teal)
     if pd.notna(actual):
         fig.add_trace(go.Bar(
             y=["Actual"],
             x=[actual],
             orientation='h',
             name='Actual',
-            marker_color='seagreen',
+            marker_color='#007381',
             text=[f"{actual:.2f}"],
             textposition='auto'
         ))
 
-    # Predicted bar
+    # Predicted bar (orange)
     if pd.notna(predicted):
         fig.add_trace(go.Bar(
             y=["Predicted"],
             x=[predicted],
             orientation='h',
             name='Predicted',
-            marker_color='darkorange',
+            marker_color='#E85412',
             text=[f"{predicted:.2f}"],
             textposition='auto'
         ))
