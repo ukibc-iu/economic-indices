@@ -402,8 +402,9 @@ predicted_str = f"{predicted:.2f}"
 
 st.markdown("### Sectoral Forecasts")
 
-# Shared card style
-def render_card(title, link, quarter="—", actual="—", predicted="—"):
+# Shared card component with dynamic unit
+def render_card(title, link, quarter="—", actual="—", predicted="—", unit=""):
+    unit_display = f" {unit}" if unit else ""
     st.markdown(f"""
     <a href='/{link}' target='_self' style='text-decoration: none;'>
         <div style='
@@ -418,22 +419,26 @@ def render_card(title, link, quarter="—", actual="—", predicted="—"):
             <div style='font-size: 15px; font-weight: 600; color: #fff;'>{title} →</div>
             <div style='font-size: 13px; color: #ccc; padding-top: 4px;'>Quarter: {quarter}</div>
             <div style='font-size: 13px; color: #ccc;'>
-                <span style='color: #007381;'>Actual: {actual} MMT</span> &nbsp;|&nbsp;
-                <span style='color: #E85412;'>Predicted: {predicted} MMT</span>
+                <span style='color: #007381;'>Actual: {actual}{unit_display}</span> &nbsp;|&nbsp;
+                <span style='color: #E85412;'>Predicted: {predicted}{unit_display}</span>
             </div>
         </div>
     </a>
     """, unsafe_allow_html=True)
 
-# Layout: 2 per row
+# First row
 col1, col2 = st.columns(2)
 with col1:
-    render_card("Fertiliser Demand Forecast", "fertiliser_demand", quarter, actual_str, predicted_str)
+    render_card("Fertiliser Demand Forecast", "fertiliser_demand", quarter, actual_str, predicted_str, unit="MMT")
 with col2:
-    render_card("Vehicle Production Forecast", "vehicle_production")
+    render_card("Vehicle Production Forecast", "vehicle_production", unit="Thousand Units")
 
+# Vertical spacing between rows
+st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
+
+# Second row
 col3, col4 = st.columns(2)
 with col3:
-    render_card("Houses Construction Forecast", "houses_construction")
+    render_card("Houses Construction Forecast", "houses_construction", unit="Lakh Houses")
 with col4:
-    render_card("Renewable Capacity Addition Forecast", "RE_ADDITION")
+    render_card("Renewable Capacity Addition Forecast", "RE_ADDITION", unit="GW")
