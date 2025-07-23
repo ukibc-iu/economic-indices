@@ -404,7 +404,7 @@ st.markdown("")
 # Second row
 col3, col4 = st.columns(2)
 with col3:
-    if st.button("Fertiliser Sales Forecast →", key="btn-fertiliser"):
+    if st.button("Fertiliser Demand Forecast →", key="btn-fertiliser"):
         st.switch_page("pages/fertiliser_sales.py")
 
 with col4:
