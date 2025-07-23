@@ -385,40 +385,49 @@ except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
 st.markdown("---")
 
-import pandas as pd
 import streamlit as st
+import pandas as pd
 
-# Load data
+# Read latest quarter data
 df = pd.read_excel("data/Agri_Model.xlsx")
-df.columns = [c.strip() for c in df.columns]
+df = df.dropna(subset=["Predicted"])  # Ensure at least predicted value exists
+latest_row = df.tail(1)
 
-# Use last row (latest quarter)
-latest_row = df.iloc[-1]
-quarter = latest_row['Quarter']
-actual = latest_row['Actual']
-predicted = latest_row['Predicted']
+quarter = latest_row["Quarter"].values[0]
+actual = latest_row["Actual"].values[0] if pd.notna(latest_row["Actual"].values[0]) else "NA"
+predicted = latest_row["Predicted"].values[0]
 
-# Format safely
-actual_str = f"{actual:.2f}" if pd.notna(actual) else "NA"
-predicted_str = f"{predicted:.2f}" if pd.notna(predicted) else "NA"
+actual_str = f"{actual:.2f}" if actual != "NA" else "NA"
+predicted_str = f"{predicted:.2f}"
 
-# Render button as HTML block
 st.markdown("### Sectoral Forecasts")
 
-st.markdown(f"""
-<a href='/Fertiliser_Demand' target='_self' style='text-decoration: none;'>
+# Render button-like styled HTML
+col1, _ = st.columns([1, 1])
+with col1:
+    if st.button(
+        label="",
+        key="btn-fert-custom",
+        help=None,
+        type="secondary",
+    ):
+        st.switch_page("pages/fertiliser_demand.py")
+
+    # HTML block inside markdown — visually replaces label
+    st.markdown(f"""
     <div style='
+        position: relative;
+        top: -60px;
         border-radius: 10px;
         padding: 16px;
         background-color: #f7f7f7;
         border: 1px solid #ccc;
         box-shadow: 1px 2px 6px rgba(0,0,0,0.06);
         transition: 0.2s ease-in-out;
-    ' onmouseover="this.style.backgroundColor='#e9f4f2'" onmouseout="this.style.backgroundColor='#f7f7f7'">
+    '>
         <strong style='font-size: 16px; color: #111;'>Fertiliser Demand Forecast →</strong><br>
         <span style='font-size: 13px; color: #555;'>Quarter: {quarter}</span><br>
         <span style='font-size: 13px; color: #007381;'>Actual: {actual_str} MMT</span> &nbsp;|&nbsp;
         <span style='font-size: 13px; color: #E85412;'>Predicted: {predicted_str} MMT</span>
     </div>
-</a>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
