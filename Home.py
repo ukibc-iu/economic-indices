@@ -388,7 +388,7 @@ st.markdown("---")
 import streamlit as st
 import pandas as pd
 
-# Read data
+# Read latest data
 df = pd.read_excel("data/Agri_Model.xlsx")
 df = df.dropna(subset=["Predicted"])
 latest_row = df.tail(1)
@@ -402,31 +402,23 @@ predicted_str = f"{predicted:.2f}"
 
 st.markdown("### Sectoral Forecasts")
 
-# Create a unique form to capture the click
-with st.form(key="fertiliser_form", clear_on_submit=False):
-    clicked = st.form_submit_button(
-        label="",
-        use_container_width=True
-    )
+# Define the label with HTML styling
+button_html = f"""
+<div style='
+    text-align: left;
+    border-radius: 10px;
+    padding: 16px;
+    background-color: #f7f7f7;
+    border: 1px solid #ccc;
+    box-shadow: 1px 2px 6px rgba(0,0,0,0.06);
+'>
+    <strong style='font-size: 16px; color: #111;'>Fertiliser Demand Forecast →</strong><br>
+    <span style='font-size: 13px; color: #555;'>Quarter: {quarter}</span><br>
+    <span style='font-size: 13px; color: #007381;'>Actual: {actual_str} MMT</span> &nbsp;|&nbsp;
+    <span style='font-size: 13px; color: #E85412;'>Predicted: {predicted_str} MMT</span>
+</div>
+"""
 
-    st.markdown(f"""
-    <div style='
-        margin-top: -60px;
-        cursor: pointer;
-        border-radius: 10px;
-        padding: 16px;
-        background-color: #f7f7f7;
-        border: 1px solid #ccc;
-        box-shadow: 1px 2px 6px rgba(0,0,0,0.06);
-        transition: background-color 0.2s ease-in-out;
-    ' onmouseover="this.style.backgroundColor='#e9f4f2'" onmouseout="this.style.backgroundColor='#f7f7f7'">
-        <strong style='font-size: 16px; color: #111;'>Fertiliser Demand Forecast →</strong><br>
-        <span style='font-size: 13px; color: #555;'>Quarter: {quarter}</span><br>
-        <span style='font-size: 13px; color: #007381;'>Actual: {actual_str} MMT</span> &nbsp;|&nbsp;
-        <span style='font-size: 13px; color: #E85412;'>Predicted: {predicted_str} MMT</span>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Redirect on click
-if clicked:
+# Render the styled HTML inside a button
+if st.button(button_html, unsafe_allow_html=True, key="fertiliser_button"):
     st.switch_page("pages/fertiliser_demand.py")
