@@ -384,6 +384,8 @@ try:
 except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
 
+
+
 st.markdown("### Sectoral Forecasts")
 
 # First row
