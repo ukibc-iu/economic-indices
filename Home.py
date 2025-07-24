@@ -452,8 +452,8 @@ for sheet in vehicle_sheets:
         predicted_total += predicted_val
 
 vehicle_quarter = latest_quarters[0] if latest_quarters else "—"
-vehicle_actual_str = f"{actual_total:,.0f}" if actual_total else "—"
-vehicle_predicted_str = f"{predicted_total:,.0f}" if predicted_total else "—"
+vehicle_actual_str = f"{actual_total:,.0f}" if actual_total else "NA"
+vehicle_predicted_str = f"{predicted_total:,.0f}" if predicted_total else "NA"
 
 
 # --- Header ---
