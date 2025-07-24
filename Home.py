@@ -530,7 +530,7 @@ col1, col2 = st.columns(2)
 with col1:
     render_card("Fertiliser Demand Forecast", "fertiliser_demand", fert_quarter, fert_actual_str, fert_predicted_str, unit="MMT")
 with col2:
-    render_card("Vehicle Production Forecast", "vehicle_production", vehicle_quarter, vehicle_actual_str, vehicle_predicted_str, unit="Thousand Units")
+    render_card("Vehicle Production Forecast", "vehicle_production", vehicle_quarter, vehicle_actual_str, vehicle_predicted_str, unit="Units")
 
 # --- Spacer ---
 st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
