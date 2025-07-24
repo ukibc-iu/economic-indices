@@ -6,7 +6,7 @@ st.markdown("### Quarterly Renewable Capacity Addition Forecasts: Actual vs Pred
 st.markdown("---")
 
 # File and sheet setup
-excel_path = "data/Solar&Wind.xlsx"
+excel_path = "data/Solar&Wind_Model.xlsx"
 sheets = ["Solar", "Wind"]
 
 colors = {
