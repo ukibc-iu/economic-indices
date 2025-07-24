@@ -414,7 +414,7 @@ house_actual_str = f"{house_actual:.2f}" if house_actual != "NA" else "NA"
 house_predicted_str = f"{house_predicted:.2f}"
 
 
-# --- Vehicle Production (Aggregate of 6 sheets) ---
+# --- Vehicle Production Data (from 6 sheets) ---
 vehicle_sheets = [
     "Passenger Vehicles",
     "Light Commercial Vehicles",
@@ -427,8 +427,8 @@ vehicle_sheets = [
 vehicle_df_dict = pd.read_excel("data/Auto_Model.xlsx", sheet_name=None)
 
 latest_quarters = []
-actual_total = 0
-predicted_total = 0
+vehicle_actual_total = 0
+vehicle_predicted_total = 0
 
 for sheet in vehicle_sheets:
     df = vehicle_df_dict[sheet]
@@ -436,7 +436,7 @@ for sheet in vehicle_sheets:
     df = df.dropna(subset=["Predicted"])
     df["Actual"] = pd.to_numeric(df["Actual"], errors="coerce")
     df["Predicted"] = pd.to_numeric(df["Predicted"], errors="coerce")
-    
+
     if df.empty:
         continue
 
@@ -447,13 +447,52 @@ for sheet in vehicle_sheets:
     predicted_val = latest_row["Predicted"].values[0]
 
     if pd.notna(actual_val):
-        actual_total += actual_val
+        vehicle_actual_total += actual_val
     if pd.notna(predicted_val):
-        predicted_total += predicted_val
+        vehicle_predicted_total += predicted_val
 
 vehicle_quarter = latest_quarters[0] if latest_quarters else "—"
-vehicle_actual_str = f"{actual_total:,.0f}" if actual_total else "NA"
-vehicle_predicted_str = f"{predicted_total:,.0f}" if predicted_total else "NA"
+vehicle_actual_str = f"{vehicle_actual_total:,.0f}" if vehicle_actual_total else "NA"
+vehicle_predicted_str = f"{vehicle_predicted_total:,.0f}" if vehicle_predicted_total else "NA"
+
+
+# --- Renewable Capacity Addition (Solar + Wind) ---
+re_sheets = ["Solar", "Wind"]
+re_path = "data/Solar&Wind_Model.xlsx"
+
+re_actual_total = 0
+re_predicted_total = 0
+re_quarter = "—"
+actual_missing = True
+predicted_missing = True
+
+re_df_dict = pd.read_excel(re_path, sheet_name=None)
+
+for sheet in re_sheets:
+    df = re_df_dict[sheet]
+    df.columns = [col.strip() for col in df.columns]
+    df = df.dropna(subset=["Predicted"])
+    df["Actual"] = pd.to_numeric(df["Actual"], errors="coerce")
+    df["Predicted"] = pd.to_numeric(df["Predicted"], errors="coerce")
+
+    if df.empty:
+        continue
+
+    latest_row = df.tail(1)
+    re_quarter = latest_row["Quarter"].values[0]
+
+    actual_val = latest_row["Actual"].values[0]
+    predicted_val = latest_row["Predicted"].values[0]
+
+    if pd.notna(actual_val):
+        re_actual_total += actual_val
+        actual_missing = False
+    if pd.notna(predicted_val):
+        re_predicted_total += predicted_val
+        predicted_missing = False
+
+re_actual_str = f"{re_actual_total:,.0f}" if not actual_missing else "NA"
+re_predicted_str = f"{re_predicted_total:,.0f}" if not predicted_missing else "NA"
 
 
 # --- Header ---
@@ -501,4 +540,4 @@ col3, col4 = st.columns(2)
 with col3:
     render_card("Houses Construction Forecast", "houses_constructed", house_quarter, house_actual_str, house_predicted_str, unit="Units")
 with col4:
-    render_card("Renewable Capacity Addition Forecast", "RE_addition", unit="GW")
+    render_card("Renewable Capacity Addition Forecast", "RE_addition", re_quarter, re_actual_str, re_predicted_str, unit="MW")
