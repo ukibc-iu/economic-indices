@@ -400,6 +400,7 @@ fert_predicted = fert_latest["Predicted"].values[0]
 fert_actual_str = f"{fert_actual:.2f}" if fert_actual != "NA" else "NA"
 fert_predicted_str = f"{fert_predicted:.2f}"
 
+
 # --- Houses Construction Data ---
 house_df = pd.read_excel("data/Housing_Model.xlsx")
 house_df = house_df.dropna(subset=["Predicted"])
@@ -412,8 +413,52 @@ house_predicted = house_latest["Predicted"].values[0]
 house_actual_str = f"{house_actual:.2f}" if house_actual != "NA" else "NA"
 house_predicted_str = f"{house_predicted:.2f}"
 
+
+# --- Vehicle Production (Aggregate of 6 sheets) ---
+vehicle_sheets = [
+    "Passenger Vehicles",
+    "Light Commercial Vehicles",
+    "Medium Commercial Vehicles",
+    "Heavy Commercial Vehicles",
+    "Three Wheelers and Quadricycles",
+    "Two Wheelers"
+]
+
+vehicle_df_dict = pd.read_excel("data/Auto_Model.xlsx", sheet_name=None)
+
+latest_quarters = []
+actual_total = 0
+predicted_total = 0
+
+for sheet in vehicle_sheets:
+    df = vehicle_df_dict[sheet]
+    df.columns = [col.strip() for col in df.columns]
+    df = df.dropna(subset=["Predicted"])
+    df["Actual"] = pd.to_numeric(df["Actual"], errors="coerce")
+    df["Predicted"] = pd.to_numeric(df["Predicted"], errors="coerce")
+    
+    if df.empty:
+        continue
+
+    latest_row = df.tail(1)
+    latest_quarters.append(latest_row["Quarter"].values[0])
+
+    actual_val = latest_row["Actual"].values[0]
+    predicted_val = latest_row["Predicted"].values[0]
+
+    if pd.notna(actual_val):
+        actual_total += actual_val
+    if pd.notna(predicted_val):
+        predicted_total += predicted_val
+
+vehicle_quarter = latest_quarters[0] if latest_quarters else "—"
+vehicle_actual_str = f"{actual_total:,.0f}" if actual_total else "—"
+vehicle_predicted_str = f"{predicted_total:,.0f}" if predicted_total else "—"
+
+
 # --- Header ---
 st.markdown("### Sectoral Forecasts")
+
 
 # --- Card Renderer ---
 def render_card(title, link, quarter="—", actual="—", predicted="—", unit=""):
@@ -440,12 +485,13 @@ def render_card(title, link, quarter="—", actual="—", predicted="—", unit=
     </a>
     """, unsafe_allow_html=True)
 
+
 # --- First row ---
 col1, col2 = st.columns(2)
 with col1:
     render_card("Fertiliser Demand Forecast", "fertiliser_demand", fert_quarter, fert_actual_str, fert_predicted_str, unit="MMT")
 with col2:
-    render_card("Vehicle Production Forecast", "vehicle_production", unit="Thousand Units")
+    render_card("Vehicle Production Forecast", "vehicle_production", vehicle_quarter, vehicle_actual_str, vehicle_predicted_str, unit="Thousand Units")
 
 # --- Spacer ---
 st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
