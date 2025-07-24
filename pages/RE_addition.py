@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-st.markdown("### Quarterly Renewable Capacity Addition Forecasts: Actual vs Predicted")
+st.markdown("### Quarterly Renewable Capacity Addition (MW): Actual vs Predicted")
 st.markdown("---")
 
 # File and sheet setup
