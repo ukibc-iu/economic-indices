@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-st.markdown("### Quarterly Vehicle Production Forecasts: Actual vs Predicted")
+st.markdown("### Quarterly Vehicle Production: Actual vs Predicted")
 st.markdown("---")
 
 # Load Excel file with multiple sheets
