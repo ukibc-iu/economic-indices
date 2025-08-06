@@ -96,13 +96,19 @@ selected_total_sales = selected_row[vehicle_sales_cols]
 
 # === CHART WRAPPER ===
 def wrapped_chart(title, fig, height=420):
-    # Generate the HTML string from Plotly
+    # Generate Plotly chart HTML
     chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
 
-    # Force the iframe (inside the chart HTML) to be 100% width
-    chart_html = chart_html.replace('<iframe ', '<iframe style="width:100%;" ')
+    # Ensure the iframe inside Plotly output is full-width
+    chart_html = chart_html.replace(
+        '<div>',
+        '<div style="width: 100%;">'
+    ).replace(
+        '<iframe ',
+        '<iframe style="width: 100%; height: 100%;" '
+    )
 
-    # Embed the chart inside a styled box and inject it via components.html
+    # Embed in a styled container
     components.html(f"""
     <div style="
         background-color: #1e1e1e;
@@ -111,6 +117,7 @@ def wrapped_chart(title, fig, height=420):
         margin-bottom: 1.5rem;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         color: white;
+        width: 100%;
         max-width: 100%;
         margin-left: auto;
         margin-right: auto;
@@ -118,8 +125,7 @@ def wrapped_chart(title, fig, height=420):
         <h4 style="margin-top: 0; margin-bottom: 10px;">{title}</h4>
         {chart_html}
     </div>
-    """, height=height + 80, scrolling=True)
-
+    """, height=height + 80, scrolling=False)
 
 # === Donut - Gauge - Donut Charts ===
 donut_left, gauge_col, donut_right = st.columns([2, 2.5, 2])
