@@ -96,19 +96,16 @@ selected_total_sales = selected_row[vehicle_sales_cols]
 
 # === CHART WRAPPER ===
 def wrapped_chart(title, fig, height=420):
-    # Generate Plotly chart HTML
+    # Get the Plotly chart HTML
     chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
 
-    # Ensure the iframe inside Plotly output is full-width
+    # Modify the iframe's width and height inside the Plotly HTML
     chart_html = chart_html.replace(
-        '<div>',
-        '<div style="width: 100%;">'
-    ).replace(
-        '<iframe ',
-        '<iframe style="width: 100%; height: 100%;" '
+        '<iframe',
+        '<iframe style="width:100%; height:100%;"'
     )
 
-    # Embed in a styled container
+    # Wrap it in a styled card
     components.html(f"""
     <div style="
         background-color: #1e1e1e;
@@ -121,9 +118,12 @@ def wrapped_chart(title, fig, height=420):
         max-width: 100%;
         margin-left: auto;
         margin-right: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     ">
         <h4 style="margin-top: 0; margin-bottom: 10px;">{title}</h4>
-        {chart_html}
+        <div style="width: 100%;">{chart_html}</div>
     </div>
     """, height=height + 80, scrolling=False)
 
