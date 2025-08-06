@@ -204,6 +204,7 @@ st.markdown(f"""
     {expert_opinion}
 </div>
 """, unsafe_allow_html=True)
+st.write("")
 # === Line Chart ===
 if display_format == "Percentage":
     y_data = df["EV Adoption Rate"] * 100
