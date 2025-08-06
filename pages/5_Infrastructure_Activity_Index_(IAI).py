@@ -181,7 +181,6 @@ with col1:
     fig_gauge = go.Figure(go.Indicator(
         mode="gauge+number",
         value=filtered['IAI'].values[0],
-        number={'font': {'color': 'white'}},
         gauge={
             'axis': {'range': [0, 1], 'tickcolor': 'white'},
             'bar': {'color': "black"},
@@ -214,7 +213,6 @@ with col2:
     fig_scatter.update_layout(
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
-        font_color='white',
         height=400
     )
     wrapped_chart("IAI vs GVA Construction (All Periods)", fig_scatter)
