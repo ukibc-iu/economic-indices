@@ -155,21 +155,10 @@ if filtered.empty:
     st.stop()
 
 # === CHART WRAPPER ===
-def wrapped_chart(title, fig, height=420):
-    chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
-    components.html(f"""
-    <div style="
-        background-color: #1e1e1e;
-        padding: 1rem;
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        color: white;
-    ">
-        <h4 style="margin-top: 0; margin-bottom: 10px;">{title}</h4>
-        {chart_html}
-    </div>
-    """, height=height + 60)
+def wrapped_chart(title, figure):
+    with st.container(border=True):
+        st.markdown(f"**{title}**")
+        st.plotly_chart(figure, use_container_width=True)
 
 # === Donut - Gauge ===
 left_col, right_col = st.columns(2)
