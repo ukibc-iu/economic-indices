@@ -118,7 +118,6 @@ with donut_left:
         height=400,
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='white'),
         margin=dict(t=20, b=20),
         legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
     )
@@ -164,7 +163,6 @@ with gauge_col:
         height=400,
         plot_bgcolor='rgba(0,0,0,0)',
         paper_bgcolor='rgba(0,0,0,0)',
-        font_color='white'
     )
     wrapped_chart(f"EV Adoption Rate - {selected_month}", gauge_fig)
 
@@ -183,7 +181,6 @@ with donut_right:
         height=400,
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(color='white'),
         margin=dict(t=20, b=20),
         legend=dict(orientation="h", y=-0.2, x=0.5, xanchor="center")
     )
@@ -233,7 +230,6 @@ line_fig.update_layout(
     margin=dict(l=50, r=30, t=40, b=30),
     plot_bgcolor='rgba(0,0,0,0)',
     paper_bgcolor='rgba(0,0,0,0)',
-    font_color='white',
     xaxis=dict(showgrid=False),
     yaxis=dict(showgrid=False)
 )
