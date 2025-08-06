@@ -292,100 +292,98 @@ for i in range(len(df_display)):
         if cols[5].button("Open", key=f"btn-{i}"):
             st.switch_page(f"pages/{INDEX_CONFIG[df_display.iloc[i]['Index']]['page']}.py")
 
-import streamlit as st
+import re
 import pandas as pd
+import streamlit as st
 import streamlit.components.v1 as components
 
-# Sample data
-data = {
-    "Parameter": ["Repo Rate", "Inflation Rate", "Unemployment Rate"],
-    "UK MoM Change": ["No Change", "No Change", "+10 bps"],
-    "India MoM Change": ["-50 bps", "-34 bps", "+50 bps"]
-}
-macro_df = pd.DataFrame(data)
+st.markdown("---")
+st.subheader("UK-India Macroeconomic Comparison")
 
-# Emoji flags
-uk_flag = "🇬🇧"
-in_flag = "🇮🇳"
+try:
+    # Load data
+    macro_df = pd.read_excel("data/Macro_MoM_Comparison.xlsx", sheet_name="June")
+    display_params = ["Repo Rate", "Inflation Rate", "Unemployment Rate"]
+    macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
 
-# Style change function
-def styled_change(value, param):
-    if "No Change" in value:
-        return "No Change"
-    color = "green" if "-" in value and param != "Unemployment Rate" else "red"
-    arrow = "🔻" if "-" in value and param != "Unemployment Rate" else "🔺"
-    return f"<span style='color:{color}; font-weight:600'>{arrow} {value}</span>"
+    def styled_change(change_str, param):
+        if not isinstance(change_str, str):
+            return "–"
+        text = change_str.strip().lower()
+        if text in ["no change", "0 bps", "0.0%", "0%", "+0 bps", "+0%", "0", "–", "-", "", "na", "n/a"]:
+            return "<span style='color:grey;'>No Change</span>"
+        up = "+" in text
+        down = "-" in text
+        if param.lower() in ["inflation rate", "unemployment rate"]:
+            color = "red" if up else "green"
+        else:
+            color = "green" if up else "red"
+        arrow = "▲" if up else "▼"
+        return f"<span style='color:{color};'>{arrow} {change_str.strip()}</span>"
 
-# HTML and CSS
-html = f"""
-<style>
-    .macro-wrapper {{
-        display: flex;
-        justify-content: center;
-        width: 100%;
-        margin-top: 30px;
-    }}
-    .macro-table {{
-        width: 100%;
-        max-width: 700px;
-        border-collapse: collapse;
-        background-color: #1e1e1e;
-        color: white;
-        font-family: sans-serif;
-        border-radius: 8px;
-        overflow: hidden;
-    }}
-    .macro-table th, .macro-table td {{
-        text-align: center;
-        padding: 14px 20px;
-        font-size: 16px;
-        white-space: nowrap;
-    }}
-    .macro-table th {{
-        background-color: #2e2e2e;
-        font-weight: bold;
-    }}
-    .macro-table td:first-child {{
-        text-align: left;
-        font-weight: 600;
-        color: #ccc;
-    }}
-</style>
+    uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
+    in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
-<div class="macro-wrapper">
-  <table class="macro-table">
-    <thead>
-      <tr>
-        <th>Parameter</th>
-        <th>{uk_flag}</th>
-        <th>{in_flag}</th>
-      </tr>
-    </thead>
-    <tbody>
-"""
-
-# Table content
-for _, row in macro_df.iterrows():
-    param = row["Parameter"]
-    uk_change = styled_change(row["UK MoM Change"], param)
-    in_change = styled_change(row["India MoM Change"], param)
-
-    html += f"""
-    <tr>
-        <td>{param}</td>
-        <td>{uk_change}</td>
-        <td>{in_change}</td>
-    </tr>
+    html = f"""
+    <style>
+        .macro-table {{
+            width: 100%;
+            border-collapse: collapse;
+            font-family: sans-serif;
+        }}
+        .macro-table th, .macro-table td {{
+            text-align: center;
+            padding: 10px;
+            font-size: 16px;
+        }}
+        .macro-table th {{
+            font-weight: 600;
+        }}
+        .macro-table td:first-child {{
+            text-align: center;
+            font-weight: 500;
+            color: darkgrey;
+        }}
+    </style>
+    <table class='macro-table'>
+        <tr>
+            <th></th>
+            <th>{uk_flag}</th>
+            <th>{in_flag}</th>
+        </tr>
     """
 
-html += """
-    </tbody>
-  </table>
-</div>
-"""
+    for _, row in macro_df.iterrows():
+        param = row["Parameter"]
+        uk_change = styled_change(str(row["UK MoM Change"]), param)
+        in_change = styled_change(str(row["India MoM Change"]), param)
+        html += f"""
+        <tr>
+            <td>{param}</td>
+            <td>{uk_change}</td>
+            <td>{in_change}</td>
+        </tr>
+        """
+    html += "</table>"
+    components.html(html, height=200)
 
-# Render
-components.html(html, height=350, scrolling=False)
+    # Inline layout using HTML and Streamlit button side by side
+    st.markdown(
+    """
+    <div style='display: flex; align-items: center; gap: 12px;'>
+        <span style='font-weight: 600; font-size: 16px;'><em>For an in-depth look at other economic parameters</em></span>
+        <a href='/Coverpage' target='_self'>
+            <button style='padding:6px 14px; font-size:14px; border-radius:6px; background-color:#444; color:white; border:none; cursor:pointer;'>
+                Click
+            </button>
+        </a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+except Exception as e:
+    st.error(f"Could not load macroeconomic comparison data: {e}")
+st.markdown("---")
 
 import streamlit as st
 import pandas as pd
