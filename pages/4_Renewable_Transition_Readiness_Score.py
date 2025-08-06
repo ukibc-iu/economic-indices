@@ -134,7 +134,7 @@ with col3:
     """, unsafe_allow_html=True)
 
 # --- Preview Type ---
-preview_type = st.selectbox("📅 Preview Type", ["Monthly", "Quarterly"])
+preview_type = st.selectbox("Preview Type", ["Monthly", "Quarterly"])
 if preview_type == "Monthly":
     period_list = df['Month'].unique().tolist()
 else:
@@ -142,7 +142,7 @@ else:
 
 # Set default to latest available period
 default_period = latest_month if preview_type == "Monthly" else latest_quarter
-selected_period = st.selectbox("📆 Select Month or Quarter", period_list, index=period_list.index(default_period))
+selected_period = st.selectbox("Select Month or Quarter", period_list, index=period_list.index(default_period))
 
 # --- Filtered Data ---
 if preview_type == "Monthly":
@@ -224,7 +224,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # === Line Chart ===
-st.subheader("📈 Readiness Score Over Time")
+st.subheader("Readiness Score Over Time")
 fig_score = px.line(df, x='Month', y='Readiness Score', markers=False,
                     line_shape='linear',
                     color_discrete_sequence=['#047E78'])
