@@ -95,7 +95,7 @@ selected_segment_sales = selected_row[ev_cols]
 selected_total_sales = selected_row[vehicle_sales_cols]
 
 # === CHART WRAPPER ===
-def wrapped_chart(title, fig, height=420):  # Keep consistent height
+def wrapped_chart(title, fig, height=420, width=1000):  # Keep consistent height
     chart_html = fig.to_html(include_plotlyjs="cdn", full_html=False)
     components.html(f"""
     <div style="
