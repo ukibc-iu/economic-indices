@@ -105,6 +105,9 @@ def wrapped_chart(title, fig, height=420, width=1000):  # Keep consistent height
         margin-bottom: 1.5rem;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         color: white;
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
     ">
         <h4 style="margin-top: 0; margin-bottom: 10px;">{title}</h4>
         {chart_html}
