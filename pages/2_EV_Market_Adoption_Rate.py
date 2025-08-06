@@ -148,6 +148,8 @@ with gauge_col:
     gauge_fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=gauge_value,
+        number={
+            'suffix': "%" if display_format == "Percentage" else "",}
         gauge={
             'axis': {'range': gauge_range, 'tickwidth': 1, 'tickcolor': "darkblue"},
             'bar': {'color': "green"},
