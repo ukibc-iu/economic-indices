@@ -193,7 +193,7 @@ with col1:
             ]
         }
     ))
-    fig_gauge.update_layout(height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
+    fig_gauge.update_layout(height=400, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
     wrapped_chart(f"IAI Gauge – {display_label}", fig_gauge)
 
 # Chart #3 – Scatter: IAI vs GVA
