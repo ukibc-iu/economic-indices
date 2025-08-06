@@ -394,7 +394,7 @@ try:
     html += "</table></div>"
 
     # Force full width of iframe and disable scroll
-    components.html(html, height=280, width=1000, scrolling=False)
+    components.html(html, height=250, width=1000, scrolling=False)
 
     # CTA Button
     st.markdown(
