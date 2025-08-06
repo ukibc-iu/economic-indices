@@ -319,88 +319,93 @@ try:
         else:
             color = "green" if up else "red"
         arrow = "▲" if up else "▼"
-        return f"<span style='color:{color};'>{arrow} {change_str.strip()}</span>"
+        return f"<span style='color:{color}; font-weight:600;'>{arrow} {change_str.strip()}</span>"
 
+    # Flags
     uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
+    # HTML Table
     html = f"""
-<style>
-    .macro-container {{
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        padding: 20px 0;
-    }}
-    .macro-table {{
-        width: 80%;
-        border-collapse: collapse;
-        font-family: 'Segoe UI', sans-serif;
-        background-color: #1e1e1e;
-        color: white;
-        border: 1px solid #333;
-        border-radius: 10px;
-        overflow: hidden;
-    }}
-    .macro-table th, .macro-table td {{
-        text-align: center;
-        padding: 16px;
-        font-size: 17px;
-    }}
-    .macro-table th {{
-        background-color: #2e2e2e;
-        font-weight: bold;
-    }}
-    .macro-table td:first-child {{
-        font-weight: 600;
-        color: #ccc;
-        text-align: left;
-        padding-left: 20px;
-    }}
-</style>
+    <style>
+        .macro-container {{
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 30px 0;
+        }}
+        .macro-table {{
+            width: 90%;
+            border-collapse: collapse;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #1e1e1e;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }}
+        .macro-table th, .macro-table td {{
+            text-align: center;
+            padding: 18px;
+            font-size: 17px;
+        }}
+        .macro-table th {{
+            background-color: #2e2e2e;
+            font-weight: bold;
+        }}
+        .macro-table td:first-child {{
+            font-weight: 600;
+            color: #ccc;
+            text-align: left;
+            padding-left: 24px;
+        }}
+    </style>
 
-<div class='macro-container'>
-<table class='macro-table'>
-    <tr>
-        <th>Parameter</th>
-        <th>{uk_flag}</th>
-        <th>{in_flag}</th>
-    </tr>
-"""
-
-for _, row in macro_df.iterrows():
-    param = row["Parameter"]
-    uk_change = styled_change(str(row["UK MoM Change"]), param)
-    in_change = styled_change(str(row["India MoM Change"]), param)
-    html += f"""
-    <tr>
-        <td>{param}</td>
-        <td>{uk_change}</td>
-        <td>{in_change}</td>
-    </tr>
+    <div class='macro-container'>
+    <table class='macro-table'>
+        <tr>
+            <th>Parameter</th>
+            <th>{uk_flag}</th>
+            <th>{in_flag}</th>
+        </tr>
     """
-html += "</table></div>"
 
-components.html(html, height=300)
+    for _, row in macro_df.iterrows():
+        param = row["Parameter"]
+        uk_change = styled_change(str(row["UK MoM Change"]), param)
+        in_change = styled_change(str(row["India MoM Change"]), param)
+        html += f"""
+        <tr>
+            <td>{param}</td>
+            <td>{uk_change}</td>
+            <td>{in_change}</td>
+        </tr>
+        """
+    html += "</table></div>"
 
-# CTA Button with spacing
-st.markdown(
-    """
-    <div style='margin-top: 30px; display: flex; align-items: center; gap: 16px;'>
-        <span style='font-weight: 500; font-size: 16px;'><em>For an in-depth look at other economic parameters</em></span>
-        <a href='/Coverpage' target='_self'>
-            <button style='padding:8px 16px; font-size:15px; border-radius:8px; background-color:#444; color:white; border:none; cursor:pointer;'>
-                Click
-            </button>
-        </a>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+    # Render HTML table
+    components.html(html, height=400)
+
+    # CTA Button and Note
+    st.markdown(
+        """
+        <div style='margin-top: 40px; display: flex; align-items: center; gap: 16px;'>
+            <span style='font-weight: 500; font-size: 16px;'><em>For an in-depth look at other economic parameters</em></span>
+            <a href='/Coverpage' target='_self'>
+                <button style='padding:10px 18px; font-size:15px; border-radius:8px; background-color:#444; color:white; border:none; cursor:pointer;'>
+                    Click
+                </button>
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
-st.markdown("---")
 
+st.markdown("---")
 import streamlit as st
 import pandas as pd
 
