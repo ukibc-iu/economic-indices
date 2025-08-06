@@ -145,20 +145,20 @@ with col3:
 
 # --- View Selector ---
 st.markdown("---")
-st.subheader("📅 View Mode")
+st.subheader("View Mode")
 view_type = st.radio("Select data preview:", ["Monthly", "Quarterly"], horizontal=True)
 
 # --- Period Selection ---
 if view_type == "Monthly":
     month_options = df['Month'].unique().tolist()
     default_month = df['Month'].iloc[-1]
-    selected_month = st.selectbox("🗓 Select Month", month_options, index=month_options.index(default_month))
+    selected_month = st.selectbox("Select Month", month_options, index=month_options.index(default_month))
     filtered = df[df['Month'] == selected_month]
     display_label = selected_month
 else:
     quarter_options = df['Fiscal Quarter'].unique().tolist()
     default_quarter = df['Fiscal Quarter'].iloc[-1]
-    selected_quarter = st.selectbox("📆 Select Quarter", quarter_options, index=quarter_options.index(default_quarter))
+    selected_quarter = st.selectbox("Select Quarter", quarter_options, index=quarter_options.index(default_quarter))
     filtered = df[df['Fiscal Quarter'] == selected_quarter]
     filtered = filtered.mean(numeric_only=True).to_frame().T
     display_label = selected_quarter
@@ -236,7 +236,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 # --- Line Chart ---
-st.subheader("📈 IAI Over Time")
+st.subheader("IAI Over Time")
 if view_type == "Monthly":
     fig_line = px.line(df, x='Month', y='IAI', markers=False, line_shape='linear', color_discrete_sequence=['#A78437'])
 else:
