@@ -306,9 +306,14 @@ try:
     display_params = ["Repo Rate", "Inflation Rate", "Unemployment Rate"]
     macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
 
+    # Optional debug: View what's loaded
+    # st.write(macro_df)
+
     def styled_change(change_str, param):
+        if pd.isna(change_str):
+            return "<span style='color:grey;'>No Data</span>"
         if not isinstance(change_str, str):
-            return "–"
+            change_str = str(change_str)
         text = change_str.strip().lower()
         if text in ["no change", "0 bps", "0.0%", "0%", "+0 bps", "+0%", "0", "–", "-", "", "na", "n/a"]:
             return "<span style='color:grey;'>No Change</span>"
@@ -325,16 +330,15 @@ try:
     uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
-    # HTML Table (Full-width layout)
+    # HTML Table with full width iframe fix
     html = f"""
     <style>
-        .macro-container {{
+        .macro-wrapper {{
             width: 100%;
-            padding: 0 0 30px 0;
+            margin: 0 auto;
         }}
         .macro-table {{
             width: 100%;
-            max-width: 100%;
             border-collapse: collapse;
             font-family: 'Segoe UI', sans-serif;
             background-color: #1e1e1e;
@@ -342,6 +346,7 @@ try:
             border: 1px solid #333;
             border-radius: 8px;
             overflow: hidden;
+            box-shadow: 0 0 12px rgba(0,0,0,0.4);
         }}
         .macro-table th, .macro-table td {{
             text-align: center;
@@ -360,8 +365,8 @@ try:
         }}
     </style>
 
-    <div class='macro-container'>
-    <table class='macro-table'>
+    <div class="macro-wrapper">
+    <table class="macro-table">
         <tr>
             <th>Parameter</th>
             <th>{uk_flag}</th>
@@ -371,8 +376,8 @@ try:
 
     for _, row in macro_df.iterrows():
         param = row["Parameter"]
-        uk_change = styled_change(str(row["UK MoM Change"]), param)
-        in_change = styled_change(str(row["India MoM Change"]), param)
+        uk_change = styled_change(row.get("UK MoM Change", ""), param)
+        in_change = styled_change(row.get("India MoM Change", ""), param)
         html += f"""
         <tr>
             <td>{param}</td>
@@ -382,10 +387,10 @@ try:
         """
     html += "</table></div>"
 
-    # Render HTML
-    components.html(html, height=350)
+    # Stretch iframe width to 100%
+    components.html(html, height=350, scrolling=False)
 
-    # CTA Button
+    # CTA
     st.markdown(
         """
         <div style='margin-top: 40px; display: flex; align-items: center; gap: 16px;'>
