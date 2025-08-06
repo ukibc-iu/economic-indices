@@ -394,12 +394,12 @@ try:
     html += "</table></div>"
 
     # Force full width of iframe and disable scroll
-    components.html(html, height=360, width=1000, scrolling=False)
+    components.html(html, height=280, width=1000, scrolling=False)
 
     # CTA Button
     st.markdown(
         """
-        <div style='margin-top: 30px; display: flex; align-items: center; gap: 16px;'>
+        <div style='margin-top: 16px; display: flex; align-items: center; gap: 16px;'>
             <span style='font-weight: 500; font-size: 16px;'><em>For an in-depth look at other economic parameters</em></span>
             <a href='/Coverpage' target='_self'>
                 <button style='padding:8px 16px; font-size:15px; border-radius:8px; background-color:#444; color:white; border:none; cursor:pointer;'>
