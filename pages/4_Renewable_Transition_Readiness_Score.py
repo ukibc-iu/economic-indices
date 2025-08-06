@@ -112,7 +112,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown(f"""
         <div class="card green-card">
-            <div style="font-size: 1.2rem;">🗓 Latest Period</div>
+            <div style="font-size: 1.2rem;">Latest Period</div>
             <div style="font-size: 2rem;">{latest_month} / {latest_quarter}</div>
         </div>
     """, unsafe_allow_html=True)
