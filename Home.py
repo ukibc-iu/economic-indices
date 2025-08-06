@@ -292,7 +292,6 @@ for i in range(len(df_display)):
         if cols[5].button("Open", key=f"btn-{i}"):
             st.switch_page(f"pages/{INDEX_CONFIG[df_display.iloc[i]['Index']]['page']}.py")
 
-st.markdown("---")
 import streamlit as st
 import pandas as pd
 import streamlit.components.v1 as components
