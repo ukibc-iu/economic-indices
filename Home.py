@@ -325,55 +325,71 @@ try:
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
     html = f"""
-    <style>
-        .macro-table {{
-            width: 100%;
-            border-collapse: collapse;
-            font-family: sans-serif;
-        }}
-        .macro-table th, .macro-table td {{
-            text-align: center;
-            padding: 10px;
-            font-size: 16px;
-        }}
-        .macro-table th {{
-            font-weight: 600;
-        }}
-        .macro-table td:first-child {{
-            text-align: center;
-            font-weight: 500;
-            color: darkgrey;
-        }}
-    </style>
-    <table class='macro-table'>
-        <tr>
-            <th></th>
-            <th>{uk_flag}</th>
-            <th>{in_flag}</th>
-        </tr>
-    """
+<style>
+    .macro-container {{
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
+    }}
+    .macro-table {{
+        width: 80%;
+        border-collapse: collapse;
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #1e1e1e;
+        color: white;
+        border: 1px solid #333;
+        border-radius: 10px;
+        overflow: hidden;
+    }}
+    .macro-table th, .macro-table td {{
+        text-align: center;
+        padding: 16px;
+        font-size: 17px;
+    }}
+    .macro-table th {{
+        background-color: #2e2e2e;
+        font-weight: bold;
+    }}
+    .macro-table td:first-child {{
+        font-weight: 600;
+        color: #ccc;
+        text-align: left;
+        padding-left: 20px;
+    }}
+</style>
 
-    for _, row in macro_df.iterrows():
-        param = row["Parameter"]
-        uk_change = styled_change(str(row["UK MoM Change"]), param)
-        in_change = styled_change(str(row["India MoM Change"]), param)
-        html += f"""
-        <tr>
-            <td>{param}</td>
-            <td>{uk_change}</td>
-            <td>{in_change}</td>
-        </tr>
-        """
-    html += "</table>"
-    components.html(html, height=200)
+<div class='macro-container'>
+<table class='macro-table'>
+    <tr>
+        <th>Parameter</th>
+        <th>{uk_flag}</th>
+        <th>{in_flag}</th>
+    </tr>
+"""
 
-    # Inline layout using HTML and Streamlit button side by side
-    st.markdown(
+for _, row in macro_df.iterrows():
+    param = row["Parameter"]
+    uk_change = styled_change(str(row["UK MoM Change"]), param)
+    in_change = styled_change(str(row["India MoM Change"]), param)
+    html += f"""
+    <tr>
+        <td>{param}</td>
+        <td>{uk_change}</td>
+        <td>{in_change}</td>
+    </tr>
     """
-    <div style='display: flex; align-items: center; gap: 12px;'>
-        <span style='font-weight: 600; font-size: 16px;'><em>For an in-depth look at other economic parameters</em></span>
+html += "</table></div>"
+
+components.html(html, height=300)
+
+# CTA Button with spacing
+st.markdown(
+    """
+    <div style='margin-top: 30px; display: flex; align-items: center; gap: 16px;'>
+        <span style='font-weight: 500; font-size: 16px;'><em>For an in-depth look at other economic parameters</em></span>
         <a href='/Coverpage' target='_self'>
-            <button style='padding:6px 14px; font-size:14px; border-radius:6px; background-color:#444; color:white; border:none; cursor:pointer;'>
+            <button style='padding:8px 16px; font-size:15px; border-radius:8px; background-color:#444; color:white; border:none; cursor:pointer;'>
                 Click
             </button>
         </a>
