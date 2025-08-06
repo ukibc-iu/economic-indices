@@ -292,10 +292,6 @@ for i in range(len(df_display)):
         if cols[5].button("Open", key=f"btn-{i}"):
             st.switch_page(f"pages/{INDEX_CONFIG[df_display.iloc[i]['Index']]['page']}.py")
 
-import streamlit as st
-import pandas as pd
-import streamlit.components.v1 as components
-
 st.markdown("---")
 import streamlit as st
 import pandas as pd
@@ -325,21 +321,21 @@ try:
         arrow = "▲" if up else "▼"
         return f"<span style='color:{color}; font-weight: 600;'>{arrow} {change_str.strip()}</span>"
 
-    # Flags
+    # Flag images
     uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
-    # Central alignment (use full width and center contents)
-    html = """
+    # Table HTML as f-string (curly braces safe)
+    html = f"""
     <style>
-        .center-wrap {
+        .center-wrap {{
             display: flex;
             justify-content: center;
             align-items: flex-start;
             width: 100%;
             margin-top: 20px;
-        }
-        .macro-table {
+        }}
+        .macro-table {{
             width: 100%;
             max-width: 800px;
             border-collapse: collapse;
@@ -349,23 +345,24 @@ try:
             border: 1px solid #333;
             border-radius: 10px;
             overflow: hidden;
-        }
-        .macro-table th, .macro-table td {
+        }}
+        .macro-table th, .macro-table td {{
             text-align: center;
             padding: 16px;
             font-size: 17px;
-        }
-        .macro-table th {
+        }}
+        .macro-table th {{
             background-color: #2e2e2e;
             font-weight: bold;
-        }
-        .macro-table td:first-child {
+        }}
+        .macro-table td:first-child {{
             text-align: left;
             font-weight: 600;
             color: #ccc;
             padding-left: 20px;
-        }
+        }}
     </style>
+
     <div class='center-wrap'>
       <table class='macro-table'>
         <tr>
@@ -373,8 +370,9 @@ try:
             <th>{uk_flag}</th>
             <th>{in_flag}</th>
         </tr>
-    """.format(uk_flag=uk_flag, in_flag=in_flag)
+    """
 
+    # Table data rows
     for _, row in macro_df.iterrows():
         param = row["Parameter"]
         uk_change = styled_change(str(row["UK MoM Change"]), param)
@@ -386,15 +384,16 @@ try:
                 <td>{in_change}</td>
             </tr>
         """
+
     html += "</table></div>"
 
-    # Display HTML table centered
+    # Show HTML table centrally aligned
     components.html(html, height=390, scrolling=False)
 
-    # Call-to-action button centered
+    # Call-to-action button centrally align
     st.markdown(
         """
-        <div style='width:100%; display:flex; justify-content:center; margin-top:30px;'>
+        <div style='width:100%; display:flex; justify-content:center; align-items:center; margin-top:30px;'>
             <span style='font-weight: 500; font-size: 16px; margin-right: 16px;'><em>For an in-depth look at other economic parameters</em></span>
             <a href='/Coverpage' target='_self'>
                 <button style='padding:8px 16px; font-size:15px; border-radius:8px; background-color:#444; color:white; border:none; cursor:pointer;'>
