@@ -297,6 +297,10 @@ import pandas as pd
 import streamlit.components.v1 as components
 
 st.markdown("---")
+import streamlit as st
+import pandas as pd
+import streamlit.components.v1 as components
+
 st.subheader("UK-India Macroeconomic Comparison")
 
 try:
@@ -325,10 +329,17 @@ try:
     uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
-    # HTML + CSS
-    html = f"""
+    # Central alignment (use full width and center contents)
+    html = """
     <style>
-        .macro-table {{
+        .center-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .macro-table {
             width: 100%;
             max-width: 800px;
             border-collapse: collapse;
@@ -338,32 +349,31 @@ try:
             border: 1px solid #333;
             border-radius: 10px;
             overflow: hidden;
-        }}
-        .macro-table th, .macro-table td {{
+        }
+        .macro-table th, .macro-table td {
             text-align: center;
             padding: 16px;
             font-size: 17px;
-        }}
-        .macro-table th {{
+        }
+        .macro-table th {
             background-color: #2e2e2e;
             font-weight: bold;
-        }}
-        .macro-table td:first-child {{
+        }
+        .macro-table td:first-child {
             text-align: left;
             font-weight: 600;
             color: #ccc;
             padding-left: 20px;
-        }}
+        }
     </style>
-
-    <div style='display: flex; justify-content: center;'>
-        <table class='macro-table'>
-            <tr>
-                <th>Parameter</th>
-                <th>{uk_flag}</th>
-                <th>{in_flag}</th>
-            </tr>
-    """
+    <div class='center-wrap'>
+      <table class='macro-table'>
+        <tr>
+            <th>Parameter</th>
+            <th>{uk_flag}</th>
+            <th>{in_flag}</th>
+        </tr>
+    """.format(uk_flag=uk_flag, in_flag=in_flag)
 
     for _, row in macro_df.iterrows():
         param = row["Parameter"]
@@ -378,14 +388,14 @@ try:
         """
     html += "</table></div>"
 
-    # Display HTML table
-    components.html(html, height=360, scrolling=False)
+    # Display HTML table centered
+    components.html(html, height=390, scrolling=False)
 
-    # Call-to-action
+    # Call-to-action button centered
     st.markdown(
         """
-        <div style='margin-top: 30px; display: flex; align-items: center; gap: 16px;'>
-            <span style='font-weight: 500; font-size: 16px;'><em>For an in-depth look at other economic parameters</em></span>
+        <div style='width:100%; display:flex; justify-content:center; margin-top:30px;'>
+            <span style='font-weight: 500; font-size: 16px; margin-right: 16px;'><em>For an in-depth look at other economic parameters</em></span>
             <a href='/Coverpage' target='_self'>
                 <button style='padding:8px 16px; font-size:15px; border-radius:8px; background-color:#444; color:white; border:none; cursor:pointer;'>
                     Click
