@@ -319,33 +319,25 @@ def styled_change(value, param):
 # HTML and CSS
 html = f"""
 <style>
-    body {{
-        margin: 0;
-        padding: 0;
-        background-color: #0e1117;
-        color: white;
-        font-family: 'Segoe UI', sans-serif;
-    }}
-    .macro-container {{
-        width: 100vw;
+    .macro-wrapper {{
         display: flex;
         justify-content: center;
-        padding: 20px 0;
+        width: 100%;
+        margin-top: 30px;
     }}
     .macro-table {{
-        width: 90vw;
-        max-width: 1200px;
+        width: 100%;
+        max-width: 700px;
         border-collapse: collapse;
         background-color: #1e1e1e;
         color: white;
-        border: 1px solid #333;
+        font-family: sans-serif;
         border-radius: 8px;
         overflow: hidden;
-        table-layout: auto;
     }}
     .macro-table th, .macro-table td {{
         text-align: center;
-        padding: 16px 24px;
+        padding: 14px 20px;
         font-size: 16px;
         white-space: nowrap;
     }}
@@ -354,26 +346,30 @@ html = f"""
         font-weight: bold;
     }}
     .macro-table td:first-child {{
+        text-align: left;
         font-weight: 600;
         color: #ccc;
-        text-align: left;
     }}
 </style>
 
-<div class='macro-container'>
-<table class='macro-table'>
-    <tr>
+<div class="macro-wrapper">
+  <table class="macro-table">
+    <thead>
+      <tr>
         <th>Parameter</th>
         <th>{uk_flag}</th>
         <th>{in_flag}</th>
-    </tr>
+      </tr>
+    </thead>
+    <tbody>
 """
 
-# Add table rows
+# Table content
 for _, row in macro_df.iterrows():
     param = row["Parameter"]
-    uk_change = styled_change(str(row["UK MoM Change"]), param)
-    in_change = styled_change(str(row["India MoM Change"]), param)
+    uk_change = styled_change(row["UK MoM Change"], param)
+    in_change = styled_change(row["India MoM Change"], param)
+
     html += f"""
     <tr>
         <td>{param}</td>
@@ -382,10 +378,14 @@ for _, row in macro_df.iterrows():
     </tr>
     """
 
-html += "</table></div>"
+html += """
+    </tbody>
+  </table>
+</div>
+"""
 
-# Render the HTML table in Streamlit
-components.html(html, height=400, scrolling=True, width=0)
+# Render
+components.html(html, height=350, scrolling=False)
 
 import streamlit as st
 import pandas as pd
