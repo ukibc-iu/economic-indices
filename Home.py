@@ -306,9 +306,6 @@ try:
     display_params = ["Repo Rate", "Inflation Rate", "Unemployment Rate"]
     macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
 
-    # Optional debug: View what's loaded
-    # st.write(macro_df)
-
     def styled_change(change_str, param):
         if pd.isna(change_str):
             return "<span style='color:grey;'>No Data</span>"
@@ -318,7 +315,6 @@ try:
         if text in ["no change", "0 bps", "0.0%", "0%", "+0 bps", "+0%", "0", "–", "-", "", "na", "n/a"]:
             return "<span style='color:grey;'>No Change</span>"
         up = "+" in text
-        down = "-" in text
         if param.lower() in ["inflation rate", "unemployment rate"]:
             color = "red" if up else "green"
         else:
@@ -330,19 +326,28 @@ try:
     uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
-    # HTML Table with full width iframe fix
+    # HTML Table with full-width enforced
     html = f"""
+    <html>
+    <head>
     <style>
-        .macro-wrapper {{
+        body {{
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            box-sizing: border-box;
+            background-color: #0e1117;
+            color: white;
+        }}
+        .macro-container {{
             width: 100%;
-            margin: 0 auto;
+            padding: 0;
         }}
         .macro-table {{
             width: 100%;
             border-collapse: collapse;
             font-family: 'Segoe UI', sans-serif;
             background-color: #1e1e1e;
-            color: white;
             border: 1px solid #333;
             border-radius: 8px;
             overflow: hidden;
@@ -364,8 +369,9 @@ try:
             padding-left: 32px;
         }}
     </style>
-
-    <div class="macro-wrapper">
+    </head>
+    <body>
+    <div class="macro-container">
     <table class="macro-table">
         <tr>
             <th>Parameter</th>
@@ -385,10 +391,15 @@ try:
             <td>{in_change}</td>
         </tr>
         """
-    html += "</table></div>"
+    html += """
+        </table>
+        </div>
+    </body>
+    </html>
+    """
 
-    # Stretch iframe width to 100%
-    components.html(html, height=350, scrolling=False)
+    # Set width=0 (Streamlit trick to make iframe 100% width)
+    components.html(html, height=400, width=0, scrolling=False)
 
     # CTA
     st.markdown(
