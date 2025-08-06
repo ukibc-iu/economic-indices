@@ -292,135 +292,100 @@ for i in range(len(df_display)):
         if cols[5].button("Open", key=f"btn-{i}"):
             st.switch_page(f"pages/{INDEX_CONFIG[df_display.iloc[i]['Index']]['page']}.py")
 
-import pandas as pd
 import streamlit as st
+import pandas as pd
 import streamlit.components.v1 as components
 
-st.markdown("---")
-st.subheader("UK-India Macroeconomic Comparison")
+# Sample data
+data = {
+    "Parameter": ["Repo Rate", "Inflation Rate", "Unemployment Rate"],
+    "UK MoM Change": ["No Change", "No Change", "+10 bps"],
+    "India MoM Change": ["-50 bps", "-34 bps", "+50 bps"]
+}
+macro_df = pd.DataFrame(data)
 
-try:
-    # Load macro data
-    macro_df = pd.read_excel("data/Macro_MoM_Comparison.xlsx", sheet_name="June")
-    display_params = ["Repo Rate", "Inflation Rate", "Unemployment Rate"]
-    macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
+# Emoji flags
+uk_flag = "🇬🇧"
+in_flag = "🇮🇳"
 
-    # Function to style value changes
-    def styled_change(change_str, param):
-        if pd.isna(change_str):
-            return "<span style='color:grey;'>No Data</span>"
-        text = str(change_str).strip().lower()
-        if text in ["no change", "0 bps", "0.0%", "0%", "+0 bps", "+0%", "0", "–", "-", "", "na", "n/a"]:
-            return "<span style='color:grey;'>No Change</span>"
-        up = "+" in text
-        if param.lower() in ["inflation rate", "unemployment rate"]:
-            color = "red" if up else "green"
-        else:
-            color = "green" if up else "red"
-        arrow = "▲" if up else "▼"
-        return f"<span style='color:{color}; font-weight:600;'>{arrow} {change_str.strip()}</span>"
+# Style change function
+def styled_change(value, param):
+    if "No Change" in value:
+        return "No Change"
+    color = "green" if "-" in value and param != "Unemployment Rate" else "red"
+    arrow = "🔻" if "-" in value and param != "Unemployment Rate" else "🔺"
+    return f"<span style='color:{color}; font-weight:600'>{arrow} {value}</span>"
 
-    # Country flags
-    uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
-    in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
+# HTML and CSS
+html = f"""
+<style>
+    body {{
+        margin: 0;
+        padding: 0;
+        background-color: #0e1117;
+        color: white;
+        font-family: 'Segoe UI', sans-serif;
+    }}
+    .macro-container {{
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
+    }}
+    .macro-table {{
+        width: 90vw;
+        max-width: 1200px;
+        border-collapse: collapse;
+        background-color: #1e1e1e;
+        color: white;
+        border: 1px solid #333;
+        border-radius: 8px;
+        overflow: hidden;
+        table-layout: auto;
+    }}
+    .macro-table th, .macro-table td {{
+        text-align: center;
+        padding: 16px 24px;
+        font-size: 16px;
+        white-space: nowrap;
+    }}
+    .macro-table th {{
+        background-color: #2e2e2e;
+        font-weight: bold;
+    }}
+    .macro-table td:first-child {{
+        font-weight: 600;
+        color: #ccc;
+        text-align: left;
+    }}
+</style>
 
-    # Build HTML table
-    html = f"""
-    <html>
-    <head>
-    <style>
-        body {{
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            box-sizing: border-box;
-            background-color: #0e1117;
-            color: white;
-        }}
-        .macro-container {{
-            width: 100%;
-            padding: 20px 0;
-        }}
-        .macro-table {{
-            width: 100%;
-            table-layout: fixed;
-            border-collapse: collapse;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #1e1e1e;
-            border: 1px solid #333;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 0 12px rgba(0,0,0,0.4);
-        }}
-        .macro-table th, .macro-table td {{
-            text-align: center;
-            padding: 16px 24px;
-            font-size: 17px;
-            word-wrap: break-word;
-        }}
-        .macro-table th {{
-            background-color: #2e2e2e;
-            font-weight: bold;
-        }}
-        .macro-table td:first-child {{
-            font-weight: 600;
-            color: #ccc;
-            text-align: left;
-            padding-left: 32px;
-        }}
-    </style>
-    </head>
-    <body>
-    <div class="macro-container">
-        <table class="macro-table">
-            <tr>
-                <th>Parameter</th>
-                <th>{uk_flag}</th>
-                <th>{in_flag}</th>
-            </tr>
+<div class='macro-container'>
+<table class='macro-table'>
+    <tr>
+        <th>Parameter</th>
+        <th>{uk_flag}</th>
+        <th>{in_flag}</th>
+    </tr>
+"""
+
+# Add table rows
+for _, row in macro_df.iterrows():
+    param = row["Parameter"]
+    uk_change = styled_change(str(row["UK MoM Change"]), param)
+    in_change = styled_change(str(row["India MoM Change"]), param)
+    html += f"""
+    <tr>
+        <td>{param}</td>
+        <td>{uk_change}</td>
+        <td>{in_change}</td>
+    </tr>
     """
 
-    for _, row in macro_df.iterrows():
-        param = row["Parameter"]
-        uk_val = styled_change(row["UK MoM Change"], param)
-        in_val = styled_change(row["India MoM Change"], param)
-        html += f"""
-            <tr>
-                <td>{param}</td>
-                <td>{uk_val}</td>
-                <td>{in_val}</td>
-            </tr>
-        """
+html += "</table></div>"
 
-    html += """
-        </table>
-    </div>
-    </body>
-    </html>
-    """
-
-    # ✅ Force full width rendering with width=0 trick
-    components.html(html, height=400, width=0)
-
-    # CTA
-    st.markdown(
-        """
-        <div style='margin-top: 40px; display: flex; align-items: center; gap: 16px;'>
-            <span style='font-weight: 500; font-size: 16px;'><em>For an in-depth look at other economic parameters</em></span>
-            <a href='/Coverpage' target='_self'>
-                <button style='padding:10px 18px; font-size:15px; border-radius:8px; background-color:#444; color:white; border:none; cursor:pointer;'>
-                    Click
-                </button>
-            </a>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-except Exception as e:
-    st.error(f"Could not load macroeconomic comparison data: {e}")
-
-st.markdown("---")
+# Render the HTML table in Streamlit
+components.html(html, height=400, scrolling=True, width=0)
 
 import streamlit as st
 import pandas as pd
