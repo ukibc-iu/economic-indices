@@ -168,7 +168,7 @@ if filtered.empty:
     st.stop()
 
 # === CHART WRAPPER ===
-def chart_wrapper(title, figure):
+def wrapped_chart(title, figure):
     with st.container(border=True):
         st.markdown(f"**{title}**")
         st.plotly_chart(figure, use_container_width=True)
