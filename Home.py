@@ -292,7 +292,6 @@ for i in range(len(df_display)):
         if cols[5].button("Open", key=f"btn-{i}"):
             st.switch_page(f"pages/{INDEX_CONFIG[df_display.iloc[i]['Index']]['page']}.py")
 
-import re
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
@@ -301,17 +300,16 @@ st.markdown("---")
 st.subheader("UK-India Macroeconomic Comparison")
 
 try:
-    # Load data
+    # Load macro data
     macro_df = pd.read_excel("data/Macro_MoM_Comparison.xlsx", sheet_name="June")
     display_params = ["Repo Rate", "Inflation Rate", "Unemployment Rate"]
     macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
 
+    # Function to style value changes
     def styled_change(change_str, param):
         if pd.isna(change_str):
             return "<span style='color:grey;'>No Data</span>"
-        if not isinstance(change_str, str):
-            change_str = str(change_str)
-        text = change_str.strip().lower()
+        text = str(change_str).strip().lower()
         if text in ["no change", "0 bps", "0.0%", "0%", "+0 bps", "+0%", "0", "–", "-", "", "na", "n/a"]:
             return "<span style='color:grey;'>No Change</span>"
         up = "+" in text
@@ -322,11 +320,11 @@ try:
         arrow = "▲" if up else "▼"
         return f"<span style='color:{color}; font-weight:600;'>{arrow} {change_str.strip()}</span>"
 
-    # Flags
+    # Country flags
     uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
-    # HTML Table with full-width enforced
+    # Build HTML table
     html = f"""
     <html>
     <head>
@@ -341,10 +339,11 @@ try:
         }}
         .macro-container {{
             width: 100%;
-            padding: 0;
+            padding: 20px 0;
         }}
         .macro-table {{
             width: 100%;
+            table-layout: fixed;
             border-collapse: collapse;
             font-family: 'Segoe UI', sans-serif;
             background-color: #1e1e1e;
@@ -357,6 +356,7 @@ try:
             text-align: center;
             padding: 16px 24px;
             font-size: 17px;
+            word-wrap: break-word;
         }}
         .macro-table th {{
             background-color: #2e2e2e;
@@ -372,34 +372,35 @@ try:
     </head>
     <body>
     <div class="macro-container">
-    <table class="macro-table">
-        <tr>
-            <th>Parameter</th>
-            <th>{uk_flag}</th>
-            <th>{in_flag}</th>
-        </tr>
+        <table class="macro-table">
+            <tr>
+                <th>Parameter</th>
+                <th>{uk_flag}</th>
+                <th>{in_flag}</th>
+            </tr>
     """
 
     for _, row in macro_df.iterrows():
         param = row["Parameter"]
-        uk_change = styled_change(row.get("UK MoM Change", ""), param)
-        in_change = styled_change(row.get("India MoM Change", ""), param)
+        uk_val = styled_change(row["UK MoM Change"], param)
+        in_val = styled_change(row["India MoM Change"], param)
         html += f"""
-        <tr>
-            <td>{param}</td>
-            <td>{uk_change}</td>
-            <td>{in_change}</td>
-        </tr>
+            <tr>
+                <td>{param}</td>
+                <td>{uk_val}</td>
+                <td>{in_val}</td>
+            </tr>
         """
+
     html += """
         </table>
-        </div>
+    </div>
     </body>
     </html>
     """
 
-    # Set width=0 (Streamlit trick to make iframe 100% width)
-    components.html(html, height=400, width=0, scrolling=False)
+    # ✅ Force full width rendering with width=0 trick
+    components.html(html, height=400, width=0)
 
     # CTA
     st.markdown(
