@@ -186,7 +186,6 @@ with right_col:
     fig_gauge = go.Figure(go.Indicator(
         mode="gauge+number",
         value=score_val,
-        number={'font': {'color': 'white'}},
         domain={'x': [0, 1], 'y': [0, 1]},
         gauge={
             'axis': {'range': [0, 1], 'tickcolor': 'white'},
