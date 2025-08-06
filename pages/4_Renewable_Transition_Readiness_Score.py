@@ -178,8 +178,7 @@ with left_col:
     fig_donut.update_traces(textposition='inside', textinfo='percent+label')
     fig_donut.update_layout(height=400,
                             paper_bgcolor='rgba(0,0,0,0)',
-                            plot_bgcolor='rgba(0,0,0,0)',
-                            font_color='white')
+                            plot_bgcolor='rgba(0,0,0,0)')
     wrapped_chart(f"Renewable Energy Mix – {selected_period}", fig_donut)
 
 with right_col:
@@ -203,8 +202,7 @@ with right_col:
     ))
     fig_gauge.update_layout(height=400,
                             paper_bgcolor='rgba(0,0,0,0)',
-                            plot_bgcolor='rgba(0,0,0,0)',
-                            font_color='white')
+                            plot_bgcolor='rgba(0,0,0,0)')
     wrapped_chart(f"Readiness Score – {selected_period}", fig_gauge)
 st.markdown("### 💡 Expert Opinion")
 
