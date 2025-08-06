@@ -325,29 +325,27 @@ try:
     uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
-    # HTML Table
+    # HTML Table (Full-width layout)
     html = f"""
     <style>
         .macro-container {{
             width: 100%;
-            display: flex;
-            justify-content: center;
-            padding: 30px 0;
+            padding: 0 0 30px 0;
         }}
         .macro-table {{
-            width: 90%;
+            width: 100%;
+            max-width: 100%;
             border-collapse: collapse;
             font-family: 'Segoe UI', sans-serif;
             background-color: #1e1e1e;
             color: white;
             border: 1px solid #333;
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
         }}
         .macro-table th, .macro-table td {{
             text-align: center;
-            padding: 18px;
+            padding: 16px 24px;
             font-size: 17px;
         }}
         .macro-table th {{
@@ -358,7 +356,7 @@ try:
             font-weight: 600;
             color: #ccc;
             text-align: left;
-            padding-left: 24px;
+            padding-left: 32px;
         }}
     </style>
 
@@ -384,10 +382,10 @@ try:
         """
     html += "</table></div>"
 
-    # Render HTML table
-    components.html(html, height=400)
+    # Render HTML
+    components.html(html, height=350)
 
-    # CTA Button and Note
+    # CTA Button
     st.markdown(
         """
         <div style='margin-top: 40px; display: flex; align-items: center; gap: 16px;'>
@@ -406,6 +404,7 @@ except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
 
 st.markdown("---")
+
 import streamlit as st
 import pandas as pd
 
