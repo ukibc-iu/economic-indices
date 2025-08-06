@@ -95,7 +95,7 @@ selected_segment_sales = selected_row[ev_cols]
 selected_total_sales = selected_row[vehicle_sales_cols]
 
 # === CHART WRAPPER ===
-def chart_wrapper(title, figure):
+def wrapped_chart(title, figure):
     with st.container(border=True):
         st.markdown(f"**{title}**")
         st.plotly_chart(figure, use_container_width=True)
