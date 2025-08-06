@@ -292,9 +292,8 @@ for i in range(len(df_display)):
         if cols[5].button("Open", key=f"btn-{i}"):
             st.switch_page(f"pages/{INDEX_CONFIG[df_display.iloc[i]['Index']]['page']}.py")
 
-import re
-import pandas as pd
 import streamlit as st
+import pandas as pd
 import streamlit.components.v1 as components
 
 st.markdown("---")
@@ -306,6 +305,7 @@ try:
     display_params = ["Repo Rate", "Inflation Rate", "Unemployment Rate"]
     macro_df = macro_df[macro_df["Parameter"].isin(display_params)]
 
+    # Styling function
     def styled_change(change_str, param):
         if not isinstance(change_str, str):
             return "–"
@@ -319,38 +319,50 @@ try:
         else:
             color = "green" if up else "red"
         arrow = "▲" if up else "▼"
-        return f"<span style='color:{color};'>{arrow} {change_str.strip()}</span>"
+        return f"<span style='color:{color}; font-weight: 600;'>{arrow} {change_str.strip()}</span>"
 
+    # Flags
     uk_flag = "<img src='https://flagcdn.com/gb.svg' width='32' style='vertical-align: middle;'>"
     in_flag = "<img src='https://flagcdn.com/in.svg' width='32' style='vertical-align: middle;'>"
 
+    # HTML + CSS
     html = f"""
     <style>
         .macro-table {{
             width: 100%;
+            max-width: 800px;
             border-collapse: collapse;
-            font-family: sans-serif;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #1e1e1e;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
         }}
         .macro-table th, .macro-table td {{
             text-align: center;
-            padding: 10px;
-            font-size: 16px;
+            padding: 16px;
+            font-size: 17px;
         }}
         .macro-table th {{
-            font-weight: 600;
+            background-color: #2e2e2e;
+            font-weight: bold;
         }}
         .macro-table td:first-child {{
-            text-align: center;
-            font-weight: 500;
-            color: darkgrey;
+            text-align: left;
+            font-weight: 600;
+            color: #ccc;
+            padding-left: 20px;
         }}
     </style>
-    <table class='macro-table'>
-        <tr>
-            <th></th>
-            <th>{uk_flag}</th>
-            <th>{in_flag}</th>
-        </tr>
+
+    <div style='display: flex; justify-content: center;'>
+        <table class='macro-table'>
+            <tr>
+                <th>Parameter</th>
+                <th>{uk_flag}</th>
+                <th>{in_flag}</th>
+            </tr>
     """
 
     for _, row in macro_df.iterrows():
@@ -358,31 +370,35 @@ try:
         uk_change = styled_change(str(row["UK MoM Change"]), param)
         in_change = styled_change(str(row["India MoM Change"]), param)
         html += f"""
-        <tr>
-            <td>{param}</td>
-            <td>{uk_change}</td>
-            <td>{in_change}</td>
-        </tr>
+            <tr>
+                <td>{param}</td>
+                <td>{uk_change}</td>
+                <td>{in_change}</td>
+            </tr>
         """
-    html += "</table>"
-    components.html(html, height=200)
+    html += "</table></div>"
 
-    # Inline layout using HTML and Streamlit button side by side
+    # Display HTML table
+    components.html(html, height=360, scrolling=False)
+
+    # Call-to-action
     st.markdown(
-    """
-    <div style='display: flex; align-items: center; gap: 12px;'>
-        <span style='font-weight: 600; font-size: 16px;'><em>For an in-depth look at other economic parameters</em></span>
-        <a href='/Coverpage' target='_self'>
-            <button style='padding:6px 14px; font-size:14px; border-radius:6px; background-color:#444; color:white; border:none; cursor:pointer;'>
-                Click
-            </button>
-        </a>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        """
+        <div style='margin-top: 30px; display: flex; align-items: center; gap: 16px;'>
+            <span style='font-weight: 500; font-size: 16px;'><em>For an in-depth look at other economic parameters</em></span>
+            <a href='/Coverpage' target='_self'>
+                <button style='padding:8px 16px; font-size:15px; border-radius:8px; background-color:#444; color:white; border:none; cursor:pointer;'>
+                    Click
+                </button>
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 except Exception as e:
     st.error(f"Could not load macroeconomic comparison data: {e}")
+
 st.markdown("---")
 
 import streamlit as st
