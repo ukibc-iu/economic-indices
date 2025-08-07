@@ -11,7 +11,7 @@ from shared.retail_index import compute_retail_index
 
 st.set_page_config(layout="wide", page_title="Economic Indices Overview")
 st.title("Economic Indices Dashboard")
-st.markdown("*Track key economic indicators and analyze their month-over-month changes.*")
+st.markdown("*key economic indicators and analyze their month-over-month changes.*")
 
 # Index Configuration (with images)
 INDEX_CONFIG = {
