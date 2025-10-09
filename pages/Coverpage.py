@@ -3,7 +3,7 @@ import pandas as pd
 
 st.set_page_config(layout="wide")
 st.markdown("<h2 style='text-align:center;'>Macroeconomic Briefing: India and United Kingdom</h2>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align:center; color: teal;'>August 2025</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align:center; color: teal;'>September 2025</h3>", unsafe_allow_html=True)
 # Load data
 df = pd.read_excel("data/Macro_MoM_Comparison.xlsx")
 df.columns = df.columns.str.strip()
