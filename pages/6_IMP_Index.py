@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import os
-import json
 
 st.set_page_config(layout="wide")
 
@@ -60,8 +59,20 @@ if 'Date' not in df.columns or 'Scale' not in df.columns:
     st.error("❌ The CSV file must contain at least 'Date' and 'Scale' columns.")
     st.stop()
 
-# Convert and clean dates
-df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
+# === Fix Date Parsing ===
+# Handles cases like "18-May" meaning "May 2018"
+def parse_date_safe(x):
+    x = str(x).strip()
+    try:
+        # if the format is like "18-May", reverse it to "May-18"
+        if "-" in x and x.split("-")[0].isdigit():
+            parts = x.split("-")
+            x = f"{parts[1]}-{parts[0]}"
+        return pd.to_datetime(x, format='%b-%y', errors='coerce')
+    except Exception:
+        return pd.NaT
+
+df['Date'] = df['Date'].apply(parse_date_safe)
 df = df.dropna(subset=['Date'])
 df['Month'] = df['Date'].dt.strftime('%b-%Y')
 
@@ -75,32 +86,22 @@ def get_fiscal_quarter(date):
 
 df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 
-# Debug info (optional)
-# st.write("Data preview:", df.head())
-# st.write("Number of rows:", len(df))
-
-# === Mode Selection ===
-mode = st.radio("Select View Mode", ["Monthly", "Quarterly"], horizontal=True)
-
-# === Safety Checks & KPI Preparation ===
 if df.empty or df['Scale'].dropna().empty:
     st.error("❌ No valid data found in IMP_Index.csv. Please check that the file contains valid 'Date' and 'Scale' values.")
     st.stop()
 
+# === Mode Selection ===
+mode = st.radio("Select View Mode", ["Monthly", "Quarterly"], horizontal=True)
+
+# === Prepare Data for KPIs ===
 if mode == "Monthly":
     df = df.dropna(subset=["Date", "Scale"])
-    if df.empty:
-        st.error("No valid monthly data available.")
-        st.stop()
     latest_row = df.sort_values("Date").iloc[-1]
     latest_value = latest_row["Scale"]
     latest_label = latest_row["Month"]
     all_labels = sorted(df['Month'].dropna().unique())
 else:
     df = df.dropna(subset=["Fiscal_Quarter", "Scale"])
-    if df.empty:
-        st.error("No valid quarterly data available.")
-        st.stop()
     latest_q = df.sort_values("Date")["Fiscal_Quarter"].iloc[-1]
     latest_value = df[df["Fiscal_Quarter"] == latest_q]["Scale"].mean()
     latest_label = latest_q
