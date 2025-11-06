@@ -44,12 +44,23 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("IMP Index Dashboard")
-st.markdown("*India’s Macroeconomic Performance (IMP) Index measures India's overall economic well‑being based on multiple macro indicators.*")
+st.markdown("*India’s Macroeconomic Performance (IMP) Index measures India's overall economic well-being based on multiple macro indicators.*")
 
 # === Load Data ===
 data_path = "data/IMP_Index.csv"
+
+if not os.path.exists(data_path):
+    st.error(f"❌ File not found: {data_path}. Please upload or place it in the correct folder.")
+    st.stop()
+
 df = pd.read_csv(data_path)
 df.columns = df.columns.str.strip()
+
+if 'Date' not in df.columns or 'Scale' not in df.columns:
+    st.error("❌ The CSV file must contain at least 'Date' and 'Scale' columns.")
+    st.stop()
+
+# Convert and clean dates
 df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
 df = df.dropna(subset=['Date'])
 df['Month'] = df['Date'].dt.strftime('%b-%Y')
@@ -64,20 +75,36 @@ def get_fiscal_quarter(date):
 
 df['Fiscal_Quarter'] = df['Date'].apply(get_fiscal_quarter)
 
+# Debug info (optional)
+# st.write("Data preview:", df.head())
+# st.write("Number of rows:", len(df))
+
 # === Mode Selection ===
 mode = st.radio("Select View Mode", ["Monthly", "Quarterly"], horizontal=True)
 
-# === Prepare Data for KPIs and Dropdown ===
+# === Safety Checks & KPI Preparation ===
+if df.empty or df['Scale'].dropna().empty:
+    st.error("❌ No valid data found in IMP_Index.csv. Please check that the file contains valid 'Date' and 'Scale' values.")
+    st.stop()
+
 if mode == "Monthly":
+    df = df.dropna(subset=["Date", "Scale"])
+    if df.empty:
+        st.error("No valid monthly data available.")
+        st.stop()
     latest_row = df.sort_values("Date").iloc[-1]
     latest_value = latest_row["Scale"]
     latest_label = latest_row["Month"]
-    all_labels = sorted(df['Month'].unique())
+    all_labels = sorted(df['Month'].dropna().unique())
 else:
+    df = df.dropna(subset=["Fiscal_Quarter", "Scale"])
+    if df.empty:
+        st.error("No valid quarterly data available.")
+        st.stop()
     latest_q = df.sort_values("Date")["Fiscal_Quarter"].iloc[-1]
     latest_value = df[df["Fiscal_Quarter"] == latest_q]["Scale"].mean()
     latest_label = latest_q
-    all_labels = sorted(df["Fiscal_Quarter"].unique())
+    all_labels = sorted(df["Fiscal_Quarter"].dropna().unique())
 
 # === KPI Cards ===
 st.markdown(f"""
@@ -97,7 +124,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# === Dropdown Selector Below KPIs ===
+# === Dropdown Selector ===
 selected_label = st.selectbox(f"Select {mode}", options=all_labels, index=all_labels.index(latest_label))
 
 # === Selected Value & Label ===
@@ -114,7 +141,7 @@ def chart_wrapper(fig, title=None):
         st.markdown(f"#### {title}")
     st.plotly_chart(fig, use_container_width=True)
 
-# === Gauge Chart (Smaller Size) ===
+# === Gauge Chart ===
 gauge_fig = go.Figure(go.Indicator(
     mode="gauge+number",
     value=selected_value,
@@ -138,7 +165,7 @@ gauge_fig = go.Figure(go.Indicator(
     }
 ))
 gauge_fig.update_layout(
-    height=300,  # Smaller height
+    height=300,
     margin=dict(l=10, r=10, t=20, b=10),
     paper_bgcolor="rgba(0,0,0,0)",
     font=dict(color="gray", family="Arial")
