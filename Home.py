@@ -94,14 +94,33 @@ def load_cdi():
 def load_imp():
     try:
         df = pd.read_csv(INDEX_CONFIG['IMP Index']['file'])
-        df['Date'] = pd.to_datetime(df['Date'], format='%b-%y', errors='coerce')
+
+        # FIX: Convert "18-May" correctly (Excel removed the year!)
+        # Parse day-month first
+        df['Date'] = pd.to_datetime(df['Date'], format='%d-%b', errors='coerce')
+
+        # ASSIGN the correct year (change 2018 to whichever year applies in your dataset)
+        # If your data spans multiple years, tell me and I will give you auto-year logic.
+        df['Date'] = df['Date'].apply(lambda x: x.replace(year=2018) if pd.notnull(x) else x)
+
+        # Continue normally
         df.dropna(subset=['Date', 'Scale'], inplace=True)
         df = df.sort_values('Date')
-        curr, prev = df['Scale'].iloc[-1], df['Scale'].iloc[-2]
+
+        # Must have at least 2 rows
+        if len(df) < 2:
+            curr = df['Scale'].iloc[-1]
+            prev = None
+        else:
+            curr, prev = df['Scale'].iloc[-1], df['Scale'].iloc[-2]
+
         latest_month = df['Date'].iloc[-1].strftime('%b-%y')
         return prev, curr, latest_month
-    except:
+
+    except Exception as e:
+        print("IMP Index load error:", e)
         return None, None, "–"
+
 
 def load_housing():
     try:
