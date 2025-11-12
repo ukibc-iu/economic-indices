@@ -118,7 +118,7 @@ st.markdown("""
     1. bps refers to basis points; 
     2. PMI refers to Purchasing Managers' Index; 
     3. Unit for merchandise imports and exports is US$; 
-    4. 1$ = 86.60 INR; 
-    5. 1£ = 1.35$.
+    4. 1$ = 88.76 INR; 
+    5. 1£ = 1.33$.
 </div>
 """, unsafe_allow_html=True)
